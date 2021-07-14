@@ -1,0 +1,28 @@
+Package: geese
+Version: 0.0.0.9000
+Title: GEne Evolutionary model using SufficiEnsy
+Description: Discrete Exponential Markov Models are a
+  family of statistical models that can be used to describe dynamic transitions
+  of phenomena with multivariate bernoulli distributed features. What the package
+  does (one paragraph). These models include GEESE (GEne Evolutionary model
+  using SufficiEnsy) (Vega Yon et al. 2021).
+Authors@R: c(
+  person(
+    "George", "Vega Yon", role=c("aut","cre"), email="g.vegayon@gmail.com",
+    comment = c(ORCID = "0000-0002-3171-0844")
+    ),
+  person("National
+         Cancer Institute (NCI)", role = "fnd", comment = "Grant Number
+         5P01CA196569-02")
+        )
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE, load = "source")
+RoxygenNote: 7.1.1
+SystemRequirements: C++11
+LinkingTo: 
+    Rcpp
+Imports: 
+    Rcpp,
+    fmcmc
