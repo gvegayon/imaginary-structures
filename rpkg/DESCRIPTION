@@ -1,6 +1,6 @@
-Package: geese
+Package: imaginarycss
 Version: 0.0.0.9000
-Title: GEne Evolutionary model using SufficiEnsy
+Title: Imaginary CSS Structures
 Description: Discrete Exponential Markov Models are a
   family of statistical models that can be used to describe dynamic transitions
   of phenomena with multivariate bernoulli distributed features. What the package
@@ -24,5 +24,4 @@ SystemRequirements: C++11
 LinkingTo: 
     Rcpp
 Imports: 
-    Rcpp,
-    fmcmc
+    Rcpp
