@@ -13,7 +13,7 @@ print.barry_graph <- function(x) {
 }
 
 #' @export
-count_recip_errors <- function(x, n, start) {
-    .Call(`_imaginarycss_count_recip_errors`, x, n, start)
+count_recip_errors <- function(x, n, end) {
+    .Call(`_imaginarycss_count_recip_errors`, x, n, end)
 }
 

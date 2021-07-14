@@ -28,14 +28,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // count_recip_errors
-std::vector< double > count_recip_errors(SEXP x, int n, std::vector< uint > start);
-RcppExport SEXP _imaginarycss_count_recip_errors(SEXP xSEXP, SEXP nSEXP, SEXP startSEXP) {
+DataFrame count_recip_errors(SEXP x, int n, std::vector< uint > end);
+RcppExport SEXP _imaginarycss_count_recip_errors(SEXP xSEXP, SEXP nSEXP, SEXP endSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< std::vector< uint > >::type start(startSEXP);
-    rcpp_result_gen = Rcpp::wrap(count_recip_errors(x, n, start));
+    Rcpp::traits::input_parameter< std::vector< uint > >::type end(endSEXP);
+    rcpp_result_gen = Rcpp::wrap(count_recip_errors(x, n, end));
     return rcpp_result_gen;
 END_RCPP
 }

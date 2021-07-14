@@ -37,32 +37,42 @@ int print_barry_graph(SEXP x) {
 
 //' @export
 // [[Rcpp::export(rng = false)]]
-std::vector< double > count_recip_errors(
+DataFrame count_recip_errors(
     SEXP x,
     int n,
-    std::vector< uint > start
+    std::vector< uint > end
   ) {
   
   Rcpp::XPtr< netcounters::Network >ptr(x);
   netcounters::NetStatsCounter counter(ptr);
   
   netcounters::counter_css_partially_false_recip_omiss(
-    counter.get_counters(), n, start
+    counter.get_counters(), n, end
     );
   
   netcounters::counter_css_partially_false_recip_commi(
-    counter.get_counters(), n, start
+    counter.get_counters(), n, end
   );
   
   netcounters::counter_css_completely_false_recip_omiss(
-    counter.get_counters(), n, start
+    counter.get_counters(), n, end
   );
   
   netcounters::counter_css_completely_false_recip_comiss(
-    counter.get_counters(), n, start
+    counter.get_counters(), n, end
   );
   
-  return counter.count_all();
+  IntegerVector id(end.size());
+  for (int i = 0; i < static_cast<int>(id.size()); ++i)
+    id[i] = i;
+  
+  // print(Rcpp::wrap(counter.get_names()));
+  
+  return DataFrame::create(
+    _["id"]    = id,
+    _["name"]  = wrap(counter.get_names()),
+    _["value"] = counter.count_all()
+  );
   
 }
 

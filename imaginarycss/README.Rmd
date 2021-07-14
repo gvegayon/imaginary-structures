@@ -50,16 +50,18 @@ target_ <- c(target_, target_[-1] + 4)
 graph <- new_barry_graph(8, source_, target_)
 graph
 
-count_recip_errors(graph, 4, 4)
+count_recip_errors(graph, 4, 8)
 ```
 
 ```{r example-krackhardt}
 krack_data <- read.csv("data-raw/advice_nets.csv")
-n            <- 21
-start_points <- cumsum(rep(21, 21))
+n          <- 21
+end_points <- cumsum(rep(21, 22))[-1]
 
 graph <- new_barry_graph(n*22, krack_data[,1] - 1, krack_data[,2] - 1)
-count_recip_errors(graph, 21, 42+21)
+ans   <- count_recip_errors(graph, 21, end_points)
 
+ans$name <- gsub("[(][0-9]+[)]", "", ans$name)
+ans
 ```
 
