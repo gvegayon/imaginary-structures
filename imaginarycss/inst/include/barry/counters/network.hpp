@@ -866,7 +866,7 @@ inline void counter_css_partially_false_recip_commi(
             // Checking change stat of the true net
             double tji = static_cast<double>(Array(j, i, false));
             double pji = static_cast<double>(Array(j + s, i + s, false));
-            double pij = static_cast<double>(Array(j + s, i + s, false));
+            double pij = static_cast<double>(Array(i + s, j + s, false));
             return pij * pji * (1.0 - 2.0 * tji);
 
         } CSS_CASE_PERCEIVED() {
@@ -874,7 +874,7 @@ inline void counter_css_partially_false_recip_commi(
             // Checking change stat of the percieved net
             double tji = static_cast<double>(Array(j - s, i - s, false));
             double pji = static_cast<double>(Array(j, i, false));
-            double tij = static_cast<double>(Array(j - s, i - s, false));
+            double tij = static_cast<double>(Array(i - s, j - s, false));
             return pji * (tij + tji - 2.0 * tij*tji);
 
         } CSS_CASE_ELSE()

@@ -65,3 +65,24 @@ ans$name <- gsub("[(][0-9]+[)]", "", ans$name)
 ans
 ```
 
+Now checking that none of these coincide completely
+
+```{r}
+tmp <- table(ans$value, ans$name)
+tmp <- apply(tmp, 2, paste, collapse = "")
+length(unique(tmp))  == 4 # Should be true
+```
+
+Checking out the distribution
+
+```{r dist}
+library(ggplot2)
+ggplot(data = ans, aes(y = value)) +
+  geom_histogram() + 
+  facet_wrap(vars(name)) +
+  coord_flip() +
+  labs(title = "Distribution of type of errors")
+```
+
+
+

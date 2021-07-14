@@ -88,26 +88,26 @@ ans
 #> 19 18   Partially false recip (omission)     17
 #> 20 19   Partially false recip (omission)     17
 #> 21 20   Partially false recip (omission)      0
-#> 22  0  Partially false recip (comission)      0
-#> 23  1  Partially false recip (comission)      0
-#> 24  2  Partially false recip (comission)      0
-#> 25  3  Partially false recip (comission)      0
-#> 26  4  Partially false recip (comission)      0
-#> 27  5  Partially false recip (comission)      0
-#> 28  6  Partially false recip (comission)      0
-#> 29  7  Partially false recip (comission)      0
-#> 30  8  Partially false recip (comission)      0
-#> 31  9  Partially false recip (comission)      0
-#> 32 10  Partially false recip (comission)      0
-#> 33 11  Partially false recip (comission)      0
-#> 34 12  Partially false recip (comission)      0
-#> 35 13  Partially false recip (comission)      0
-#> 36 14  Partially false recip (comission)      0
-#> 37 15  Partially false recip (comission)      0
-#> 38 16  Partially false recip (comission)      0
-#> 39 17  Partially false recip (comission)      0
-#> 40 18  Partially false recip (comission)      0
-#> 41 19  Partially false recip (comission)      0
+#> 22  0  Partially false recip (comission)     56
+#> 23  1  Partially false recip (comission)      1
+#> 24  2  Partially false recip (comission)     23
+#> 25  3  Partially false recip (comission)     15
+#> 26  4  Partially false recip (comission)     23
+#> 27  5  Partially false recip (comission)     31
+#> 28  6  Partially false recip (comission)      6
+#> 29  7  Partially false recip (comission)      5
+#> 30  8  Partially false recip (comission)     14
+#> 31  9  Partially false recip (comission)      1
+#> 32 10  Partially false recip (comission)     10
+#> 33 11  Partially false recip (comission)     14
+#> 34 12  Partially false recip (comission)      1
+#> 35 13  Partially false recip (comission)      1
+#> 36 14  Partially false recip (comission)     28
+#> 37 15  Partially false recip (comission)      9
+#> 38 16  Partially false recip (comission)     15
+#> 39 17  Partially false recip (comission)     37
+#> 40 18  Partially false recip (comission)     34
+#> 41 19  Partially false recip (comission)     37
 #> 42 20  Partially false recip (comission)      0
 #> 43  0  Completely false recip (omission)      1
 #> 44  1  Completely false recip (omission)     32
@@ -152,3 +152,26 @@ ans
 #> 83 19 Completely false recip (comission)      6
 #> 84 20 Completely false recip (comission)      0
 ```
+
+Now checking that none of these coincide completely
+
+``` r
+tmp <- table(ans$value, ans$name)
+tmp <- apply(tmp, 2, paste, collapse = "")
+length(unique(tmp))  == 4 # Should be true
+#> [1] TRUE
+```
+
+Checking out the distribution
+
+``` r
+library(ggplot2)
+ggplot(data = ans, aes(y = value)) +
+  geom_histogram() + 
+  facet_wrap(vars(name)) +
+  coord_flip() +
+  labs(title = "Distribution of type of errors")
+#> `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+```
+
+<img src="man/figures/README-dist-1.png" width="100%" />
