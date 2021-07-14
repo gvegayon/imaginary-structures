@@ -12,3 +12,8 @@ print.barry_graph <- function(x) {
     invisible(.Call(`_imaginarycss_print_barry_graph`, x))
 }
 
+#' @export
+count_recip_errors <- function(x, n, start) {
+    .Call(`_imaginarycss_count_recip_errors`, x, n, start)
+}
+

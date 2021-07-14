@@ -29,8 +29,40 @@ SEXP new_barry_graph(
 int print_barry_graph(SEXP x) {
   
   Rcpp::XPtr< netcounters::Network >ptr(x);
-  ptr->print("This is a graph!\n");
+  ptr->print();
   
   return 0;
   
 }
+
+//' @export
+// [[Rcpp::export(rng = false)]]
+std::vector< double > count_recip_errors(
+    SEXP x,
+    int n,
+    std::vector< uint > start
+  ) {
+  
+  Rcpp::XPtr< netcounters::Network >ptr(x);
+  netcounters::NetStatsCounter counter(ptr);
+  
+  netcounters::counter_css_partially_false_recip_omiss(
+    counter.get_counters(), n, start
+    );
+  
+  netcounters::counter_css_partially_false_recip_commi(
+    counter.get_counters(), n, start
+  );
+  
+  netcounters::counter_css_completely_false_recip_omiss(
+    counter.get_counters(), n, start
+  );
+  
+  netcounters::counter_css_completely_false_recip_comiss(
+    counter.get_counters(), n, start
+  );
+  
+  return counter.count_all();
+  
+}
+

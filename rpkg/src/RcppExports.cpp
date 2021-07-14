@@ -27,10 +27,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// count_recip_errors
+std::vector< double > count_recip_errors(SEXP x, int n, std::vector< uint > start);
+RcppExport SEXP _imaginarycss_count_recip_errors(SEXP xSEXP, SEXP nSEXP, SEXP startSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< std::vector< uint > >::type start(startSEXP);
+    rcpp_result_gen = Rcpp::wrap(count_recip_errors(x, n, start));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_imaginarycss_new_barry_graph", (DL_FUNC) &_imaginarycss_new_barry_graph, 3},
     {"_imaginarycss_print_barry_graph", (DL_FUNC) &_imaginarycss_print_barry_graph, 1},
+    {"_imaginarycss_count_recip_errors", (DL_FUNC) &_imaginarycss_count_recip_errors, 3},
     {NULL, NULL, 0}
 };
 
