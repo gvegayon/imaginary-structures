@@ -1,0 +1,117 @@
+---
+title: "Illustrative Examples of Imaginary Structures"
+output:
+  html_document: default
+  pdf_document: default
+---
+This doc shows some illustrative examples of imaginary structures in CSS data.
+
+## Glossary
+- __P-EO__: Partially false errors of omission
+- __P-EC__: Partially false errors of commission
+- __C-EO__: Completely false errors of omission
+- __C-EC__: Completely false errors of commission
+- __M-EO__: Mixed false errors of omission
+- __M-EC__: Mixed false errors of commission
+
+## Installation
+To calculate imaginary structure statistics, you can install the `imaginarycss` package from [CRAN](https://CRAN.R-project.org).
+
+```r
+# install.packages("imaginarycss")
+```
+Or you can also install the development version from [GitHub](https://github.com/).
+``` r
+# install.packages("devtools")
+# remotes::install_github("gvegayon/imaginary-structures/imaginarycss@main")
+```
+
+## 3-node Graph Case with 2-node Imaginary Motifs
+First, we define a true graph. In this case, the true graph includes 3 nodes and 3 edges. It also has all the possible dyadic MAN conditions:
+
+- mutual
+- asymmetric
+- null
+
+Consequently, this true graph example can cover all the possible dyadic imaginary motifs, compared to different perceived graph patterns.
+
+In the following, we're also going to construct three perceived graphs that compare with the true graph. we calculate example imaginary motif statistics using these examples.
+
+```{r message = FALSE, warning = FALSE}
+library(sna)
+```
+
+```{r true graph}
+# library(imaginarycss)
+# 3 actor true graph
+t_source_ <- c("A","A","B") 
+t_target_ <- c("B","C","A")
+# t_source_ <- c(1,1,2) 
+# t_target_ <- c(2,3,1)
+t_ <- as.network(data.frame(from = t_source_,
+                      to = t_target_))
+gplot(t_, displaylabels = T, usecurve = T, edge.curve = .1)
+```
+
+### A's perceived graph
+We define A's perceived graph and then compare it with the true graph. By doing so, we should obverse the following imaginary 2-node motifs:
+
+- P-EO = 1
+- P-EC = 1
+- C-EO = 0
+- C-EC = 0
+- M-EO = 0
+- M-EC = 0
+
+```{r A graph}
+# A's perceived graph
+a_source_ <- c("A","A","C")
+a_target_ <- c("B","C","A")
+# a_source_ <- c(1,1,3)
+# a_target_ <- c(2,3,1)
+a_ <- as.network(data.frame(from = a_source_,
+                 to = a_target_))
+gplot(a_, displaylabels = T, usecurve = T, edge.curve = .1)
+```
+
+### B's perceived graph
+Compared to the true graph, B should provide the following imaginary 2-node motifs:
+
+- P-EO = 0
+- P-EC = 0
+- C-EO = 1
+- C-EC = 1
+- M-EO = 0
+- M-EC = 0
+
+```{r B graph}
+# C's perceived graph
+b_source_ <- c("A","B","C")
+b_target_ <- c("C","C","B")
+# b_source_ <- c(1,2,3)
+# b_target_ <- c(3,3,2)
+b_ <- as.network(data.frame(from = b_source_,
+                            to = b_target_))
+gplot(b_, displaylabels = T, usecurve = T, edge.curve = .1)
+```
+
+### C's perceived graph
+This should be C's perceived graph statistics:
+
+- P-EO = 0
+- P-EC = 0
+- C-EO = 0
+- C-EC = 0
+- M-EO = 1
+- M-EC = 1
+```{r C graph}
+# C's perceived graph
+c_source_ <- c("A","B")
+c_target_ <- c("C","A")
+# c_source_ <- c(1,2)
+# c_target_ <- c(3,1)
+c_ <- as.network(data.frame(from = c_source_,
+                      to = c_target_),matrix.type='edgelist')
+gplot(c_, displaylabels = T, usecurve = T, edge.curve = .1)
+```
+
