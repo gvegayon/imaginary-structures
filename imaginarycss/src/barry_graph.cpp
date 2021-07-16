@@ -9,8 +9,8 @@ using namespace Rcpp;
 // [[Rcpp::export(rng = false)]]
 SEXP new_barry_graph(
     int n,
-    std::vector< uint > source,
-    std::vector< uint > target
+    std::vector< unsigned integer > source,
+    std::vector< unsigned integer > target
     ) {
   
   // Creating network of size six with five ties
@@ -40,7 +40,7 @@ int print_barry_graph(SEXP x) {
 DataFrame count_recip_errors(
     SEXP x,
     int n,
-    std::vector< uint > end
+    std::vector< unsigned integer > end
   ) {
   
   Rcpp::XPtr< netcounters::Network >ptr(x);
