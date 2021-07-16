@@ -6,13 +6,13 @@
 using namespace Rcpp;
 
 // new_barry_graph
-SEXP new_barry_graph(int n, std::vector< unsigned integer > source, std::vector< unsigned integer > target);
+SEXP new_barry_graph(int n, std::vector< unsigned int > source, std::vector< unsigned int > target);
 RcppExport SEXP _imaginarycss_new_barry_graph(SEXP nSEXP, SEXP sourceSEXP, SEXP targetSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< std::vector< unsigned integer > >::type source(sourceSEXP);
-    Rcpp::traits::input_parameter< std::vector< unsigned integer > >::type target(targetSEXP);
+    Rcpp::traits::input_parameter< std::vector< unsigned int > >::type source(sourceSEXP);
+    Rcpp::traits::input_parameter< std::vector< unsigned int > >::type target(targetSEXP);
     rcpp_result_gen = Rcpp::wrap(new_barry_graph(n, source, target));
     return rcpp_result_gen;
 END_RCPP
@@ -28,13 +28,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // count_recip_errors
-DataFrame count_recip_errors(SEXP x, int n, std::vector< unsigned integer > end);
+DataFrame count_recip_errors(SEXP x, int n, std::vector< unsigned int > end);
 RcppExport SEXP _imaginarycss_count_recip_errors(SEXP xSEXP, SEXP nSEXP, SEXP endSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< std::vector< unsigned integer > >::type end(endSEXP);
+    Rcpp::traits::input_parameter< std::vector< unsigned int > >::type end(endSEXP);
     rcpp_result_gen = Rcpp::wrap(count_recip_errors(x, n, end));
     return rcpp_result_gen;
 END_RCPP
