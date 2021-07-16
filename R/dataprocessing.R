@@ -1,5 +1,12 @@
 # The script for CSS data processing
 
+# install packages
+# install.packages("devtools")
+install.packages("imaginarycss")
+devtools::install_github("gvegayon/imaginary-structures")
+devtools::install_github("gvegayon/imaginary-structures@main")
+devtools::install_github("gvegayon/imaginary-structures/tree/main/imaginarycss@main")
+
 # Read packages
 library(sna)
 
