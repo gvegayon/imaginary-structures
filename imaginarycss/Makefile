@@ -2,7 +2,7 @@ VERSION:=$(shell Rscript -e 'x<-readLines("DESCRIPTION");cat(gsub(".+[:]\\s*", "
 PKGNAME:=$(shell Rscript -e 'x<-readLines("DESCRIPTION");cat(gsub(".+[:]\\s*", "", x[grepl("^Package", x)]))')
 
 .PHONY: build
-${PKGNAME}_${VERSION}.tar.gz: R/* src/*.cpp src/*.h inst/include/barry/** man
+${PKGNAME}_${VERSION}.tar.gz: R/* src/*.cpp inst/include/barry/** man
 	$(MAKE) clean ;\
 	       	Rscript -e 'Rcpp::compileAttributes();roxygen2::roxygenize()' && \
 		R CMD build .	
