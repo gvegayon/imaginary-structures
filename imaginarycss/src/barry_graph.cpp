@@ -6,7 +6,7 @@ using namespace Rcpp;
 
 //' Creates a new network
 //' @export
-// [[Rcpp::export(rng = false)]]
+// [[Rcpp::export(rng = false, name = "new_barry_graph_cpp")]]
 SEXP new_barry_graph(
     int n,
     std::vector< unsigned int > source,
