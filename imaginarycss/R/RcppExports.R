@@ -3,8 +3,8 @@
 
 #' Creates a new network
 #' @export
-new_barry_graph <- function(n, source, target) {
-    .Call(`_imaginarycss_new_barry_graph`, n, source, target)
+new_barry_graph_cpp <- function(n, source, target, netsize, endpoints) {
+    .Call(`_imaginarycss_new_barry_graph`, n, source, target, netsize, endpoints)
 }
 
 #' @export
@@ -12,8 +12,10 @@ print.barry_graph <- function(x) {
     invisible(.Call(`_imaginarycss_print_barry_graph`, x))
 }
 
+#' Add a counter for reciprocity errors
+#' @param x An object of class [barry_graph].
 #' @export
-count_recip_errors <- function(x, n, end) {
-    .Call(`_imaginarycss_count_recip_errors`, x, n, end)
+count_recip_errors <- function(x) {
+    .Call(`_imaginarycss_count_recip_errors`, x)
 }
 

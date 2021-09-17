@@ -5,15 +5,22 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // new_barry_graph
-SEXP new_barry_graph(int n, std::vector< unsigned int > source, std::vector< unsigned int > target);
-RcppExport SEXP _imaginarycss_new_barry_graph(SEXP nSEXP, SEXP sourceSEXP, SEXP targetSEXP) {
+SEXP new_barry_graph(int n, std::vector< unsigned int > source, std::vector< unsigned int > target, int netsize, std::vector< unsigned int > endpoints);
+RcppExport SEXP _imaginarycss_new_barry_graph(SEXP nSEXP, SEXP sourceSEXP, SEXP targetSEXP, SEXP netsizeSEXP, SEXP endpointsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< std::vector< unsigned int > >::type source(sourceSEXP);
     Rcpp::traits::input_parameter< std::vector< unsigned int > >::type target(targetSEXP);
-    rcpp_result_gen = Rcpp::wrap(new_barry_graph(n, source, target));
+    Rcpp::traits::input_parameter< int >::type netsize(netsizeSEXP);
+    Rcpp::traits::input_parameter< std::vector< unsigned int > >::type endpoints(endpointsSEXP);
+    rcpp_result_gen = Rcpp::wrap(new_barry_graph(n, source, target, netsize, endpoints));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -28,22 +35,20 @@ BEGIN_RCPP
 END_RCPP
 }
 // count_recip_errors
-DataFrame count_recip_errors(SEXP x, int n, std::vector< unsigned int > end);
-RcppExport SEXP _imaginarycss_count_recip_errors(SEXP xSEXP, SEXP nSEXP, SEXP endSEXP) {
+DataFrame count_recip_errors(SEXP x);
+RcppExport SEXP _imaginarycss_count_recip_errors(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< std::vector< unsigned int > >::type end(endSEXP);
-    rcpp_result_gen = Rcpp::wrap(count_recip_errors(x, n, end));
+    rcpp_result_gen = Rcpp::wrap(count_recip_errors(x));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_imaginarycss_new_barry_graph", (DL_FUNC) &_imaginarycss_new_barry_graph, 3},
+    {"_imaginarycss_new_barry_graph", (DL_FUNC) &_imaginarycss_new_barry_graph, 5},
     {"_imaginarycss_print_barry_graph", (DL_FUNC) &_imaginarycss_print_barry_graph, 1},
-    {"_imaginarycss_count_recip_errors", (DL_FUNC) &_imaginarycss_count_recip_errors, 3},
+    {"_imaginarycss_count_recip_errors", (DL_FUNC) &_imaginarycss_count_recip_errors, 1},
     {NULL, NULL, 0}
 };
 

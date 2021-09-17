@@ -10,7 +10,9 @@ using namespace Rcpp;
 SEXP new_barry_graph(
     int n,
     std::vector< unsigned int > source,
-    std::vector< unsigned int > target
+    std::vector< unsigned int > target,
+    int                         netsize,
+    std::vector< unsigned int > endpoints
     ) {
   
   // Creating network of size six with five ties
@@ -18,7 +20,9 @@ SEXP new_barry_graph(
       new netcounters::Network(n, n, source, target)
       );
   
-  dat.attr("class") = "barry_graph";
+  dat.attr("class")     = "barry_graph";
+  dat.attr("netsize")   = netsize;
+  dat.attr("endpoints") = Rcpp::wrap(endpoints);
   
   return dat;
   
@@ -29,22 +33,29 @@ SEXP new_barry_graph(
 int print_barry_graph(SEXP x) {
   
   Rcpp::XPtr< netcounters::Network >ptr(x);
-  ptr->print();
+  
+  std::vector< unsigned int > end = ptr.attr("endpoints");
+  int                           n = ptr.attr("netsize");
+  
+  ptr->print("A barry_graph with %i networks of size %i\n.", end.size() + 1, n);
   
   return 0;
   
 }
 
+//' Add a counter for reciprocity errors
+//' @param x An object of class [barry_graph].
 //' @export
 // [[Rcpp::export(rng = false)]]
 DataFrame count_recip_errors(
-    SEXP x,
-    int n,
-    std::vector< unsigned int > end
+    SEXP x
   ) {
   
   Rcpp::XPtr< netcounters::Network >ptr(x);
   netcounters::NetStatsCounter counter(ptr);
+  
+  std::vector< unsigned int > end = ptr.attr("endpoints");
+  int                           n = ptr.attr("netsize");
   
   netcounters::counter_css_partially_false_recip_omiss(
     counter.get_counters(), n, end

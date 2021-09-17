@@ -345,7 +345,8 @@ COUNTERS_TEMPLATE(std::vector<std::string>, get_names)() const
 
 }
 
-COUNTERS_TEMPLATE(std::vector<std::string>, get_descriptions)() const {
+COUNTERS_TEMPLATE(std::vector<std::string>, get_descriptions)() const
+{
     
     std::vector< std::string > out(this->size());
     for (unsigned int i = 0u; i < out.size(); ++i)

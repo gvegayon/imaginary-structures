@@ -41,22 +41,28 @@ This is a basic example which shows you how to solve a common problem:
 ```{r example}
 library(imaginarycss)
 
-source_ <- c(1, 2, 3, 1) - 1
-target_ <- c(2, 1, 4, 4) - 1
+source_ <- c(1, 2, 3, 1) 
+target_ <- c(2, 1, 4, 4)
 
 source_ <- c(source_, source_[-1] + 4)
 target_ <- c(target_, target_[-1] + 4)
 
-graph <- new_barry_graph(8, source_, target_)
+adjmat <- matrix(0L, nrow = 8, ncol = 8)
+adjmat[cbind(source_, target_)] <- 1L
+
+graph <- new_barry_graph(adjmat, n = 4)
 graph
 
-count_recip_errors(graph, 4, 8)
+# These are two attributes that are part of the barry_graph object
+attr(graph, "endpoints")
+attr(graph, "netsize")
+
+count_recip_errors(graph)
 ```
 
 ```{r example-krackhardt}
 krack_data <- read.csv("data-raw/advice_nets.csv")
 n          <- 21
-end_points <- cumsum(rep(21, 22))[-1]
 
 graph <- new_barry_graph(n*22, krack_data[,1] - 1, krack_data[,2] - 1)
 ans   <- count_recip_errors(graph, 21, end_points)

@@ -38,6 +38,7 @@ In the following, we're also going to construct three perceived graphs that comp
 ```{r message = FALSE, warning = FALSE}
 library(sna)
 library(imaginarycss)
+library(ergmito)
 ```
 
 ```{r true graph}
@@ -45,11 +46,14 @@ library(imaginarycss)
 # 3 actor true graph
 t_source_ <- c("A","A","B") 
 t_target_ <- c("B","C","A")
-t_source <- c(1,1,2) -1
-t_target <- c(2,3,1) -1
+t_source <- c(1,1,2)
+t_target <- c(2,3,1)
 t_ <- as.network(data.frame(from = t_source_,
                       to = t_target_))
-gplot(t_, displaylabels = T, usecurve = T, edge.curve = .1)
+coords <- gplot(
+  t_, displaylabels = T, usecurve = T, edge.curve = .1,
+  main = "True", jitter = FALSE
+  )
 ```
 
 ### A's perceived graph
@@ -65,11 +69,14 @@ We define A's perceived graph and then compare it with the true graph. By doing 
 # A's perceived graph
 a_source_ <- c("A","A","C")
 a_target_ <- c("B","C","A")
-a_source <- c(1,1,3) -1
-a_target <- c(2,3,1) -1
+a_source <- c(1,1,3)
+a_target <- c(2,3,1)
 a_ <- as.network(data.frame(from = a_source_,
                  to = a_target_))
-gplot(a_, displaylabels = T, usecurve = T, edge.curve = .1)
+gplot(
+  a_, displaylabels = T, usecurve = T, edge.curve = .1,
+  coord = coords, main = "A", jitter = FALSE
+  )
 ```
 
 ### B's perceived graph
@@ -88,7 +95,10 @@ b_source <- c(3,2,3) -1
 b_target <- c(1,3,2) -1
 b_ <- as.network(data.frame(from = b_source_,
                             to = b_target_),matrix.type='edgelist')
-gplot(b_, displaylabels = T, usecurve = T, edge.curve = .1)
+gplot(
+  b_, displaylabels = T, usecurve = T, edge.curve = .1,
+  coord = coords, main = "B", jitter = FALSE
+  )
 ```
 
 ### C's perceived graph
@@ -107,18 +117,42 @@ c_source <- c(3,2) -1
 c_target <- c(1,1) -1
 c_ <- as.network(data.frame(from = c_source_,
                       to = c_target_),matrix.type='edgelist')
-gplot(c_, displaylabels = T, usecurve = T, edge.curve = .1)
+gplot(
+  c_, displaylabels = T, usecurve = T, edge.curve = .1,
+  coord = coords, main = "C", jitter = FALSE
+  )
 ```
 
 ### Count Imaginary Errors
+
+```{r all-three, echo = FALSE}
+op <- par(mfcol=c(2, 2), mar = rep(1, 4))
+gplot(
+  t_, displaylabels = T, usecurve = T, edge.curve = .1,
+  coord = coords, main = "True", jitter = FALSE
+  )
+gplot(
+  a_, displaylabels = T, usecurve = T, edge.curve = .1,
+  coord = coords, main = "A", jitter = FALSE)
+
+gplot(
+  b_, displaylabels = T, usecurve = T, edge.curve = .1,
+  coord = coords, main = "B", jitter = FALSE)
+
+gplot(
+  c_, displaylabels = T, usecurve = T, edge.curve = .1,
+  coord = coords, main = "C", jitter = FALSE)
+par(op)
+```
+
+
 Let's count errors using `count_recip_errors` in the imaginary_css package.
+
 ```{r Errors}
-n <- 3
-end_points <- cumsum(rep(n, 4))[-1]
-graph <- new_barry_graph(n*4,
-                         c(t_source,a_source,b_source,c_source),
-                         c(t_target,a_target,b_source,c_source))
-ans <- count_recip_errors(graph,n = 3, end_points)
+big_graph <- blockdiagonalize(list(t_, a_, b_, c_))
+graph <- new_barry_graph(as.matrix(big_graph), n = 3)
+
+ans <- count_recip_errors(graph)
 ans$name <- gsub("[(][0-9]+[)]", "", ans$name)
 ans
 ```
