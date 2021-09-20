@@ -149,7 +149,7 @@ par(op)
 Let's count errors using `count_recip_errors` in the imaginary_css package.
 
 ```{r Errors}
-big_graph <- blockdiagonalize(list(t_, a_, b_, c_))
+big_graph <- blockdiagonalize(list(t_, a_, b_)) #
 graph <- new_barry_graph(as.matrix(big_graph), n = 3)
 
 ans <- count_recip_errors(graph)
