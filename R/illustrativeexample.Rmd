@@ -50,6 +50,8 @@ t_source <- c(1,1,2)
 t_target <- c(2,3,1)
 t_ <- as.network(data.frame(from = t_source_,
                       to = t_target_))
+
+set.seed(1231)
 coords <- gplot(
   t_, displaylabels = T, usecurve = T, edge.curve = .1,
   main = "True", jitter = FALSE
@@ -149,10 +151,21 @@ par(op)
 Let's count errors using `count_recip_errors` in the imaginary_css package.
 
 ```{r Errors}
-big_graph <- blockdiagonalize(list(t_, a_, b_)) #
+big_graph <- blockdiagonalize(list(t_, a_, b_, c_)) #
 graph <- new_barry_graph(as.matrix(big_graph), n = 3)
 
 ans <- count_recip_errors(graph)
 ans$name <- gsub("[(][0-9]+[)]", "", ans$name)
 ans
 ```
+
+<!-- > ans -->
+<!--   id                                name value -->
+<!-- 1  0   Partially false recip (omission)      1 -->
+<!-- 2  1   Partially false recip (omission)      0 -->
+<!-- 3  0  Partially false recip (comission)      1 -->
+<!-- 4  1  Partially false recip (comission)      0 -->
+<!-- 5  0  Completely false recip (omission)      0 -->
+<!-- 6  1  Completely false recip (omission)      1 -->
+<!-- 7  0 Completely false recip (comission)      0 -->
+<!-- 8  1 Completely false recip (comission)      1 -->
