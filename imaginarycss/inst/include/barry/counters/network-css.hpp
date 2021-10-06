@@ -131,7 +131,7 @@ inline void counter_css_partially_false_recip_omiss(
 
             CSS_PERCEIVED_CELLS()
             return tji * tij * (1.0 - 2.0 * pji) - 
-                (1.0 - pij) * ((1.0 - tij) * tji + tij * (1.0 - tji))
+                (1.0 - pji) * ((1.0 - tij) * tji + tij * (1.0 - tji))
             ;
 
         } CSS_CASE_ELSE()

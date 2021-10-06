@@ -73,6 +73,10 @@ DataFrame count_recip_errors(
     counter.get_counters(), n, end
   );
   
+  netcounters::counter_css_mixed_recip(
+    counter.get_counters(), n, end
+  );
+  
   IntegerVector id(end.size());
   for (int i = 0; i < static_cast<int>(id.size()); ++i)
     id[i] = i;
