@@ -287,235 +287,8 @@ gplot(
 <pre class="r"><code>big_graph &lt;- blockdiagonalize(list(t_, a_, b_, c_)) #
 graph &lt;- new_barry_graph(as.matrix(big_graph), n = 3)
 
-ans &lt;- count_recip_errors(graph)</code></pre>
-<pre><code>## [barry] Initializing -count_all- debug. get_names():
-## [barry] 
-## [barry] Partially false recip (omission) (0)
-## [barry] Partially false recip (omission) (1)
-## [barry] Partially false recip (omission) (2)
-## [barry] Partially false recip (comission) (0)
-## [barry] Partially false recip (comission) (1)
-## [barry] Partially false recip (comission) (2)
-## [barry] Completely false recip (omission) (0)
-## [barry] Completely false recip (omission) (1)
-## [barry] Completely false recip (omission) (2)
-## [barry] Completely false recip (comission) (0)
-## [barry] Completely false recip (comission) (1)
-## [barry] Completely false recip (comission) (2)
-## [barry] Mixed reciprocity errors (0)
-## [barry] Mixed reciprocity errors (1)
-## [barry] Mixed reciprocity errors (2)
-## [barry] 
-## [barry] ================================================================================
-## [barry] Debugging Stats counter: current_stats (before)
-## [barry] Inserting cell (0, 1)
-## [barry]  [0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 ]
-## [barry] Debugging Stats counter: EmptyArray
-## [barry] [  0,]    .  1.00     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  1,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  2,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  3,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  4,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  5,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  6,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  7,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  8,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  9,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [ 10,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [ 11,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] Debugging Stats counter: current_stats (after)
-## [barry]  [1.0000 1.0000 1.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 ]
-## [barry] ================================================================================
-## [barry] Debugging Stats counter: current_stats (before)
-## [barry] Inserting cell (0, 2)
-## [barry]  [1.0000 1.0000 1.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 ]
-## [barry] Debugging Stats counter: EmptyArray
-## [barry] [  0,]    .  1.00  1.00     .     .     .     .     .     .     .     .     . 
-## [barry] [  1,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  2,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  3,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  4,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  5,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  6,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  7,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  8,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  9,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [ 10,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [ 11,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] Debugging Stats counter: current_stats (after)
-## [barry]  [2.0000 2.0000 2.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 ]
-## [barry] ================================================================================
-## [barry] Debugging Stats counter: current_stats (before)
-## [barry] Inserting cell (1, 0)
-## [barry]  [2.0000 2.0000 2.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 ]
-## [barry] Debugging Stats counter: EmptyArray
-## [barry] [  0,]    .  1.00  1.00     .     .     .     .     .     .     .     .     . 
-## [barry] [  1,] 1.00     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  2,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  3,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  4,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  5,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  6,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  7,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  8,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  9,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [ 10,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [ 11,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] Debugging Stats counter: current_stats (after)
-## [barry]  [1.0000 1.0000 1.0000 0.0000 0.0000 0.0000 1.0000 1.0000 1.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 ]
-## [barry] ================================================================================
-## [barry] Debugging Stats counter: current_stats (before)
-## [barry] Inserting cell (3, 4)
-## [barry]  [1.0000 1.0000 1.0000 0.0000 0.0000 0.0000 1.0000 1.0000 1.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 ]
-## [barry] Debugging Stats counter: EmptyArray
-## [barry] [  0,]    .  1.00  1.00     .     .     .     .     .     .     .     .     . 
-## [barry] [  1,] 1.00     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  2,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  3,]    .     .     .     .  1.00     .     .     .     .     .     .     . 
-## [barry] [  4,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  5,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  6,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  7,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  8,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  9,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [ 10,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [ 11,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] Debugging Stats counter: current_stats (after)
-## [barry]  [2.0000 1.0000 1.0000 0.0000 0.0000 0.0000 0.0000 1.0000 1.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 ]
-## [barry] ================================================================================
-## [barry] Debugging Stats counter: current_stats (before)
-## [barry] Inserting cell (3, 5)
-## [barry]  [2.0000 1.0000 1.0000 0.0000 0.0000 0.0000 0.0000 1.0000 1.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 ]
-## [barry] Debugging Stats counter: EmptyArray
-## [barry] [  0,]    .  1.00  1.00     .     .     .     .     .     .     .     .     . 
-## [barry] [  1,] 1.00     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  2,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  3,]    .     .     .     .  1.00  1.00     .     .     .     .     .     . 
-## [barry] [  4,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  5,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  6,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  7,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  8,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  9,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [ 10,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [ 11,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] Debugging Stats counter: current_stats (after)
-## [barry]  [1.0000 1.0000 1.0000 0.0000 0.0000 0.0000 0.0000 1.0000 1.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 ]
-## [barry] ================================================================================
-## [barry] Debugging Stats counter: current_stats (before)
-## [barry] Inserting cell (5, 3)
-## [barry]  [1.0000 1.0000 1.0000 0.0000 0.0000 0.0000 0.0000 1.0000 1.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 ]
-## [barry] Debugging Stats counter: EmptyArray
-## [barry] [  0,]    .  1.00  1.00     .     .     .     .     .     .     .     .     . 
-## [barry] [  1,] 1.00     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  2,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  3,]    .     .     .     .  1.00  1.00     .     .     .     .     .     . 
-## [barry] [  4,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  5,]    .     .     .  1.00     .     .     .     .     .     .     .     . 
-## [barry] [  6,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  7,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  8,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  9,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [ 10,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [ 11,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] Debugging Stats counter: current_stats (after)
-## [barry]  [1.0000 1.0000 1.0000 1.0000 0.0000 0.0000 0.0000 1.0000 1.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 ]
-## [barry] ================================================================================
-## [barry] Debugging Stats counter: current_stats (before)
-## [barry] Inserting cell (7, 8)
-## [barry]  [1.0000 1.0000 1.0000 1.0000 0.0000 0.0000 0.0000 1.0000 1.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 ]
-## [barry] Debugging Stats counter: EmptyArray
-## [barry] [  0,]    .  1.00  1.00     .     .     .     .     .     .     .     .     . 
-## [barry] [  1,] 1.00     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  2,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  3,]    .     .     .     .  1.00  1.00     .     .     .     .     .     . 
-## [barry] [  4,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  5,]    .     .     .  1.00     .     .     .     .     .     .     .     . 
-## [barry] [  6,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  7,]    .     .     .     .     .     .     .     .  1.00     .     .     . 
-## [barry] [  8,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  9,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [ 10,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [ 11,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] Debugging Stats counter: current_stats (after)
-## [barry]  [1.0000 1.0000 1.0000 1.0000 1.0000 0.0000 0.0000 1.0000 1.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 ]
-## [barry] ================================================================================
-## [barry] Debugging Stats counter: current_stats (before)
-## [barry] Inserting cell (8, 6)
-## [barry]  [1.0000 1.0000 1.0000 1.0000 1.0000 0.0000 0.0000 1.0000 1.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 ]
-## [barry] Debugging Stats counter: EmptyArray
-## [barry] [  0,]    .  1.00  1.00     .     .     .     .     .     .     .     .     . 
-## [barry] [  1,] 1.00     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  2,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  3,]    .     .     .     .  1.00  1.00     .     .     .     .     .     . 
-## [barry] [  4,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  5,]    .     .     .  1.00     .     .     .     .     .     .     .     . 
-## [barry] [  6,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  7,]    .     .     .     .     .     .     .     .  1.00     .     .     . 
-## [barry] [  8,]    .     .     .     .     .     .  1.00     .     .     .     .     . 
-## [barry] [  9,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [ 10,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [ 11,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] Debugging Stats counter: current_stats (after)
-## [barry]  [1.0000 0.0000 1.0000 1.0000 1.0000 0.0000 0.0000 1.0000 1.0000 0.0000 0.0000 0.0000 0.0000 1.0000 0.0000 ]
-## [barry] ================================================================================
-## [barry] Debugging Stats counter: current_stats (before)
-## [barry] Inserting cell (8, 7)
-## [barry]  [1.0000 0.0000 1.0000 1.0000 1.0000 0.0000 0.0000 1.0000 1.0000 0.0000 0.0000 0.0000 0.0000 1.0000 0.0000 ]
-## [barry] Debugging Stats counter: EmptyArray
-## [barry] [  0,]    .  1.00  1.00     .     .     .     .     .     .     .     .     . 
-## [barry] [  1,] 1.00     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  2,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  3,]    .     .     .     .  1.00  1.00     .     .     .     .     .     . 
-## [barry] [  4,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  5,]    .     .     .  1.00     .     .     .     .     .     .     .     . 
-## [barry] [  6,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  7,]    .     .     .     .     .     .     .     .  1.00     .     .     . 
-## [barry] [  8,]    .     .     .     .     .     .  1.00  1.00     .     .     .     . 
-## [barry] [  9,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [ 10,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [ 11,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] Debugging Stats counter: current_stats (after)
-## [barry]  [1.0000 0.0000 1.0000 1.0000 0.0000 0.0000 0.0000 1.0000 1.0000 0.0000 1.0000 0.0000 0.0000 1.0000 0.0000 ]
-## [barry] ================================================================================
-## [barry] Debugging Stats counter: current_stats (before)
-## [barry] Inserting cell (10, 9)
-## [barry]  [1.0000 0.0000 1.0000 1.0000 0.0000 0.0000 0.0000 1.0000 1.0000 0.0000 1.0000 0.0000 0.0000 1.0000 0.0000 ]
-## [barry] Debugging Stats counter: EmptyArray
-## [barry] [  0,]    .  1.00  1.00     .     .     .     .     .     .     .     .     . 
-## [barry] [  1,] 1.00     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  2,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  3,]    .     .     .     .  1.00  1.00     .     .     .     .     .     . 
-## [barry] [  4,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  5,]    .     .     .  1.00     .     .     .     .     .     .     .     . 
-## [barry] [  6,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  7,]    .     .     .     .     .     .     .     .  1.00     .     .     . 
-## [barry] [  8,]    .     .     .     .     .     .  1.00  1.00     .     .     .     . 
-## [barry] [  9,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [ 10,]    .     .     .     .     .     .     .     .     .  1.00     .     . 
-## [barry] [ 11,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] Debugging Stats counter: current_stats (after)
-## [barry]  [1.0000 0.0000 2.0000 1.0000 0.0000 0.0000 0.0000 1.0000 0.0000 0.0000 1.0000 0.0000 0.0000 1.0000 0.0000 ]
-## [barry] ================================================================================
-## [barry] Debugging Stats counter: current_stats (before)
-## [barry] Inserting cell (11, 9)
-## [barry]  [1.0000 0.0000 2.0000 1.0000 0.0000 0.0000 0.0000 1.0000 0.0000 0.0000 1.0000 0.0000 0.0000 1.0000 0.0000 ]
-## [barry] Debugging Stats counter: EmptyArray
-## [barry] [  0,]    .  1.00  1.00     .     .     .     .     .     .     .     .     . 
-## [barry] [  1,] 1.00     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  2,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  3,]    .     .     .     .  1.00  1.00     .     .     .     .     .     . 
-## [barry] [  4,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  5,]    .     .     .  1.00     .     .     .     .     .     .     .     . 
-## [barry] [  6,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [  7,]    .     .     .     .     .     .     .     .  1.00     .     .     . 
-## [barry] [  8,]    .     .     .     .     .     .  1.00  1.00     .     .     .     . 
-## [barry] [  9,]    .     .     .     .     .     .     .     .     .     .     .     . 
-## [barry] [ 10,]    .     .     .     .     .     .     .     .     .  1.00     .     . 
-## [barry] [ 11,]    .     .     .     .     .     .     .     .     .  1.00     .     . 
-## [barry] Debugging Stats counter: current_stats (after)
-## [barry]  [1.0000 0.0000 1.0000 1.0000 0.0000 0.0000 0.0000 1.0000 0.0000 0.0000 1.0000 0.0000 0.0000 1.0000 1.0000 ]</code></pre>
-<pre class="r"><code>ans$name &lt;- gsub(&quot;[(][0-9]+[)]&quot;, &quot;&quot;, ans$name)
+ans &lt;- count_recip_errors(graph)
+ans$name &lt;- gsub(&quot;[(][0-9]+[)]&quot;, &quot;&quot;, ans$name)
 ans</code></pre>
 <pre><code>##    id                                name value
 ## 1   0   Partially false recip (omission)      1
@@ -544,6 +317,45 @@ ans</code></pre>
 <!-- 7  0 Completely false recip (comission)      0 -->
 <!-- 8  1 Completely false recip (comission)      1 -->
 </div>
+</div>
+<div id="rewiring" class="section level1">
+<h1>Rewiring</h1>
+<pre class="r"><code>library(netdiffuseR)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;netdiffuseR&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:ergmito&#39;:
+## 
+##     nedges</code></pre>
+<pre><code>## The following object is masked from &#39;package:base&#39;:
+## 
+##     %*%</code></pre>
+<pre class="r"><code>load(&quot;../data/krackhardt_css.RData&quot;)
+
+nets &lt;- c(list(friend_net), friendship_nets)
+
+# Preparing data
+graph &lt;- lapply(nets, as.matrix)
+graph &lt;- lapply(graph, methods::as, &quot;dgCMatrix&quot;)
+graph[[1]] &lt;- as.matrix(graph[[1]])
+
+ans &lt;- replicate(n = 100, {
+  
+  graph0 &lt;- graph
+  
+  graph0[2:length(graph)] &lt;- lapply(graph[2:length(graph)], function(g) {
+    as.matrix(rewire_graph(g, p = 20, algorithm = &quot;swap&quot;))
+    })
+  
+  graph0 &lt;- blockdiagonalize(graph0)
+  
+  graph0 &lt;- new_barry_graph(as.matrix(graph0), n = length(friendship_nets))
+
+  out &lt;- count_recip_errors(graph0)
+  out$name &lt;- gsub(&quot;[(][0-9]+[)]&quot;, &quot;&quot;, out$name)
+  out
+}, simplify = FALSE)
+
+ans &lt;- do.call(rbind, ans)</code></pre>
 </div>
 
 

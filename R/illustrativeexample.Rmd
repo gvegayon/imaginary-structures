@@ -169,3 +169,40 @@ ans
 <!-- 6  1  Completely false recip (omission)      1 -->
 <!-- 7  0 Completely false recip (comission)      0 -->
 <!-- 8  1 Completely false recip (comission)      1 -->
+
+# Rewiring
+
+```{r}
+library(netdiffuseR)
+load("../data/krackhardt_css.RData")
+
+nets <- c(list(friend_net), friendship_nets)
+
+# Preparing data
+graph <- lapply(nets, as.matrix)
+graph <- lapply(graph, methods::as, "dgCMatrix")
+graph[[1]] <- as.matrix(graph[[1]])
+
+ans <- replicate(n = 100, {
+  
+  graph0 <- graph
+  
+  graph0[2:length(graph)] <- lapply(graph[2:length(graph)], function(g) {
+    as.matrix(rewire_graph(g, p = 20, algorithm = "swap"))
+    })
+  
+  graph0 <- blockdiagonalize(graph0)
+  
+  graph0 <- new_barry_graph(as.matrix(graph0), n = length(friendship_nets))
+
+  out <- count_recip_errors(graph0)
+  out$name <- gsub("[(][0-9]+[)]", "", out$name)
+  out
+}, simplify = FALSE)
+
+ans <- do.call(rbind, ans)
+
+
+
+```
+
