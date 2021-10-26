@@ -256,8 +256,7 @@ hist(rbeta(100000,3,11))  # This gives you a sense of what the priors look like!
 # various models (warning: slow)
 # fr.post.fixed<-bbnam.fixed(friendship_nets,nprior=np,em=3/(3+11),ep=3/(3+11))
 # fr.post.pooled<-bbnam.pooled(friendship_nets,nprior=np,em=emp[1,],ep=epp[1,])
-fr.post.actor<-bbnam.actor(friendship_nets,nprior=np,em=emp,ep=epp,
-                           )
+fr.post.actor<-bbnam.actor(friendship_nets,nprior=np,em=emp,ep=epp)
 summary(fr.post.actor)
 plot(fr.post.actor)
 gplot(as.network(apply(fr.post.actor$net, c(2, 3), median)))
