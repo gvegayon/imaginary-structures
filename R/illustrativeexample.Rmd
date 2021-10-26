@@ -40,6 +40,7 @@ In the following, we're also going to construct three perceived graphs that comp
 library(sna)
 library(imaginarycss)
 library(ergmito)
+set.seed(1231)
 ```
 
 ```{r true graph}
@@ -52,7 +53,6 @@ t_target <- c(2,3,1)
 t_ <- as.network(data.frame(from = t_source_,
                       to = t_target_))
 
-set.seed(1231)
 coords <- gplot(
   t_, displaylabels = T, usecurve = T, edge.curve = .1,
   main = "True", jitter = FALSE
@@ -152,7 +152,7 @@ par(op)
 Let's count errors using `count_recip_errors` in the imaginary_css package.
 
 ```{r Errors}
-big_graph <- blockdiagonalize(list(t_, a_, b_, c_)) #
+big_graph <- blockdiagonalize(list(t_, a_, b_, c_))
 graph <- new_barry_graph(as.matrix(big_graph), n = 3)
 
 ans <- count_recip_errors(graph)
@@ -171,42 +171,6 @@ ans
 <!-- 7  0 Completely false recip (comission)      0 -->
 <!-- 8  1 Completely false recip (comission)      1 -->
 
-
-# Rewiring
-
-```{r}
-library(netdiffuseR)
-load("../data/krackhardt_css.RData")
-
-nets <- c(list(friend_net), friendship_nets)
-
-# Preparing data
-graph <- lapply(nets, as.matrix)
-graph <- lapply(graph, methods::as, "dgCMatrix")
-graph[[1]] <- as.matrix(graph[[1]])
-
-ans <- replicate(n = 100, {
-  
-  graph0 <- graph
-  
-  graph0[2:length(graph)] <- lapply(graph[2:length(graph)], function(g) {
-    as.matrix(rewire_graph(g, p = 20, algorithm = "swap"))
-    })
-  
-  graph0 <- blockdiagonalize(graph0)
-  
-  graph0 <- new_barry_graph(as.matrix(graph0), n = length(friendship_nets))
-
-  out <- count_recip_errors(graph0)
-  out$name <- gsub("[(][0-9]+[)]", "", out$name)
-  out
-}, simplify = FALSE)
-
-ans <- do.call(rbind, ans)
-
-
-
-```
 
 ## Krackhardt's CSS data
 
@@ -230,23 +194,10 @@ ans$name <- gsub("[(][0-9]+[)]", "", ans$name)
 ans
 ```
 
-Using ans, we visualize histograms to check the distributions of each error case. Here, we use ggplot2.
-
-```{r}
-library(ggplot2)
-
-ggplot(data = ans,
-        aes(x = value))+
-  geom_histogram()+
-  facet_grid(name~.)+
-  theme_classic(base_size = 18) +
-  theme(axis.title = element_text(face = "bold"),legend.position = 'none')
-```
-
 BNAM (Baysian network inference): Let's start by defining some priors for the Bayesian network inference model. We'll use an uninformative network prior, together with weakly informative (but diffuse and symmetric) priors on the error rates. Read the man page ("?bbnam") to get more information about how the routine works.
 
 Check Lee & Butts (2018; 2020) to get their parameters.
-```{r}
+```{r BNAM}
 np<-matrix(0.5,21,21)  # 21 x 21 matrix of Bernoulli parameters (since n=21)
 emp<-sapply(c(1,11),rep,21)  # Beta(3,11) priors for false negatives
 epp<-sapply(c(1,11),rep,21)  # Beta(3,11) priors for false positives
@@ -258,6 +209,266 @@ hist(rbeta(100000,3,11))  # This gives you a sense of what the priors look like!
 # fr.post.pooled<-bbnam.pooled(friendship_nets,nprior=np,em=emp[1,],ep=epp[1,])
 fr.post.actor<-bbnam.actor(friendship_nets,nprior=np,em=emp,ep=epp)
 summary(fr.post.actor)
-plot(fr.post.actor)
+# plot(fr.post.actor)
 gplot(as.network(apply(fr.post.actor$net, c(2, 3), median)))
+
+# advice
+ad.post.actor<-bbnam.actor(advice_nets,nprior=np,em=emp,ep=epp)
+gplot(as.network(apply(ad.post.actor$net, c(2, 3), median)))
+```
+```{r network plot}
+library(netplot)
+library(gridExtra)
+g_ad <- igraph::graph_from_adjacency_matrix(apply(ad.post.actor$net, c(2, 3), median))
+g_fr <- igraph::graph_from_adjacency_matrix(apply(fr.post.actor$net, c(2, 3), median))
+layout <- igraph::layout_nicely(g_fr)
+# png(file = 'plot_v1.png', bg = 'transparent', res=800)
+gviz <- grid.arrange(
+  arrangeGrob(nplot(
+        g_fr,
+        layout = layout,
+        dge.curvature = pi/4,
+        edge.col = ~ego(alpha=0, col = '#e88e2d') + alter(alpha = .7)), left = 'Friendship Network', top='Actual'),
+  arrangeGrob(nplot(g_ad,
+        layout = layout,
+        edge.curvature = pi/4),top='Perceived'),
+  arrangeGrob(nplot(g_ad,
+        layout = layout,
+        edge.curvature = pi/4),left = 'Advice Network'),
+  arrangeGrob(nplot(g_ad,
+        layout = layout,
+        edge.curvature = pi/4)),
+  ncol = 2, nrow = 2
+)
+# ggsave("netplot_v1.png",gviz)
+# dev.off()
+```
+
+## Calculate some basic stats for true graphs
+
+```{r basic stats}
+library(xtable)
+ad.true <- as.network(apply(ad.post.actor$net, c(2, 3), median))
+fr.true <- as.network(apply(fr.post.actor$net, c(2, 3), median))
+# create a data.frame for a des stat table
+table <- data.frame(Network = c('Friendship Network', 'Advice Network'),
+                    People = c(network.size(fr.true),network.size(ad.true)),
+                    Edges = c(network.edgecount(fr.true),network.edgecount(ad.true)),
+                    Density = c(network.density(fr.true),network.density(ad.true)),
+                    Mutual = c(dyad.census(fr.true)[[1,1]],dyad.census(ad.true)[[1,1]]),
+                    Asymmetric = c(dyad.census(fr.true)[[1,2]],dyad.census(ad.true)[[1,2]]),
+                    Null = c(dyad.census(fr.true)[[1,3]],dyad.census(ad.true)[[1,3]]))
+
+# reciprocity rate
+grecip(ad.true) #.700
+grecip(fr.true) #.919
+
+xtable(table,include.rownames = FALSE)
+```
+
+
+## Rewiring
+
+```{r rewiring}
+library(netdiffuseR)
+
+rewiring <- function(nets){
+  # Preparing data
+  graph <- lapply(nets, as.matrix)
+  graph <- lapply(graph, methods::as, "dgCMatrix")
+  graph[[1]] <- as.matrix(graph[[1]])
+  
+  graph0 <- graph
+  
+  graph0[2:length(graph)] <- lapply(graph[2:length(graph)], function(g) {
+    as.matrix(rewire_graph(g, p = 20, algorithm = "swap"))
+    })
+  
+  graph0 <- blockdiagonalize(graph0)
+  
+  graph0 <- new_barry_graph(as.matrix(graph0), n = length(friendship_nets))
+
+  out <- count_recip_errors(graph0)
+  out$name <- gsub("[(][0-9]+[)]", "", out$name)
+  return(out)
+}
+
+bootstrapping <- function(nsim = 1000, nets = nets){
+  ans <- replicate(n = nsim, {
+  out <- rewiring(nets)
+  }, simplify = FALSE)
+  # create a data.frame
+  ans <- do.call(rbind, ans)
+  return(ans)
+}
+
+# calculate empirical error rates
+emp_count <- function(nets = nets){
+  net0 <- new_barry_graph(as.matrix(blockdiagonalize(nets)),
+                                  n = length(nets)-1)
+  ans0 <- count_recip_errors(net0)
+  ans0$name <- gsub("[(][0-9]+[)]", "", ans0$name)
+  return(ans0)
+}
+
+# set BNAM as a true graph
+# friendship 
+nets <- c(list(fr.true), friendship_nets)
+
+fr.ans0 <- emp_count(nets = nets)
+fr.ans <- bootstrapping(nsim = 1000,
+                        nets = nets)
+
+# advice
+nets <- c(list(ad.true), advice_nets)
+ad.ans0 <- emp_count(nets = nets)
+ad.ans <- bootstrapping(nsim = 1000,
+                        nets = nets)
+```
+
+## Null distributions
+
+```{r histograms}
+
+ghist <- function(ans, ans0, id){
+  library(ggplot2)
+  hplot <- ggplot(data = ans[ans$id==id,],
+       aes(x = value, group = name, fill = name)) +
+    geom_histogram(alpha = .6)+
+    geom_vline(data = ans0[ans0$id==id,],
+               aes(xintercept = value, color = name),
+               linetype = 2)+
+      scale_fill_manual(values = c('#55B748','#DB2B27','#FDBF11','#98CF90','#E9807D')) +
+      scale_color_manual(values = c('#55B748','#DB2B27','#FDBF11','#98CF90','#E9807D')) +
+    facet_grid(name~.,
+               labeller = labeller(name = as_labeller(c(`Partially false recip (omission) ` = 'P-FN',`Partially false recip (comission) ` = 'P-FP',`Completely false recip (omission) ` = 'C-FN',`Completely false recip (comission) ` = 'C-FP',`Mixed reciprocity errors ` = 'M-F'))))+
+    theme_classic(base_size = 18) +
+    theme(axis.title = element_text(face = "bold"),legend.position = 'none')+
+    ggtitle(paste('Respondent',id+1,'False Motifs'))
+  return(hplot)
+}
+
+# plot
+for (id in 0:20){
+  hplot <- ghist(ans = fr.ans,
+                 ans0 = fr.ans0,
+                 id = id)
+  print(hplot)
+}
+```
+```{r Bootstrap Hypothesis Testing}
+bootstrap_testing <- function(meanobs,meansim){
+  # n <- length(meanobs)
+  ans <- vector("numeric",4)
+  ans[1] <- 2*min(mean(meansim <= meanobs),
+                  mean(meansim > meanobs))
+  ans[2] <- meanobs
+  ans[3] <- mean(meansim)
+  ans[4] <- round(sd(meansim),3)
+  return(ans)
+}
+
+# id = c(0,20)
+# class = c(1,5)
+ind_test <- function(id = 0, class = 1, ans, ans0){
+  ans$class <- as.numeric(as.factor(ans$name))
+  ans0$class <- as.numeric(as.factor(ans0$name))
+  # sapply(ans,levels)
+  # sapply(ans0,levels)
+  ans[,c('name','class')] # check which name corresponds to class numeric
+  # define meansim as a simulated values vector
+  meansim <- ans[ans$id==id & ans$class==class,'value']
+  # define meanobs as a observed value
+  meanobs <- ans0[ans0$id==id & ans0$class==class,'value']
+  
+  # now run the bootstrap hypothesis test
+  ans <- bootstrap_testing(meanobs = meanobs, meansim = meansim)
+  return(ans)
+}
+ind_test(id = 20, class = 5, ans = fr.ans, ans0 = fr.ans0)
+fr.table <- cbind(t(sapply(c(0:20),ind_test(ans = fr.ans,ans0 = fr.ans0),1)),
+      t(sapply(c(0:20),ind_test,2)),
+      t(sapply(c(0:20),ind_test,3)),
+      t(sapply(c(0:20),ind_test,4)),
+      t(sapply(c(0:20),ind_test,5)))
+# outer(X = c(0:20),Y = c(1:5),ind_test(id=X,class=Y))
+colnames(fr.table) <- c()
+xtable(fr.table, scalebox = .7)
+```
+
+## Examine advice ties
+
+```{r advice}
+# set BNAM as a true graph
+true <- as.network(apply(ad.post.actor$net, c(2, 3), median))
+nets <- c(list(true), advice_nets)
+
+# Preparing data
+graph <- lapply(nets, as.matrix)
+graph <- lapply(graph, methods::as, "dgCMatrix")
+graph[[1]] <- as.matrix(graph[[1]])
+
+adv <- replicate(n = 200, {
+  
+  graph0 <- graph
+  
+  graph0[2:length(graph)] <- lapply(graph[2:length(graph)], function(g) {
+    as.matrix(rewire_graph(g, p = 20, algorithm = "swap"))
+    })
+  
+  graph0 <- blockdiagonalize(graph0)
+  
+  graph0 <- new_barry_graph(as.matrix(graph0), n = length(advice_nets))
+
+  out <- count_recip_errors(graph0)
+  out$name <- gsub("[(][0-9]+[)]", "", out$name)
+  out
+}, simplify = FALSE)
+
+adv <- do.call(rbind, adv)
+
+# calculate empirical error rates
+adv0 <- new_barry_graph(as.matrix(blockdiagonalize(c(list(true), advice_nets))),
+                                  n = length(advice_nets))
+adv0 <- count_recip_errors(adv0)
+adv0$name <- gsub("[(][0-9]+[)]", "", adv0$name)
+
+# plot
+id <- 1
+ggplot(data = adv[adv$id==id,],
+       aes(x = value, group = name, fill = name)) +
+  geom_histogram(alpha = .6)+
+  geom_vline(data = adv0[adv0$id==id,],
+             aes(xintercept = value, color = name),
+             linetype = 2)+
+  facet_grid(name~.)+
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),legend.position = 'none')
+
+```
+
+Using ans, we visualize histograms to check the distributions of each error case. Here, we use ggplot2.
+
+```{r visualization}
+library(ggplot2)
+library(dplyr)
+
+g_hist2 <- function(ans, ans0){
+  ghist2 <- ggplot(data = ans0,
+        aes(x = value, fill=name))+
+  geom_histogram(alpha=.6)+
+  geom_vline(data=ans0 %>% group_by(name) %>% mutate(avg=mean(value)), aes(xintercept = avg, color=name),
+             linetype = 2)+
+  scale_fill_manual(values = c('#55B748','#DB2B27','#FDBF11','#98CF90','#E9807D')) +
+  scale_color_manual(values = c('#55B748','#DB2B27','#FDBF11','#98CF90','#E9807D')) +
+  facet_grid(name~.,
+             labeller = labeller(name = as_labeller(c(`Partially false recip (omission) ` = 'P-FN',`Partially false recip (comission) ` = 'P-FP',`Completely false recip (omission) ` = 'C-FN',`Completely false recip (comission) ` = 'C-FP',`Mixed reciprocity errors ` = 'M-F'))))+
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),legend.position = 'none')
+  return(ghist2)
+}
+
+grid.arrange(g_hist(ans = fr.ans,ans0 = fr.ans0),
+             g_hist(ans = ad.ans,ans0 = ad.ans0),
+             
 ```
