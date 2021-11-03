@@ -327,27 +327,43 @@ rewiring <- function(nets){
   graph[[1]] <- as.matrix(graph[[1]])
   
   graph0 <- graph
-  
-  graph0[2:length(graph)] <- lapply(graph[2:length(graph)], function(g) {
-    as.matrix(rewire_graph(g, p = 20, algorithm = "swap"))
+  nties  <- sapply(graph, sum)
+  graph0[2:length(graph)] <- lapply(2:length(graph), function(i) {
+    as.matrix(rewire_graph(graph[[i]], p = 20 * nties[i], algorithm = "swap"))
     })
   
   graph0 <- blockdiagonalize(graph0)
   
-  graph0 <- new_barry_graph(as.matrix(graph0), n = length(friendship_nets))
+  graph0 <- new_barry_graph(as.matrix(graph0), n = length(nets))
 
   out <- count_recip_errors(graph0)
   out$name <- gsub("[(][0-9]+[)]", "", out$name)
   return(out)
 }
 
-bootstrapping <- function(nsim = 1000, nets = nets){
-  ans <- replicate(n = nsim, {
-  out <- rewiring(nets)
-  }, simplify = FALSE)
+bootstrapping <- function(nsim = 1000, nets = nets, ncores = 4) {
+
+  cl <- parallel::makePSOCKcluster(ncores)
+  on.exit(parallel::stopCluster(cl))
+  
+  parallel::clusterEvalQ(cl, {
+    library(netdiffuseR)
+    library(ergmito)
+    library(imaginarycss)
+  })
+  
+  parallel::clusterExport(cl, c("nets"), envir = environment())
+  parallel::clusterExport(cl, "rewiring", envir = .GlobalEnv)
+  ans <- parallel::parLapply(cl, X = 1:nsim, fun = function(i) {
+    rewiring(nets)
+  })
+  # ans <- replicate(n = nsim, {
+  # out <- rewiring(nets)
+  # }, simplify = FALSE)
   # create a data.frame
   ans <- do.call(rbind, ans)
   return(ans)
+  
 }
 
 # calculate empirical error rates
@@ -361,16 +377,16 @@ emp_count <- function(nets = nets){
 
 # set BNAM as a true graph
 # friendship 
-nets <- c(list(fr.true), friendship_nets)
+nets <- lapply(advice_nets, as.matrix) # c(list(fr.true), friendship_nets)
 
 fr.ans0 <- emp_count(nets = nets)
-fr.ans <- bootstrapping(nsim = 5000,
+fr.ans <- bootstrapping(nsim = 2000,
                         nets = nets)
 
 # advice
 nets <- c(list(ad.true), advice_nets)
 ad.ans0 <- emp_count(nets = nets)
-ad.ans <- bootstrapping(nsim = 5000,
+ad.ans <- bootstrapping(nsim = 100,
                         nets = nets)
 ```
 
