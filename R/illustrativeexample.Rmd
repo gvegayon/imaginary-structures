@@ -320,31 +320,47 @@ xtable(table,include.rownames = FALSE)
 ```{r rewiring}
 library(netdiffuseR)
 
-rewiring <- function(nets){
-  # Preparing data
-  graph <- lapply(nets, as.matrix)
-  graph <- lapply(graph, methods::as, "dgCMatrix")
-  graph[[1]] <- as.matrix(graph[[1]])
+rewiring_css <- function(graph, nties = NULL){
   
-  graph0 <- graph
-  nties  <- sapply(graph, sum)
-  graph0[2:length(graph)] <- lapply(2:length(graph), function(i) {
+  if (!length(nties))
+    nties <- sapply(graph, sum)
+  
+  graph[2:length(graph)] <- lapply(2:length(graph), function(i) {
     as.matrix(rewire_graph(graph[[i]], p = 20 * nties[i], algorithm = "swap"))
     })
   
-  graph0 <- blockdiagonalize(graph0)
+  graph <- blockdiagonalize(graph)
   
-  graph0 <- new_barry_graph(as.matrix(graph0), n = length(nets))
+  graph <- new_barry_graph(as.matrix(graph), n = length(nties))
 
-  out <- count_recip_errors(graph0)
+  out <- count_recip_errors(graph)
   out$name <- gsub("[(][0-9]+[)]", "", out$name)
   return(out)
 }
 
-bootstrapping <- function(nsim = 1000, nets = nets, ncores = 4) {
+#' Rewiring algorithm preserving degree-sequence
+#' 
+#' @param nsim Integer. Number of simulations
+#' @param nets A list of CSS networks; the first one the original.
+#' @param ncores Integer. Number of cores to run the test (parallel computing).
+#' @param seed Integer. Seed for Pseudo RNG (passed to parallel::clusterSetRNGStream)
+rewire_test <- function(
+  nets,
+  nsim   = 1000,
+  ncores = 4,
+  seed   = sample.int(.Machine$integer.max, 1)
+  ) {
 
+  # Preparing the data
+  graph <- lapply(nets, as.matrix)
+  graph[2:length(graph)] <- lapply(graph[2:length(graph)], methods::as, "dgCMatrix")
+  nties <- sapply(graph, sum)
+
+  # Setting up the cluster
   cl <- parallel::makePSOCKcluster(ncores)
-  on.exit(parallel::stopCluster(cl))
+  on.exit(parallel::stopCluster(cl)) # The cluster will stop automatically
+  
+  parallel::clusterSetRNGStream(cl, seed)
   
   parallel::clusterEvalQ(cl, {
     library(netdiffuseR)
@@ -352,15 +368,14 @@ bootstrapping <- function(nsim = 1000, nets = nets, ncores = 4) {
     library(imaginarycss)
   })
   
-  parallel::clusterExport(cl, c("nets"), envir = environment())
-  parallel::clusterExport(cl, "rewiring", envir = .GlobalEnv)
+  parallel::clusterExport(cl, c("graph", "nties"), envir = environment())
+  parallel::clusterExport(cl, "rewiring_css", envir = .GlobalEnv)
+  
+  # Making the call
   ans <- parallel::parLapply(cl, X = 1:nsim, fun = function(i) {
-    rewiring(nets)
+    rewiring_css(graph)
   })
-  # ans <- replicate(n = nsim, {
-  # out <- rewiring(nets)
-  # }, simplify = FALSE)
-  # create a data.frame
+  
   ans <- do.call(rbind, ans)
   return(ans)
   
@@ -378,15 +393,18 @@ emp_count <- function(nets = nets){
 # set BNAM as a true graph
 # friendship 
 nets <- lapply(advice_nets, as.matrix) # c(list(fr.true), friendship_nets)
+nets <- c(list(nets[[1]]), nets)
 
 fr.ans0 <- emp_count(nets = nets)
-fr.ans <- bootstrapping(nsim = 2000,
+fr.ans <- rewire_test(nsim = 2000,
                         nets = nets)
 
 # advice
 nets <- c(list(ad.true), advice_nets)
 ad.ans0 <- emp_count(nets = nets)
-ad.ans <- bootstrapping(nsim = 100,
+
+set.seed(1231) # For reproducibility
+ad.ans2 <- rewire_test(nsim = 100,
                         nets = nets)
 ```
 
@@ -420,6 +438,7 @@ for (id in 0:20){
   print(hplot)
 }
 ```
+
 ```{r Bootstrap Hypothesis Testing}
 bootstrap_testing <- function(meanobs,meansim){
   # n <- length(meanobs)
