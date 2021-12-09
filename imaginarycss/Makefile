@@ -23,6 +23,9 @@ profile: install
 update:
 	rsync -av ~/Documents/development/barry/include/barry inst/include
 
+update-css:
+	rsync -av ~/Documents/development/barry/include/barry/counters/network-css.hpp inst/include/barry/counters
+
 .PHONY: man docker
 
 man: R/* 

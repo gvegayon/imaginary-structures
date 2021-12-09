@@ -3,6 +3,8 @@ title: "Illustrative Examples of Imaginary Structures"
 output:
   html_document: default
   pdf_document: default
+editor_options: 
+  chunk_output_type: console
 ---
 This doc shows some illustrative examples of imaginary structures in CSS data.
 

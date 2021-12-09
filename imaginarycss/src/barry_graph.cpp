@@ -43,6 +43,9 @@ int print_barry_graph(SEXP x) {
   
 }
 
+#define APPEND_COUNTER(a) netcounters:: a (\
+  counter.get_counters(), n, end );
+
 //' Add a counter for reciprocity errors
 //' @param x An object of class [barry_graph].
 //' @export
@@ -57,25 +60,22 @@ DataFrame count_recip_errors(
   std::vector< unsigned int > end = ptr.attr("endpoints");
   int                           n = ptr.attr("netsize");
   
-  netcounters::counter_css_partially_false_recip_omiss(
-    counter.get_counters(), n, end
-    );
-  
-  netcounters::counter_css_partially_false_recip_commi(
-    counter.get_counters(), n, end
-  );
-  
-  netcounters::counter_css_completely_false_recip_omiss(
-    counter.get_counters(), n, end
-  );
-  
-  netcounters::counter_css_completely_false_recip_comiss(
-    counter.get_counters(), n, end
-  );
-  
-  netcounters::counter_css_mixed_recip(
-    counter.get_counters(), n, end
-  );
+  APPEND_COUNTER(counter_css_partially_false_recip_omiss)
+  APPEND_COUNTER(counter_css_partially_false_recip_commi)
+  APPEND_COUNTER(counter_css_completely_false_recip_omiss)
+  APPEND_COUNTER(counter_css_completely_false_recip_comiss)
+  APPEND_COUNTER(counter_css_mixed_recip)
+    
+  APPEND_COUNTER(counter_css_census01)
+  APPEND_COUNTER(counter_css_census02)
+  APPEND_COUNTER(counter_css_census03)
+  APPEND_COUNTER(counter_css_census04)
+  APPEND_COUNTER(counter_css_census05)
+  APPEND_COUNTER(counter_css_census06)
+  APPEND_COUNTER(counter_css_census07)
+  APPEND_COUNTER(counter_css_census08)
+  APPEND_COUNTER(counter_css_census09)
+  APPEND_COUNTER(counter_css_census10)
   
   IntegerVector id(end.size());
   for (int i = 0; i < static_cast<int>(id.size()); ++i)
@@ -90,4 +90,6 @@ DataFrame count_recip_errors(
   );
   
 }
+
+#undef APPEND_COUNTER
 

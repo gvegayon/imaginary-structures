@@ -46,6 +46,11 @@
             new NetCounterData({netsize, i == 0u ? netsize : end_[i-1], end_[i]}, {}),\
             true, tmpname);}
 
+#define CSS_NET_COUNTER_LAMBDA_INIT() NETWORK_COUNTER_LAMBDA(tmp_init) {\
+        CSS_CHECK_SIZE_INIT() \
+        return 0.0; \
+    };
+
 
 /** @brief Counts errors of commission 
  * @param netsize Size of the reference (true) network 
@@ -54,11 +59,12 @@
  * The `end_` parameter should be of length `N of networks` - 1. It is
  * assumed that the first network ends at `netsize`.
  */
+
 inline void counter_css_partially_false_recip_commi(
-        NetCounters * counters,
-        uint netsize,
-        const std::vector< uint > & end_
-    ) {
+    NetCounters * counters,
+    uint netsize,
+    const std::vector< uint > & end_
+) {
     
     NETWORK_COUNTER_LAMBDA(tmp_count) {
         
@@ -88,15 +94,8 @@ inline void counter_css_partially_false_recip_commi(
             return 0.0;
         
     };
-    
-    NETWORK_COUNTER_LAMBDA(tmp_init) {
 
-        // The reported size doesn't match the true network
-        CSS_CHECK_SIZE_INIT()
-        
-        return 0.0;
-        
-    };
+    CSS_NET_COUNTER_LAMBDA_INIT()
     
     // checking sizes
     CSS_CHECK_SIZE()
@@ -107,11 +106,12 @@ inline void counter_css_partially_false_recip_commi(
 }
 
 /** @brief Counts errors of omission */
+
 inline void counter_css_partially_false_recip_omiss(
-        NetCounters * counters,
-        uint netsize,
-        const std::vector< uint > & end_
-    ) {
+    NetCounters * counters,
+    uint netsize,
+    const std::vector< uint > & end_
+) {
     
     NETWORK_COUNTER_LAMBDA(tmp_count) {
         
@@ -139,14 +139,7 @@ inline void counter_css_partially_false_recip_omiss(
 
     };
     
-    NETWORK_COUNTER_LAMBDA(tmp_init) {
-
-        // The reported size doesn't match the true network
-        CSS_CHECK_SIZE_INIT()
-        
-        return 0.0;
-        
-    };
+    CSS_NET_COUNTER_LAMBDA_INIT()
     
     // checking sizes
     CSS_CHECK_SIZE()
@@ -157,11 +150,12 @@ inline void counter_css_partially_false_recip_omiss(
 }
 
 /** @brief Counts completely false reciprocity (comission) */
+
 inline void counter_css_completely_false_recip_comiss(
-        NetCounters * counters,
-        uint netsize,
-        const std::vector< uint > & end_
-    ) {
+    NetCounters * counters,
+    uint netsize,
+    const std::vector< uint > & end_
+) {
     
     NETWORK_COUNTER_LAMBDA(tmp_count) {
 
@@ -185,14 +179,7 @@ inline void counter_css_completely_false_recip_comiss(
 
     };
     
-    NETWORK_COUNTER_LAMBDA(tmp_init) {
-
-        // The reported size doesn't match the true network
-        CSS_CHECK_SIZE_INIT()
-        
-        return 0.0;
-        
-    };
+    CSS_NET_COUNTER_LAMBDA_INIT()
     
     // checking sizes
     CSS_CHECK_SIZE()
@@ -203,11 +190,12 @@ inline void counter_css_completely_false_recip_comiss(
 }
 
 /** @brief Counts completely false reciprocity (omission) */
+
 inline void counter_css_completely_false_recip_omiss(
-        NetCounters * counters,
-        uint netsize,
-        const std::vector< uint > & end_
-    ) {
+    NetCounters * counters,
+    uint netsize,
+    const std::vector< uint > & end_
+) {
     
     NETWORK_COUNTER_LAMBDA(tmp_count) {
 
@@ -231,14 +219,7 @@ inline void counter_css_completely_false_recip_omiss(
         
     };
     
-    NETWORK_COUNTER_LAMBDA(tmp_init) {
-
-        // The reported size doesn't match the true network
-        CSS_CHECK_SIZE_INIT()
-        
-        return 0.0;
-        
-    };
+    CSS_NET_COUNTER_LAMBDA_INIT()
     
     // checking sizes
     CSS_CHECK_SIZE()
@@ -249,11 +230,12 @@ inline void counter_css_completely_false_recip_omiss(
 }
 
 /** @brief Counts mixed reciprocity errors */
+
 inline void counter_css_mixed_recip(
-        NetCounters * counters,
-        uint netsize,
-        const std::vector< uint > & end_
-    ) {
+    NetCounters * counters,
+    uint netsize,
+    const std::vector< uint > & end_
+) {
     
     NETWORK_COUNTER_LAMBDA(tmp_count) {
 
@@ -277,14 +259,7 @@ inline void counter_css_mixed_recip(
         
     };
     
-    NETWORK_COUNTER_LAMBDA(tmp_init) {
-
-        // The reported size doesn't match the true network
-        CSS_CHECK_SIZE_INIT()
-        
-        return 0.0;
-        
-    };
+    CSS_NET_COUNTER_LAMBDA_INIT()
     
     // checking sizes
     CSS_CHECK_SIZE()
@@ -294,6 +269,398 @@ inline void counter_css_mixed_recip(
     
 }
 
+/////////////////////////// CENSUS
+
+
+inline void counter_css_census01(
+    NetCounters * counters,
+    uint netsize,
+    const std::vector< uint > & end_
+) {
+
+    NETWORK_COUNTER_LAMBDA(tmp_count) {
+
+        // Getting the network size
+        CSS_SIZE()
+
+        // True network
+        CSS_CASE_TRUTH()
+        {
+
+            CSS_TRUE_CELLS()
+            return -(1.0 - pij) * (1.0 - pji) * (1.0 - tji);
+
+        } CSS_CASE_PERCEIVED() {
+
+            CSS_PERCEIVED_CELLS()
+            return -(1.0 - tij) * (1.0 - tji) * (1.0 - pji);
+
+        } CSS_CASE_ELSE()
+            return 0.0;
+        
+    };
+    
+    CSS_NET_COUNTER_LAMBDA_INIT()
+    
+    // checking sizes
+    CSS_CHECK_SIZE()
+    CSS_APPEND("Accurate null")
+        
+    return;
+
+}
+
+
+inline void counter_css_census02(
+    NetCounters * counters,
+    uint netsize,
+    const std::vector< uint > & end_
+) {
+
+    NETWORK_COUNTER_LAMBDA(tmp_count) {
+
+        // Getting the network size
+        CSS_SIZE()
+
+        // True network
+        CSS_CASE_TRUTH()
+        {
+
+            CSS_TRUE_CELLS()
+            return -(1.0 - tji) * ((1.0 - pij) * pji + pij * (1.0 - pji));
+
+        } CSS_CASE_PERCEIVED() {
+
+            CSS_PERCEIVED_CELLS()
+            return -(1.0 - tij) * (1.0 - tji) * (1 - 2.0 * pji);
+
+        } CSS_CASE_ELSE()
+            return 0.0;
+        
+    };
+    
+    CSS_NET_COUNTER_LAMBDA_INIT()
+    
+    // checking sizes
+    CSS_CHECK_SIZE()
+    CSS_APPEND("Partial false positive (null)")
+        
+    return;
+
+}
+
+
+inline void counter_css_census03(
+    NetCounters * counters,
+    uint netsize,
+    const std::vector< uint > & end_
+) {
+
+    NETWORK_COUNTER_LAMBDA(tmp_count) {
+
+        // Getting the network size
+        CSS_SIZE()
+
+        // True network
+        CSS_CASE_TRUTH()
+        {
+
+            CSS_TRUE_CELLS()
+            return -(1.0 - tji) * pij * pji;
+
+        } CSS_CASE_PERCEIVED() {
+
+            CSS_PERCEIVED_CELLS()
+            return (1.0 - tij) * (1.0 - tji) *pji;
+
+        } CSS_CASE_ELSE()
+            return 0.0;
+        
+    };
+    
+    CSS_NET_COUNTER_LAMBDA_INIT()
+    
+    // checking sizes
+    CSS_CHECK_SIZE()
+    CSS_APPEND("Complete false positive (null)")
+        
+    return;
+
+}
+
+
+inline void counter_css_census04(
+    NetCounters * counters,
+    uint netsize,
+    const std::vector< uint > & end_
+) {
+
+    NETWORK_COUNTER_LAMBDA(tmp_count) {
+
+        // Getting the network size
+        CSS_SIZE()
+
+        // True network
+        CSS_CASE_TRUTH()
+        {
+
+            CSS_TRUE_CELLS()
+            return (1.0 - pij) * (1.0 - pji) * (1.0 - 2.0 * tji);
+
+        } CSS_CASE_PERCEIVED() {
+
+            CSS_PERCEIVED_CELLS()
+            return -(1.0 - pji) * ((1.0 - tij) * tji + tij * (1.0 - tji));
+
+        } CSS_CASE_ELSE()
+            return 0.0;
+        
+    };
+    
+    CSS_NET_COUNTER_LAMBDA_INIT()
+    
+    // checking sizes
+    CSS_CHECK_SIZE()
+    CSS_APPEND("Partial false negative (assym)")
+        
+    return;
+
+}
+
+
+inline void counter_css_census05(
+    NetCounters * counters,
+    uint netsize,
+    const std::vector< uint > & end_
+) {
+
+    NETWORK_COUNTER_LAMBDA(tmp_count) {
+
+        // Getting the network size
+        CSS_SIZE()
+
+        // True network
+        CSS_CASE_TRUTH()
+        {
+
+            CSS_TRUE_CELLS()
+            return pij * (1.0 - tji) * (1.0 - pji) - (1.0 - pij) * tji * pji;
+
+        } CSS_CASE_PERCEIVED() {
+
+            CSS_PERCEIVED_CELLS()
+            return tij * (1.0 - tji) * (1.0 - pji) - (1.0 - tij) * tji * pji;
+
+        } CSS_CASE_ELSE()
+            return 0.0;
+        
+    };
+    
+    CSS_NET_COUNTER_LAMBDA_INIT()
+    
+    // checking sizes
+    CSS_CHECK_SIZE()
+    CSS_APPEND("Accurate assym")
+        
+    return;
+
+}
+
+
+inline void counter_css_census06(
+    NetCounters * counters,
+    uint netsize,
+    const std::vector< uint > & end_
+) {
+
+    NETWORK_COUNTER_LAMBDA(tmp_count) {
+
+        // Getting the network size
+        CSS_SIZE()
+
+        // True network
+        CSS_CASE_TRUTH()
+        {
+
+            CSS_TRUE_CELLS()
+            return (1.0 - pij) * (1.0 - tji) * pji - pij * tji * (1.0 - pji);
+
+        } CSS_CASE_PERCEIVED() {
+
+            CSS_PERCEIVED_CELLS()
+            return (1.0 - tij) * tji * (1.0 - pji) - tij * (1.0 - tji) * pji;
+
+        } CSS_CASE_ELSE()
+            return 0.0;
+        
+    };
+    
+    CSS_NET_COUNTER_LAMBDA_INIT()
+    
+    // checking sizes
+    CSS_CHECK_SIZE()
+    CSS_APPEND("Mixed assym")
+        
+    return;
+
+}
+
+
+inline void counter_css_census07(
+    NetCounters * counters,
+    uint netsize,
+    const std::vector< uint > & end_
+) {
+
+    NETWORK_COUNTER_LAMBDA(tmp_count) {
+
+        // Getting the network size
+        CSS_SIZE()
+
+        // True network
+        CSS_CASE_TRUTH()
+        {
+
+            CSS_TRUE_CELLS()
+            return pij * pji * (1.0 - 2.0 * tji);
+
+        } CSS_CASE_PERCEIVED() {
+
+            CSS_PERCEIVED_CELLS()
+            return pji * (tij * (1.0 - tji) + (1.0 - tij) * tji);
+
+        } CSS_CASE_ELSE()
+            return 0.0;
+        
+    };
+    
+    CSS_NET_COUNTER_LAMBDA_INIT()
+    
+    // checking sizes
+    CSS_CHECK_SIZE()
+    CSS_APPEND("Partial false positive (assym)")
+        
+    return;
+
+}
+
+
+inline void counter_css_census08(
+    NetCounters * counters,
+    uint netsize,
+    const std::vector< uint > & end_
+) {
+
+    NETWORK_COUNTER_LAMBDA(tmp_count) {
+
+        // Getting the network size
+        CSS_SIZE()
+
+        // True network
+        CSS_CASE_TRUTH()
+        {
+
+            CSS_TRUE_CELLS()
+            return tji * (1.0 - pij) * (1.0 - pji);
+
+        } CSS_CASE_PERCEIVED() {
+
+            CSS_PERCEIVED_CELLS()
+            return - tij * tji * (1.0 - pji);
+
+        } CSS_CASE_ELSE()
+            return 0.0;
+        
+    };
+    
+    CSS_NET_COUNTER_LAMBDA_INIT()
+    
+    // checking sizes
+    CSS_CHECK_SIZE()
+    CSS_APPEND("Complete false negative (full)")
+        
+    return;
+
+}
+
+
+inline void counter_css_census09(
+    NetCounters * counters,
+    uint netsize,
+    const std::vector< uint > & end_
+) {
+
+    NETWORK_COUNTER_LAMBDA(tmp_count) {
+
+        // Getting the network size
+        CSS_SIZE()
+
+        // True network
+        CSS_CASE_TRUTH()
+        {
+
+            CSS_TRUE_CELLS()
+            return tji * (pij * (1.0 - pji) + (1.0 - pij) * pji);
+
+        } CSS_CASE_PERCEIVED() {
+
+            CSS_PERCEIVED_CELLS()
+            return tij * tji * (1.0 - 2.0 * pji);
+
+        } CSS_CASE_ELSE()
+            return 0.0;
+        
+    };
+    
+    CSS_NET_COUNTER_LAMBDA_INIT()
+    
+    // checking sizes
+    CSS_CHECK_SIZE()
+    CSS_APPEND("Mixed full")
+        
+    return;
+
+}
+
+
+inline void counter_css_census10(
+    NetCounters * counters,
+    uint netsize,
+    const std::vector< uint > & end_
+) {
+
+    NETWORK_COUNTER_LAMBDA(tmp_count) {
+
+        // Getting the network size
+        CSS_SIZE()
+
+        // True network
+        CSS_CASE_TRUTH()
+        {
+
+            CSS_TRUE_CELLS()
+            return tji * pij * pji;
+
+        } CSS_CASE_PERCEIVED() {
+
+            CSS_PERCEIVED_CELLS()
+            return tij * tji * pji;
+
+        } CSS_CASE_ELSE()
+            return 0.0;
+        
+    };
+    
+    CSS_NET_COUNTER_LAMBDA_INIT()
+    
+    // checking sizes
+    CSS_CHECK_SIZE()
+    CSS_APPEND("Accurate full")
+        
+    return;
+
+}
+
 #undef CSS_CASE_TRUTH
 #undef CSS_TRUE_CELLS
 #undef CSS_CASE_PERCEIVED
@@ -301,4 +668,5 @@ inline void counter_css_mixed_recip(
 #undef CSS_CASE_ELSE
 #undef CSS_CHECK_SIZE_INIT
 #undef CSS_CHECK_SIZE
+#undef CSS_NET_COUNTER_LAMBDA_INIT
 #endif
