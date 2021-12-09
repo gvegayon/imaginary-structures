@@ -333,7 +333,7 @@ rewiring_css <- function(graph, nties = NULL){
   
   graph <- blockdiagonalize(graph)
   
-  graph <- new_barry_graph(as.matrix(graph), n = length(nties))
+  graph <- new_barry_graph(as.matrix(graph), n = length(nties)-1)
 
   out <- count_recip_errors(graph)
   out$name <- gsub("[(][0-9]+[)]", "", out$name)
@@ -394,8 +394,9 @@ emp_count <- function(nets = nets){
 
 # set BNAM as a true graph
 # friendship 
-nets <- lapply(advice_nets, as.matrix) # c(list(fr.true), friendship_nets)
-nets <- c(list(nets[[1]]), nets)
+# nets <- lapply(advice_nets, as.matrix) # 
+nets <- c(list(fr.true), friendship_nets)
+# nets <- c(list(nets[[1]]), nets)
 
 fr.ans0 <- emp_count(nets = nets)
 fr.ans <- rewire_test(nsim = 2000,
@@ -406,7 +407,7 @@ nets <- c(list(ad.true), advice_nets)
 ad.ans0 <- emp_count(nets = nets)
 
 set.seed(1231) # For reproducibility
-ad.ans2 <- rewire_test(nsim = 100,
+ad.ans <- rewire_test(nsim = 2000,
                         nets = nets)
 ```
 
@@ -527,7 +528,7 @@ a_header <- construct_header(
   span = c(5,5,5,5,5),
   align = 'c'
 )
-print(xtable(fr.table), add.to.row = a_header, scalebox = .5)
+print(xtable(fr.table), add.to.row = a_header, scalebox = .57)
 # advice table
 ad.table <- cbind(t(sapply(c(0:20),ind_test,1,ad.ans,ad.ans0)),
       t(sapply(c(0:20),ind_test,2,ad.ans,ad.ans0)),
@@ -629,7 +630,7 @@ twovars_plot <- function(df = fr_df,
          aes(x = !!enquo(var1),y = !!enquo(var2), color = class))+
   geom_point(alpha = .6)+
   geom_smooth(method = 'lm')+
-  stat_cor(p.accuracy = 0.001, r.accuracy = 0.01,hjust = 0, vjust = 1)+
+  stat_cor(cor.coef.name = 'r',p.accuracy = 0.001, r.accuracy = 0.01,hjust = 0, vjust = 1)+
   scale_color_manual(values = c('#55B748','#DB2B27','#FDBF11','#98CF90','#E9807D')) +
   facet_grid(class~.,
              labeller = labeller(class = as_labeller(c(`C-C`='C-FP',`C-O`='C-FN',
@@ -648,8 +649,8 @@ outdegree <- grid.arrange(arrangeGrob(twovars_plot(),top = '(a) Friendship Netwo
              ncol = 2, nrow = 1)
 ggsave('outdegree_cor_v1.png', plot = outdegree, dpi = 800)
 
-den_plot <- grid.arrange(arrangeGrob(twovars_plot(var1 = fr_density,var1_name = 'Density'),top = '(a) Friendship Network'),
-             arrangeGrob(twovars_plot(df=ad_df,var1 = ad_density,var1_name = 'Density'),top = '(b) Advice Network'),
+den_plot <- grid.arrange(arrangeGrob(twovars_plot(var1 = fr_density,var1_name = 'Perceived Network Density'),top = '(a) Friendship Network'),
+             arrangeGrob(twovars_plot(df=ad_df,var1 = ad_density,var1_name = 'Perceived Network Density'),top = '(b) Advice Network'),
              ncol = 2, nrow = 1)
 ggsave('density_cor_v1.png', plot = den_plot, dpi = 800)
 
