@@ -19,3 +19,22 @@ count_recip_errors <- function(x) {
     .Call(`_imaginarycss_count_recip_errors`, x)
 }
 
+#' Computes census of imaginary errors
+#' @param x An object of class [barry_graph].
+#' @details
+#' There are ten (10) values:
+#' - (01) Accurate null
+#' - (02) Partial false positive (null)
+#' - (03) Complete false positive (null)
+#' - (04) Partial false negative (assym)
+#' - (05) Accurate assym
+#' - (06) Mixed assym
+#' - (07) Partial false positive (assym)
+#' - (08) Complete false negative (full)
+#' - (09) Partial false negative (full)
+#' - (10) Accurate full
+#' @export
+count_imaginary_census <- function(x) {
+    .Call(`_imaginarycss_count_imaginary_census`, x)
+}
+

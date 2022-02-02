@@ -13,6 +13,8 @@
 // -----------------------------------------------------------------------------
 
 // Basic types
+// See this thread
+// https://stackoverflow.com/questions/35055042/difference-between-uint8-t-uint-fast8-t-and-uint-least8-t
 typedef unsigned int uint;
 
 // Mostly relevant for the BArray definition -----------------------------------
@@ -48,6 +50,18 @@ namespace EXISTS {
   * A single count
   */
 typedef std::vector< std::pair< std::vector<double>, uint > > Counts_type;
+
+// class Counts_type
+// {
+// private:
+//     std::vector< std::uint_fast32_t > stats_counts;
+//     std::vector< double > stats_values;
+//     size_t n_stats;
+//     unsigned int n_obs;
+// public:
+//     std::vector< double > operator()
+// }
+
 template <class Type_A > class Cell;
 
 template<typename Cell_Type>
@@ -89,8 +103,11 @@ public:
 
 // Relevant for anything using vecHasher function ------------------------------
 template <typename T>
-struct vecHasher {
-    std::size_t operator()(std::vector< T > const&  dat) const noexcept {
+struct vecHasher
+{
+
+    std::size_t operator()(std::vector< T > const&  dat) const noexcept
+    {
         
         std::hash< T > hasher;
         std::size_t hash = hasher(dat[0u]);
@@ -105,6 +122,7 @@ struct vecHasher {
         return hash;
         
     }
+
 };
 
 template<typename Ta = double, typename Tb = uint> 
@@ -114,6 +132,7 @@ using MapVec_type = std::unordered_map< std::vector< Ta >, Tb, vecHasher<Ta>>;
 // Mostly relevant in the case of the stats count functions -------------------
 template <typename Cell_Type, typename Data_Type> class BArray;
 template <typename Array_Type, typename Counter_Type> class Counter;
+template <typename Cell_Type, typename Data_Type> class BArrayDense;
 
 /**
  * @brief Counter and rule functions
@@ -161,7 +180,7 @@ template <typename T>
 inline bool vec_equal_approx(
     const std::vector< T > & a,
     const std::vector< T > & b,
-    double eps = 1e-10
+    double eps = 1e-100
 ) {
     
     if (a.size() != b.size())
@@ -182,16 +201,45 @@ inline T vec_inner_prod(
 const std::vector< T > & a,
 const std::vector< T > & b
 ) {
+
     
     if (a.size() != b.size())
         throw std::length_error("-a- and -b- should have the same length.");
     
     double res = 0.0;
+    #ifdef __OPENM 
+    #pragma omp simd reduction(+:res)
+    #else
+    #pragma GCC ivdep
+    #endif
     for (unsigned int i = 0u; i < a.size(); ++i)
         res += (a[i] * b[i]);
     
     return res;
+
 }
 
+template <>
+inline double vec_inner_prod(
+const std::vector< double > & a,
+const std::vector< double > & b
+) {
+    
+    
+    if (a.size() != b.size())
+        throw std::length_error("-a- and -b- should have the same length.");
+    
+    double res = 0.0;
+    #ifdef __OPENMP
+    #pragma omp simd reduction(+:res)
+    #else
+    #pragma GCC ivdep
+    #endif
+    for (unsigned int i = 0u; i < a.size(); ++i)
+        res += (a[i] * b[i]);
+    
+    return res;
+
+}
 
 #endif

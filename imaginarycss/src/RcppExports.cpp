@@ -44,11 +44,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// count_imaginary_census
+DataFrame count_imaginary_census(SEXP x);
+RcppExport SEXP _imaginarycss_count_imaginary_census(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(count_imaginary_census(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_imaginarycss_new_barry_graph", (DL_FUNC) &_imaginarycss_new_barry_graph, 5},
     {"_imaginarycss_print_barry_graph", (DL_FUNC) &_imaginarycss_print_barry_graph, 1},
     {"_imaginarycss_count_recip_errors", (DL_FUNC) &_imaginarycss_count_recip_errors, 1},
+    {"_imaginarycss_count_imaginary_census", (DL_FUNC) &_imaginarycss_count_imaginary_census, 1},
     {NULL, NULL, 0}
 };
 

@@ -10,7 +10,9 @@
 #include <utility>
 #include <random>
 #include <climits>
+#include <cfloat>
 #include <string>
+#include <cstdint>
 
 #ifdef BARRY_USE_OMP
 #include <omp.h>
@@ -28,6 +30,7 @@ namespace barry {
     
     //! Tree class and TreeIterator class
     #include "typedefs.hpp"
+    #include "barry-macros.hpp"
 
     #include "cell-bones.hpp"
     #include "cell-meat.hpp"
@@ -37,6 +40,16 @@ namespace barry {
     #include "barray-meat.hpp"
     #include "barraycell-meat.hpp"
     #include "barray-meat-operators.hpp"
+
+    #include "barraydense-bones.hpp"
+    #include "barraydensecell-bones.hpp"
+
+    #include "barraydenserow-bones.hpp"
+    #include "barraydensecol-bones.hpp"
+
+    #include "barraydense-meat.hpp"
+    #include "barraydensecell-meat.hpp"
+    #include "barraydense-meat-operators.hpp"
     
     #include "counters-bones.hpp"
     #include "counters-meat.hpp"

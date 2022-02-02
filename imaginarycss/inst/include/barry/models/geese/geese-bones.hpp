@@ -25,7 +25,7 @@ inline std::vector< Ta > vector_caster(const std::vector< Tb > & x) {
 // The same need to be locked
 RULE_FUNCTION(rule_empty_free) {
 
-    return Array.get_cell(i, j) == 9u;
+    return Array(i, j) == 9u;
     
 }
 
@@ -62,7 +62,7 @@ inline bool vec_diff(
 ) {
 
     for (unsigned int i = 0u; i < a.size(); ++i)
-        if ((a.at(i) != 9u) && (a.at(i) != s.at(i)))
+        if ((a[i] != 9u) && (a[i] != s[i]))
             return true;
 
     return false;
@@ -107,6 +107,7 @@ public:
     unsigned int                       nfunctions;
     std::map< unsigned int, Node >     nodes;
     barry::MapVec_type< unsigned int > map_to_nodes;
+    std::vector< std::vector< std::vector< size_t > > > pset_loc;    ///< Locations of columns
 
     // Tree-traversal sequence
     std::vector< unsigned int > sequence;
@@ -129,6 +130,12 @@ public:
      * 0, 1, and 9.
      * @param geneid Id of the gene. It should be of length `N`.
      * @param parent Id of the parent gene. Also of length `N`
+     * @param duplication Logical scalar indicating the type of event (true:
+     * duplication, false: speciation.)
+     * 
+     * @details 
+     * The ordering of the entries does not matter. Passing the nodes in post
+     * order or not makes no difference to the constructor.
      */
     ///@{
     Geese();
@@ -136,7 +143,7 @@ public:
     Geese(
         std::vector< std::vector<unsigned int> > & annotations,
         std::vector< unsigned int > &              geneid,
-        std::vector< int> &                        parent,
+        std::vector< int > &                       parent,
         std::vector< bool > &                      duplication
         );
 
@@ -192,7 +199,11 @@ public:
     unsigned int support_size() const noexcept;      ///< Number of unique sets of sufficient stats.
     std::vector< unsigned int > nannotations() const noexcept;      ///< Number of annotations.
     std::vector< std::string > colnames() const;     ///< Names of the terms in the model.
-    unsigned int parse_polytomies(bool verb = true) const noexcept;  ///< Check polytomies and return the largest.
+    unsigned int parse_polytomies(
+        bool verb = true,
+        std::vector< size_t > * dist = nullptr
+        ) const noexcept;  ///< Check polytomies and return the largest.
+
     ///@}
 
     std::vector< std::vector<double> > observed_counts();
@@ -269,13 +280,13 @@ public:
      * @return `get_rengine()` returns the Pseudo-RNG engine used.
      * @return `get_counters()` returns the vector of counters used.
      * @return `get_model()` returns the `Model` object used.
-     * @return `get_support()` returns the computed support of the model.
+     * @return `get_support_fun()` returns the computed support of the model.
      */
     ///@{
     std::mt19937 *                     get_rengine();
     phylocounters::PhyloCounters *     get_counters();
     phylocounters::PhyloModel *        get_model();
-    phylocounters::PhyloSupport *      get_support();
+    phylocounters::PhyloSupport *      get_support_fun();
     ///@}
     
     /**

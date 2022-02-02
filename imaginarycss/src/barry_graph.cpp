@@ -43,7 +43,7 @@ int print_barry_graph(SEXP x) {
   
 }
 
-#define APPEND_COUNTER(a) netcounters:: a (\
+#define APPEND_COUNTER(a) netcounters:: a <netcounters::Network>(\
   counter.get_counters(), n, end );
 
 //' Add a counter for reciprocity errors
@@ -55,7 +55,7 @@ DataFrame count_recip_errors(
   ) {
   
   Rcpp::XPtr< netcounters::Network >ptr(x);
-  netcounters::NetStatsCounter counter(ptr);
+  netcounters::NetStatsCounter< netcounters::Network> counter(ptr);
   
   std::vector< unsigned int > end = ptr.attr("endpoints");
   int                           n = ptr.attr("netsize");
@@ -83,6 +83,56 @@ DataFrame count_recip_errors(
   
   // print(Rcpp::wrap(counter.get_names()));
   
+  return DataFrame::create(
+    _["id"]    = id,
+    _["name"]  = wrap(counter.get_names()),
+    _["value"] = counter.count_all()
+  );
+  
+}
+
+//' Computes census of imaginary errors
+//' @param x An object of class [barry_graph].
+//' @details
+//' There are ten (10) values:
+//' - (01) Accurate null
+//' - (02) Partial false positive (null)
+//' - (03) Complete false positive (null)
+//' - (04) Partial false negative (assym)
+//' - (05) Accurate assym
+//' - (06) Mixed assym
+//' - (07) Partial false positive (assym)
+//' - (08) Complete false negative (full)
+//' - (09) Partial false negative (full)
+//' - (10) Accurate full
+//' @export
+// [[Rcpp::export(rng = false)]]
+DataFrame count_imaginary_census(
+    SEXP x
+) {
+  
+  Rcpp::XPtr< netcounters::Network >ptr(x);
+  netcounters::NetStatsCounter< netcounters::Network> counter(ptr);
+  
+  std::vector< unsigned int > end = ptr.attr("endpoints");
+  int                           n = ptr.attr("netsize");
+  
+  APPEND_COUNTER(counter_css_census01)
+  APPEND_COUNTER(counter_css_census02)
+  APPEND_COUNTER(counter_css_census03)
+  APPEND_COUNTER(counter_css_census04)
+  APPEND_COUNTER(counter_css_census05)
+  APPEND_COUNTER(counter_css_census06)
+  APPEND_COUNTER(counter_css_census07)
+  APPEND_COUNTER(counter_css_census08)
+  APPEND_COUNTER(counter_css_census09)
+  APPEND_COUNTER(counter_css_census10)
+    
+  IntegerVector id(end.size());
+  for (int i = 0; i < static_cast<int>(id.size()); ++i)
+    id[i] = i;
+  
+  // print(Rcpp::wrap(counter.get_names()));
   return DataFrame::create(
     _["id"]    = id,
     _["name"]  = wrap(counter.get_names()),

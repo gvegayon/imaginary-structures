@@ -6,6 +6,9 @@
 #ifndef BARRY_STATSCOUNTER_BONES_HPP 
 #define BARRY_STATSCOUNTER_BONES_HPP 1
 
+class NetworkDense;
+class NetCounterData;
+
 /**
  * @brief Count stats for a single Array.
  * 
@@ -26,6 +29,9 @@ private:
     Counters<Array_Type,Data_Type> * counters;
     bool                             counter_deleted  = false;
 
+    std::vector< double > count_all_dense();
+    std::vector< double > count_all_sparse();
+
 public:
         
     /**
@@ -43,6 +49,13 @@ public:
         
         return;
     }
+
+    /**
+     * @brief Copy constructor
+     * 
+     * @param counter 
+     */
+    StatsCounter(const StatsCounter<Array_Type,Data_Type> & counter);
     
     /**
      * @brief Can be created without setting the array.

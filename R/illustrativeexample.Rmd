@@ -194,6 +194,15 @@ krack_graph <- new_barry_graph(as.matrix(big_krack), n = 21)
 ans <- count_recip_errors(krack_graph)
 ans$name <- gsub("[(][0-9]+[)]", "", ans$name)
 ans
+
+# Census
+census <- count_imaginary_census(krack_graph)
+census_tab <- data.frame(
+  name = gsub("\\s\\([0-9]+\\)$", "", census$name, perl = TRUE),
+  count = census$value
+)
+
+aggregate(count ~ name, data = census_tab, sum)
 ```
 
 BNAM (Baysian network inference): Let's start by defining some priors for the Bayesian network inference model. We'll use an uninformative network prior, together with weakly informative (but diffuse and symmetric) priors on the error rates. Read the man page ("?bbnam") to get more information about how the routine works.

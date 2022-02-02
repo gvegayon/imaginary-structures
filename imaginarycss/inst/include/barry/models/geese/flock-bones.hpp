@@ -52,7 +52,9 @@ public:
     
     // void add_geese(Geese x);
     phylocounters::PhyloCounters * get_counters();
-    phylocounters::PhyloSupport *  get_support();
+    phylocounters::PhyloSupport *  get_support_fun();
+    std::vector< std::vector< double > > * get_stats_support();
+    std::vector< std::vector< double > > * get_stats_target();
     phylocounters::PhyloModel *  get_model();
 
     /**
@@ -81,7 +83,10 @@ public:
     unsigned int nterms() const;
     unsigned int support_size() const noexcept;
     std::vector< std::string > colnames() const;
-    unsigned int parse_polytomies(bool verb = true) const noexcept;
+    unsigned int parse_polytomies(
+        bool verb = true,
+        std::vector< size_t > * dist = nullptr
+        ) const noexcept;  ///< Check polytomies and return the largest.
     void print() const;
     ///@}
 

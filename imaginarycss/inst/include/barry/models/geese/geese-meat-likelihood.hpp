@@ -7,7 +7,7 @@ inline double Geese::likelihood(
     const std::vector< double > & par,
     bool as_log,
     bool use_reduced_sequence
-    ) {
+) {
 
     INITIALIZED()
 
@@ -16,24 +16,36 @@ inline double Geese::likelihood(
     std::vector< double > par_root(par.end() - nfunctions, par.end());
 
     // Scaling root
-    for (auto& p : par_root) {
+    for (auto& p : par_root)
         p = std::exp(p)/(std::exp(p) + 1);
-    }
-
-    std::vector< unsigned int > tmpstate(nfunctions);
 
     double ll = 0.0;
+
     Node * n_off;
 
     // Following the prunning sequence
     std::vector< unsigned int > * preseq;
+
     if (use_reduced_sequence)
+    {
+
         preseq = &this->reduced_sequence;
+
+    }
     else
+    {   
+
         preseq = &this->sequence;
 
+    }
 
-    for (auto& i : *preseq) {
+    // The first time it is called, it need to generate the corresponding
+    // hashes of the columns so it is fast to access then (saves time
+    // hashing and looking in the map.)
+    auto arrays2support = model->get_arrays2support();
+
+    for (auto& i : *preseq)
+    {
 
         // We cannot compute probability at the leaf, we need to continue
         if (this->nodes[i].is_leaf())
@@ -43,69 +55,90 @@ inline double Geese::likelihood(
         Node & node = nodes[i];
 
         // Iterating through states
-        for (unsigned int s = 0u; s < states.size(); ++s) {
+        for (unsigned int s = 0u; s < states.size(); ++s)
+        {
 
             // Starting the prob
             double totprob = 0.0;
 
             // Retrieving the sets of arrays
-            const std::vector< phylocounters::PhyloArray > * psets = model->get_pset(
-                node.narray[s]
-            );
+            const std::vector< phylocounters::PhyloArray > * psets =
+                model->get_pset(node.narray[s]);
 
-            const std::vector< std::vector<double> > * psets_stats = model->get_pset_stats(
-                node.narray[s]
-            );
+            const std::vector< std::vector<double> > * psets_stats =
+                model->get_pset_stats(node.narray[s]);
 
+            std::vector< std::vector< size_t > > & locations = pset_loc[
+                arrays2support->operator[](node.narray[s])
+                ];
+            
             // Summation over all possible values of X
             unsigned int nstate = 0u;
-            for (auto x = psets->begin(); x != psets->end(); ++x) {
+            unsigned int narray = 0u;
+            for (auto x = psets->begin(); x != psets->end(); ++x)
+            {
+
+                if (!x->is_dense())
+                    throw std::logic_error("This is only supported for dense arrays.");
+
+                std::vector< size_t > & location_x = locations[narray++];
 
                 // Extracting the possible values of each offspring
                 double off_mult = 1.0;
-                for (auto o = 0u; o < x->ncol(); ++o) {
+
+                for (auto o = 0u; o < x->ncol(); ++o)
+                {
 
                     // Setting the node
                     n_off = node.offspring[o];
-
-                    // First, getting what is the corresponding state
-                    std::fill(tmpstate.begin(), tmpstate.end(), 0u);
-                    x->get_col_vec(&tmpstate, o, false);
-
+                    
                     // In the case that the offspring is a leaf, then we need to
                     // check whether the state makes sense.
-                    if (n_off->is_leaf()) {
+                    if (n_off->is_leaf())
+                    {
+                        for (auto f = 0u; f < nfunctions; ++f)
+                        {
+                            if (n_off->annotations[f] != 9u)
+                            {
 
-                        if (vec_diff(tmpstate, n_off->annotations)) {
+                                if (x->operator()(f, o) != n_off->annotations[f])
+                                {
 
-                            off_mult = -1.0;
+                                    off_mult = -1.0;
+                                    break;
+
+                                }
+                                
+                            }
+
+                        }
+
+                        // Going out
+                        if (off_mult < 0)
                             break;
-
-                        } 
-
+                
                         continue;
 
                     }
 
                     // Retrieving the location to the respective set of probabilities
-                    unsigned int loc = map_to_nodes[tmpstate];
-                    off_mult *= node.offspring[o]->subtree_prob[loc];
+                    off_mult *= node.offspring[o]->subtree_prob[location_x[o]];
 
                 }
 
                 // Is this state valid?
-                if (off_mult < 0.0) {
+                if (off_mult < 0.0)
+                {
 
                     ++nstate;
                     continue;
                     
                 }
-                    
 
                 // Multiplying by P(x|x_n), the transition probability
                 off_mult *= model->likelihood(
                     par0,
-                    psets_stats->at(nstate++),
+                    psets_stats->operator[](nstate++),
                     node.narray[s]
                 );
 
@@ -120,11 +153,19 @@ inline double Geese::likelihood(
         }
 
         // All probabilities should be completed at this point
-        if (node.parent == nullptr) {
-            for (unsigned int s = 0u; s < states.size(); ++s) {
+        if (node.parent == nullptr)
+        {
+
+            for (unsigned int s = 0u; s < states.size(); ++s)
+            {
+
                 double tmpll = 1.0;
-                for (auto k = 0u; k < nfunctions; ++k) {
+
+                for (auto k = 0u; k < nfunctions; ++k)
+                {
+
                     tmpll *= states[s][k] ? par_root[k] : (1 - par_root[k]);
+
                 }
 
                 ll += tmpll * node.subtree_prob[s];

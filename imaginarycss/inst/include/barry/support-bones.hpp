@@ -35,7 +35,13 @@ template <
 class Support {
     
 private:
-    void calc_backend(
+    void calc_backend_sparse(
+        uint pos = 0u,
+        std::vector< Array_Type > * array_bank = nullptr,
+        std::vector< std::vector< double > > * stats_bank = nullptr
+    );
+
+    void calc_backend_dense(
         uint pos = 0u,
         std::vector< Array_Type > * array_bank = nullptr,
         std::vector< std::vector< double > > * stats_bank = nullptr
@@ -60,9 +66,14 @@ public:
     
     // Temp variables to reduce memory allocation
     std::vector< double >                current_stats;
-    std::vector< std::pair<uint,uint> >  coordinates_free;
-    std::vector< std::pair<uint,uint> >  coordinates_locked;
-    std::vector< std::vector< double > > change_stats;
+    std::vector< size_t >                coordinates_free;
+    std::vector< size_t >                coordinates_locked;
+    size_t coordiantes_n_free;
+    size_t coordiantes_n_locked;
+    std::vector< double > change_stats;
+    std::vector< size_t > hashes;
+    std::vector< bool   > hashes_initialized;
+    size_t n_counters;
     
     /**@brief Constructor passing a reference Array.
       */
@@ -104,7 +115,6 @@ public:
         std::vector< Array_Type > * array_bank = nullptr,
         std::vector< std::vector< double > > * stats_bank = nullptr
     );
-    
     
     /**
      * @name Resets the support calculator
@@ -164,8 +174,7 @@ public:
         unsigned int max_num_elements_ = 0u
     );
     
-    Counts_type           get_counts() const;
-    const MapVec_type<> * get_counts_ptr() const;
+    std::vector< double > get_counts() const;
     std::vector< double > * get_current_stats(); ///< List current statistics.
     void print() const;
     
@@ -173,6 +182,7 @@ public:
     Counters<Array_Type,Data_Counter_Type> * get_counters();   ///< Vector of couter functions.
     Rules<Array_Type,Data_Rule_Type> *       get_rules();      ///< Vector of static rules (cells to iterate).
     Rules<Array_Type,Data_Rule_Dyn_Type> *   get_rules_dyn();  ///< Vector of dynamic rules (to include/exclude a realizaton).
+    
 };
 
 

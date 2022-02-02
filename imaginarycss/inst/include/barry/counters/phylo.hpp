@@ -10,7 +10,7 @@
 
 #define MAKE_DUPL_VARS() \
     bool DPL = Array.D()->duplication; \
-    unsigned int DATA_AT = data->at(0u);
+    unsigned int DATA_AT = data->operator[](0u);
 
 #define IS_EITHER()      (DATA_AT == DUPL_EITH)
 #define IS_DUPLICATION() ((DATA_AT == DUPL_DUPL) & (DPL))
@@ -79,6 +79,7 @@ public:
 
     uint at(uint d) {return data.at(d);};
     uint operator()(uint d) {return data.at(d);};
+    uint operator[](uint d) {return data[d];};
     void reserve(uint x) {return data.reserve(x);};
     void push_back(uint x) {return data.push_back(x);};
     void shrink_to_fit()  {return data.shrink_to_fit();};
@@ -100,7 +101,7 @@ class PhyloRuleDynData;
  * @name Convenient typedefs for Node objects.
  * */
 ///@{
-typedef BArray<uint, NodeData> PhyloArray;
+typedef BArrayDense<uint, NodeData> PhyloArray;
 typedef Counter<PhyloArray, PhyloCounterData > PhyloCounter;
 typedef Counters< PhyloArray, PhyloCounterData> PhyloCounters;
 
@@ -161,16 +162,17 @@ inline void counter_overall_gains(
     {
 
         PHYLO_CHECK_MISSING();
+        
         return 0.0;
 
     };
 
     PHYLO_COUNTER_LAMBDA(tmp_count)
     {
-        IF_MATCHES()
-            return 1.0;
-        
-        return 0.0;
+        IF_NOTMATCHES()
+            return 0.0;
+      
+        return Array.D()->states[i] ? 0.0 : 1.0;
       
     };
     
@@ -199,8 +201,23 @@ inline void counter_gains(
     PHYLO_COUNTER_LAMBDA(tmp_init)
     {
 
-        PHYLO_CHECK_MISSING();
-        return 0.0;
+        IF_NOTMATCHES()
+            return 0.0;
+
+        double ngains = 0.0;
+        auto   k = data->operator[](1u);
+        auto   s = Array.D()->states[k];
+
+        if (s)
+            return 0.0;
+
+        for (auto o = 0u; o < Array.ncol(); ++o)
+        {
+            if (!s && (Array(k,o) == 1u))
+                ngains += 1.0;
+        }
+        
+        return ngains;
 
     };
 
@@ -212,7 +229,7 @@ inline void counter_gains(
             return 0.0;
 
         IF_MATCHES()
-            return (i == data->at(1u)) ? 1.0 : 0.0;
+            return (i == data->operator[](1u)) ? 1.0 : 0.0;
         
         return 0.0;
 
@@ -255,7 +272,7 @@ inline void counter_gains_k_offspring(
     {
 
         // Is this relevant?
-        if (i != data->at(1u))
+        if (i != data->operator[](1u))
             return 0.0;
 
         IF_NOTMATCHES()
@@ -275,7 +292,7 @@ inline void counter_gains_k_offspring(
             }
 
         // Three cases: base on the diff
-        int diff = static_cast<int>(data->at(2u)) - counts + 1;
+        int diff = static_cast<int>(data->operator[](2u)) - counts + 1;
         // (a) counts were 1 below k, then +1
         if (diff == 1)
             return -1.0;
@@ -324,10 +341,10 @@ inline void counter_genes_changing(
 
         // At the beginning, all offspring are zero, so we need to
         // find at least one state = true.
-        for (uint j0 = 0u; j0 < Array.nrow(); ++j0)
+        for (auto s : Array.D()->states)
         {
 
-            if (Array.D()->states[j0]) 
+            if (s) 
                 // Yup, we are loosing a function, so break
                 return static_cast<double>(Array.ncol());
             
@@ -396,19 +413,14 @@ inline void counter_prop_genes_changing(
 
         // At the beginning, all offspring are zero, so we need to
         // find at least one state = true.
-
-        for (uint j0 = 0u; j0 < Array.nrow(); ++j0)
+        for (auto s : Array.D()->states)
         {
-
-            if (Array.D()->states[j0]) 
-                // Yup, we are loosing a function, so break
-                return 1.0; // static_cast<double>(Array.ncol());
-            
+            if (s)
+                return 1.0;
         }
-
+        
         return 0.0;
       
-
     };
 
     PHYLO_COUNTER_LAMBDA(tmp_count)
@@ -417,64 +429,58 @@ inline void counter_prop_genes_changing(
         // Checking the type of event
         IF_NOTMATCHES()
             return 0.0;
+        
+        // Setup
+        bool j_diverges = false;
+        const std::vector< bool > & par_state = Array.D()->states;
 
-        // Case 1: The parent had the function (then probably need to substract one)
-        if (Array.D()->states[i]) {
+        for (unsigned int f = 0u; f < Array.nrow(); ++f)
+        {
 
-            // Need to check the other functions
-            for (uint k = 0u; k < Array.nrow(); ++k)
+            // Was the gene annotation different from the parent?
+            if (par_state[f] != (Array(f,j) == 1u))
+            {
+                j_diverges = true;
+                break;
+            }
+
+        }
+
+
+        bool j_used_to_diverge = false;
+        for (unsigned int f = 0u; f < Array.nrow(); ++f)
+        {
+
+            if (f == i)
+            {
+                if (par_state[f])
+                {
+                    j_used_to_diverge = true;
+                    break;
+                }
+            }
+            else
             {
 
-                if (k != i)
+                if (par_state[f] != (Array(f,j) == 1u))
                 {
-
-                    // Nah, this gene was already different.
-                    if (Array.D()->states[k] && (Array(k, j, false) == 0u))
-                        return 0.0;
-                    else if ((!Array.D()->states[k]) && (Array(k, j, false) == 1u))
-                        return 0.0;
-
+                    j_used_to_diverge = true;
+                    break;
                 }
 
             }
 
-            // Nope, this gene is now matching its parent, so we need to 
-            // take it out from the count of genes that have changed.
-            return -1.0/static_cast<double>(Array.ncol());
-
         }
-        else if (!Array.D()->states[i])
-        {
-            // Case 2: The parent didn't had the function. Probably need to increase
-            // by one.
 
-
-              // Need to check the other functions, where these the same?
-              // if these were the same, then we are facing a gene who is changing.
-              for (uint k = 0u; k < Array.nrow(); ++k)
-              {
-
-                  if (k != i)
-                  {
-                      // Nah, this gene was already different.
-                      if (Array.D()->states[k] && (Array(k, j, false) == 0u))
-                          return 0.0;
-                      else if ((!Array.D()->states[k]) && (Array(k, j, false) == 1u))
-                          return 0.0;
-                  }
-                  
-              }
-
-              // Nope, this gene is now matching its parent, so we need to 
-              // take it out from the count of genes that have changed.
-              return 1.0/static_cast<double>(Array.ncol());
-
-        } else
-            throw std::logic_error(
-                "Reach the end of -counter_prop_genes_changing-. This shouldn't happen!"
-                );
-
-        return 0.0;
+        // Case 1: j hasn't changed
+        if ((!j_used_to_diverge & !j_diverges) | (j_used_to_diverge & j_diverges))
+            return 0.0;
+        // Case 2: j NOW diverges
+        else if (j_diverges)
+            return 1.0/Array.ncol();
+        // Case 3: j USED to diverge, so no more
+        else
+            return -1.0/Array.ncol();
 
     };
     
@@ -548,35 +554,25 @@ inline void counter_maxfuns(
     PHYLO_COUNTER_LAMBDA(tmp_init)
     {
 
-      PHYLO_CHECK_MISSING();    
+        PHYLO_CHECK_MISSING();    
 
-      if (data->at(0u) == 0u)
-        return static_cast<double>(Array.ncol());
-      else
-      {
+        IF_NOTMATCHES()
+            return 0.0;
+
 
         double ans = 0.0;
-        for (uint k = 0u; k < Array.ncol(); ++k)
+        for (uint o = 0u; o < Array.ncol(); ++o)
         {
 
-          // How many functions the k-th offspring has
-          uint count = 0u;
-          for (uint l = 0u; l < Array.nrow(); ++l)
-          {
-
-            if (Array(l, k, false) == 1u)
-              ++count;
-
-          }
-
-          if (count >= data->at(0u) && count <= data->at(1u))
-            ans += 1.0;
+            if (Array.rowsum(o) >= data->at(1u))
+                if (Array.rowsum(o) <= data->at(1u))
+                    ans += 1.0;
 
         }
 
         return ans;
 
-      }
+      
 
     };
     
@@ -585,21 +581,20 @@ inline void counter_maxfuns(
 
         IF_NOTMATCHES()
             return 0.0;
-        
-        uint counts = 1u;
-        for (uint k = 0u; k < Array.nrow(); ++k)
-            if (k != j)
-                if (Array(k, j, false) == 1u)
-                    ++counts;
 
-        // Reached the lower bound
-        if (counts == data->at(1u))
+        int count = Array.colsum(j);
+        int ub    = data->operator[](2u);
+        
+        // It now matches
+        if (count == static_cast<int>(data->operator[](1u)))
             return 1.0;
-          // Went outside of the upper bound
-        else if (counts == (data->at(2u) + 1u))
+
+        // Was within, but now outside
+        if (count > ub && ((count - ub) == 1))
             return -1.0;
-        else
-            return 0.0;
+
+        // Otherwise nothing happens.
+        return 0.0;
 
     };
 
@@ -620,7 +615,8 @@ inline void counter_maxfuns(
  * @brief Total count of losses for an specific function.
  */
 inline void counter_loss(
-    PhyloCounters * counters, std::vector<uint> nfun,
+    PhyloCounters * counters,
+    std::vector<uint> nfun,
     unsigned int duplication = DEFAULT_DUPLICATION
 )
 {
@@ -634,7 +630,7 @@ inline void counter_loss(
         if (!Array.D()->states[i])
             return 0.0;
         
-        return (i == data->at(1u)) ? -1.0 : 0.0;
+        return (i == data->operator[](1u)) ? -1.0 : 0.0;
 
     };
     
@@ -646,10 +642,12 @@ inline void counter_loss(
         IF_NOTMATCHES()
             return 0.0;
         
-        if (!Array.D()->states[i])
+        auto f = data->operator[](1u);
+
+        if (!Array.D()->states[f])
             return 0.0;
         
-        return Array.D()->states[data->at(1u)]? Array.ncol() : 0.0;
+        return static_cast<double>(Array.ncol());
 
     };
     
@@ -745,15 +743,15 @@ inline void counter_subfun(
             return 0.0;
         
         // Are we looking at either of the relevant functions?
-        if ((data->at(1u) != i) && (data->at(2u) != i))
+        if ((data->operator[](1u) != i) && (data->operator[](2u) != i))
             return 0.0;
         
         // Are A and B existant? if not, no change
-        if (!Array.D()->states[data->at(1u)] | !Array.D()->states[data->at(2u)])
+        if (!Array.D()->states[data->operator[](1u)] | !Array.D()->states[data->operator[](2u)])
             return 0.0;
         
         // Figuring out which is the first (reference) function
-        uint other = (i == data->at(1u))? data->at(2u) : data->at(1u);
+        uint other = (i == data->operator[](1u))? data->operator[](2u) : data->operator[](1u);
         double res = 0.0;
         // There are 4 cases: (first x second) x (had the second function)
         if (Array(other, j, false) == 1u)
@@ -830,8 +828,8 @@ inline void counter_cogain(
         IF_NOTMATCHES()
             return 0.0;
 
-        auto d1 = data->at(1u);
-        auto d2 = data->at(2u);
+        auto d1 = data->operator[](1u);
+        auto d2 = data->operator[](2u);
       
         // Is the function in scope relevant?
         if ((i != d1) && (i != d2))
@@ -873,7 +871,7 @@ inline void counter_cogain(
 }
 
 // -----------------------------------------------------------------------------
-/**@brief Longest branch mutates (either by gain or by loss) */
+/** @brief Longest branch mutates (either by gain or by loss) */
 inline void counter_longest(
     PhyloCounters * counters,
     unsigned int duplication = DEFAULT_DUPLICATION
@@ -886,34 +884,93 @@ inline void counter_longest(
         IF_NOTMATCHES()
             return 0.0;
 
-        // Only relevant if the 
-        double res = 0.0;
-        if (Array.D()->states[i])
+        // Figuring out which match
+        std::vector< bool> is_longest(Array.ncol(), false);
+        bool j_mutates = false;
+        int nmutate = 0;
+        int nmutate_longest = 0;
+
+        auto states  = Array.D()->states;
+        
+        for (auto off = 0u; off < Array.ncol(); ++off)
         {
-            
-            for (auto& off : *data)
-                if (off == j)
+
+            // On the fly, figuring out if it is longest
+            for (auto & l : *data)
+                if (l == off)
+                    is_longest[off] = true;
+
+            for (auto f = 0u; f < Array.nrow(); ++f)
+            {
+                if ((Array(f, off) == 1u) != states[f])
                 {
+                    
+                    // If it happens that j != off and is not longest
+                    // then return 0 (a not longest was mutating prev)
+                    if (is_longest[off] && (off != j))
+                        return 0.0;
 
-                    res -= 1.0;
+                    if (off == j)
+                        j_mutates = true;
+
+                    if (is_longest[j])
+                        nmutate_longest++;
+                    else
+                        nmutate++;
+
                     break;
-
                 }
-            
-        } else {
-            
-            for (auto& off : *data)
-                if (off == j)
-                {
 
-                    res += 1.0;
-                    break;
+            }
+        }
 
-                }
-            
+        // There was already more than one in difference
+        // so nothing to change
+        if (std::fabs(nmutate - nmutate_longest) > 1)
+            return 0.0;
+
+        // Figuring out previously
+        bool j_mutates_prev = false;
+        for (auto f = 0u; f < Array.nrow(); ++f)
+        {
+            // Checking the previous function... was it
+            // different before?
+            if ((f == i) && states[i])
+            {
+                j_mutates_prev = true;
+                break;
+            }
+            else if ((Array(f, j) == 1u) != states[f])
+            {
+                j_mutates_prev = true;
+                break;
+            }
+
+        }
+
+        // Adjusting the previous count
+        auto nmutate_prev         = nmutate;
+        auto nmutate_longest_prev = nmutate_longest;
+        if (j_mutates & !j_mutates_prev)
+        {
+            if (is_longest[j])
+                nmutate_longest_prev--;
+            else
+                nmutate_prev--;
+        }
+        else if (!j_mutates & j_mutates)
+        {
+            if (is_longest[j])
+                nmutate_longest_prev++;
+            else
+                nmutate_prev++;
+
         }
         
-        return res;
+        // Just compute the change statistic directly
+        return
+            ( ((nmutate == 0) & (nmutate_longest > 0)) ? 1.0 : 0.0 ) +
+            ( ((nmutate_prev == 0) & (nmutate_longest_prev > 0)) ? 1.0 : 0.0 );
 
     };
     
@@ -958,16 +1015,16 @@ inline void counter_longest(
         
         // Starting the counter, since all in zero, then this will be equal to
         // the number of functions in 1 x number of longest branches
-        double res = 0.0;
         for (uint ii = 0u; ii < Array.nrow(); ++ii)
         {
             
             if (Array.D()->states[ii])
-                res += (1.0 * data->size());
+                return (1.0 * static_cast<double>(data->size()));
 
         }
         
-        return res;
+        return 0.0;
+
     };
     
     counters->add_counter(
@@ -1002,17 +1059,17 @@ inline void counter_neofun(
             return 0.0;
         
         // Is the function in scope relevant?
-        if ((i != data->at(1u)) && (i != data->at(2u)))
+        if ((i != data->operator[](1u)) && (i != data->operator[](2u)))
             return 0.0;
         
         // Checking if the parent has both functions
-        if (!Array.D()->states[data->at(1u)] && !Array.D()->states[data->at(2u)]) 
+        if (!Array.D()->states[data->operator[](1u)] && !Array.D()->states[data->operator[](2u)]) 
             return 0.0;
-        else if (Array.D()->states[data->at(1u)] && Array.D()->states[data->at(2u)])
+        else if (Array.D()->states[data->operator[](1u)] && Array.D()->states[data->operator[](2u)])
             return 0.0;
         
         // Figuring out which is the first (reference) function
-        uint other = (i == data->at(1u))? data->at(2u) : data->at(1u);
+        uint other = (i == data->operator[](1u))? data->operator[](2u) : data->operator[](1u);
         double res = 0.0;
         
         if (Array.is_empty(other, j, false))
@@ -1087,8 +1144,8 @@ inline void counter_neofun_a2b(
         IF_NOTMATCHES()
             return 0.0;
         
-        const uint & funA = data->at(1u);
-        const uint & funB = data->at(2u);
+        const uint & funA = data->operator[](1u);
+        const uint & funB = data->operator[](2u);
         
         // Checking the parent has funA but not funb
         if ((!Array.D()->states[funA]) | Array.D()->states[funB]) 
@@ -1205,8 +1262,8 @@ inline void counter_co_opt(
         IF_NOTMATCHES()
             return 0.0;
         
-        const unsigned int funA = data->at(1u);
-        const unsigned int funB = data->at(2u);
+        const unsigned int funA = data->operator[](1u);
+        const unsigned int funB = data->operator[](2u);
 
         // If the change is out of scope, then nothing to do
         if ((i != funA) & (i != funB))
@@ -1259,13 +1316,13 @@ inline void counter_co_opt(
         if (data->size() != 3u)
             throw std::length_error("The counter data should be of length 2.");
 
-        if (data->at(0u) == data->at(1u))
+        if (data->operator[](1u) == data->operator[](2u))
             throw std::logic_error("Functions A and B should be different from each other.");
 
-        if (data->at(0u) >= Array.nrow())
+        if (data->operator[](1u) >= Array.nrow())
             throw std::length_error("Function A in counter out of range.");
 
-        if (data->at(1u) >= Array.nrow())
+        if (data->operator[](2u) >= Array.nrow())
             throw std::length_error("Function B in counter out of range.");
 
         return 0.0;
@@ -1307,14 +1364,12 @@ inline void counter_k_genes_changing(
 
         // At the beginning, all offspring are zero, so we need to
         // find at least one state = true.
-        unsigned int count = 0u;
-        for (uint j0 = 0u; j0 < Array.nrow(); ++j0)
-            if (Array.D()->states[j0]) 
-                count++;
+        for (auto s : Array.D()->states)
+            if (s)
+                return Array.ncol() == data->operator[](1u) ? 1.0 : 0.0;
 
-        return (count == data->at(1u)) ? 1.0: 0.0;
+        return data->operator[](1u) == 0 ? 1.0 : 0.0;
       
-
     };
 
     PHYLO_COUNTER_LAMBDA(tmp_count)
@@ -1324,72 +1379,78 @@ inline void counter_k_genes_changing(
         IF_NOTMATCHES()
             return 0.0;
         
-        // Setup
-        int count = 0u; ///< How many genes diverge the parent
-        int k     = static_cast<int>(data->at(1u));
-        std::vector< bool > par_state = Array.D()->states;
+        // How many genes diverge the parent
+        int              count = 0; 
+        bool        j_diverges = false;
+        const auto & par_state = Array.D()->states;
 
-        // Comparing the focal gene with the parent. Whas this already
-        // different?
-        bool j_matches = true;
-        for (unsigned int f = 0u; f < Array.nrow(); ++f)
+        int k = static_cast<int>(data->operator[](1u));
+
+        for (auto o = 0u; o < Array.ncol(); ++o)
         {
-            if (f == i)
-                continue;
 
-            if (par_state[f] != Array(f, j))
+            for (auto f = 0u; f < Array.nrow(); ++f)
             {
-                j_matches = false;
-                break;
+
+                // Was the gene annotation different from the parent?
+                if ((Array(f, o) == 1u) != par_state[f])
+                {
+
+                    if (o == j)
+                        j_diverges = true;
+
+                    count++;
+                    break;
+
+                }
+
             }
+
         }
 
-        // If there was a function other than this not matching, then
-        // there's no change.
-        if (!j_matches)
+        // Counts will only be relevant if (count - k) > 1. Otherwise,
+        // having the j gene changed is not relevant
+        if (std::abs(count - k) > 1)
             return 0.0;
 
-        // Otherwise, if the parent doesn't have the function, then it means
-        // that this gene now diverges (so we increase the counter).
-        if (!par_state[i])
-            count++;
-
-        // Iterating through genes
-        for (unsigned int g = 0u; g < Array.ncol(); ++g) 
+        // Did it used to diverge?
+        bool j_used_to_diverge = false;
+        for (auto f = 0u; f < Array.nrow(); ++f)
         {
 
-            // We already did j
-            if (g == j)
-                continue;
-
-            // Iterating through the function
-            bool changes = false;
-            for (unsigned int f = 0u; f < Array.nrow(); ++f)
+            if (f == i)
             {
-                
-                if ((Array(f, g) == 1u) != par_state[f])
+                if (par_state[f]) // Since it is now true, it used to diverge
                 {
-                    changes = true;
+                    j_used_to_diverge = true;
+                    break;
+                }
+            }
+            else
+            {
+
+                if (par_state[f] != (Array(f,j) == 1u))
+                {
+                    j_used_to_diverge = true;
                     break;
                 }
 
             }
 
-            // If the branch has changed
-            if (!changes)
-                ++count;
-
         }
 
-        // If it matches, then we are now swithing to 1
-        if (count == k) 
-            return 1.0;
-        // Otherwise, if the difference is only one, then it means
-        // that we were matching
-        else if (std::fabs(count - k) < 1.0)
-            return -1.0;
-        else
+        auto count_prev = count;
+        // Case 1: j hasn't changed
+        if ((!j_used_to_diverge & !j_diverges) | (j_used_to_diverge & j_diverges))
             return 0.0;
+        // Case 2: j NOW diverges
+        else if (j_diverges)
+            count_prev--;
+        // Case 3: j USED to diverge
+        else
+            count_prev++;
+
+        return (count == k ? 1.0 : 0.0) - (count_prev == k ? 1.0 : 0.0);
 
     };
     
@@ -1400,7 +1461,124 @@ inline void counter_k_genes_changing(
         std::to_string(k) + " genes changing" + get_last_name(duplication)
     );
   
-}   
+}
+
+// -----------------------------------------------------------------------------
+/**
+ * @brief Indicator function. Equals to one if \f$k\f$ genes changed and zero
+ * otherwise.
+ */
+inline void counter_less_than_p_prop_genes_changing(
+    PhyloCounters * counters,
+    double p,
+    unsigned int duplication = DEFAULT_DUPLICATION
+)
+{
+  
+    PHYLO_COUNTER_LAMBDA(tmp_init)
+    {
+        
+        PHYLO_CHECK_MISSING();
+
+        IF_NOTMATCHES()
+            return 0.0;
+
+        for (auto s : Array.D()->states)
+            if (s)
+                return data->operator[](1u) == 100 ? 1.0 : 0.0;
+
+        // Only one if it was specified it was zero
+        return 1.0;
+      
+    };
+
+    PHYLO_COUNTER_LAMBDA(tmp_count)
+    {
+
+        // Checking the type of event
+        IF_NOTMATCHES()
+            return 0.0;
+        
+        // Setup
+        double count = 0.0; ///< How many genes diverge the parent
+
+        bool j_diverges = false;
+        const std::vector< bool > & par_state = Array.D()->states;
+
+        for (unsigned int o = 0u; o < Array.ncol(); ++o)
+        {
+
+            for (unsigned int f = 0u; f < Array.nrow(); ++f)
+            {
+
+                // Was the gene annotation different from the parent?
+                if ((Array(f, o) == 1u) != par_state[f])
+                {
+
+                    if (o == j)
+                        j_diverges = true;
+
+                    count += 1.0;
+                    break;
+
+                }
+
+            }
+
+        }
+
+
+        bool j_used_to_diverge = false;
+        for (unsigned int f = 0u; f < Array.nrow(); ++f)
+        {
+
+            if (f == i)
+            {
+                if (par_state[f])
+                {
+                    j_used_to_diverge = true;
+                    break;
+                }
+            }
+            else
+            {
+
+                if (par_state[f] != (Array(f,j) == 1u))
+                {
+                    j_used_to_diverge = true;
+                    break;
+                }
+
+            }
+
+        }
+
+        auto count_prev = count;
+        // Case 1: j hasn't changed
+        if ((!j_used_to_diverge & !j_diverges) | (j_used_to_diverge & j_diverges))
+            return 0.0;
+        // Case 2: j NOW diverges
+        else if (j_diverges)
+            count_prev -= 1.0;
+        // Case 3: j USED to diverge
+        else
+            count_prev += 1.0;
+
+        double ncol = static_cast<double>(Array.ncol());
+        double p    = static_cast<double>(data->operator[](1u)) / 100.0;
+
+        return ((count/ncol) <= p ? 1.0 : 0.0) - ((count_prev/ncol) <= p ? 1.0 : 0.0);
+
+    };
+    
+    counters->add_counter(
+        tmp_count, tmp_init,
+        new PhyloCounterData({duplication, static_cast<uint>(p * 100)}),
+        true,
+        std::to_string(p) + " prop genes changing" + get_last_name(duplication)
+    );
+  
+}
 
 ///@}
 
@@ -1454,10 +1632,12 @@ inline void rule_dyn_limit_changes(
         unsigned int rule_type = data->duplication;
         if (rule_type != DUPL_EITH)
         {
+
             if (Array.D()->duplication & (rule_type != DUPL_DUPL))
                 return true;
             else if (!Array.D()->duplication & (rule_type != DUPL_SPEC))
                 return true;
+                
         }
 
         if (data->counts->operator[](data->pos) < data->lb)
