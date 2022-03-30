@@ -1,0 +1,421 @@
+---
+title: "Dyad Census - Imaginary Network Motifs"
+output: html_document
+---
+
+This analyzes 4 CSS data sets using a dyad census approach.
+
+```{r message = FALSE, warning = FALSE}
+library(sna)
+library(imaginarycss)
+library(ergmito)
+library(netdiffuseR)
+library(netplot)
+library(ggplot2)
+library(grid)
+library(gridExtra)
+library(xtable)
+set.seed(1231)
+```
+
+## Dyad census approach
+
+```{r dyad censue}
+load('../data/data.list.Rdata')
+# 1. Silicon System Advice Seeking
+# 2. Silicon Systems Friendship
+# 3. High Tech Managers Advice Seeking
+# 4. High Tech Managers Friendship
+# 5. Italian University Advice Seeking
+# 6. Italian University Friendship
+# 7. Pacific Distributors Advice Seeking
+# 8. Pacific Distributors Friendship
+
+#  first dimension is the informant, the second is the sender, and the third is the receiver
+
+sili_ad <- data.list[1][[1]]
+sili_fr <- data.list[2][[1]]
+high_ad <- data.list[3][[1]]
+high_fr <- data.list[4][[1]]
+ital_ad <- data.list[5][[1]]
+ital_fr <- data.list[6][[1]]
+paci_ad <- data.list[7][[1]]
+paci_fr <- data.list[8][[1]]
+
+blockdiagonalize(lapply(1:33,function(x) sili_ad[x,,]))
+
+# plot arrangement
+# grid.arrange(grobs = lapply(1:10, function(ii) 
+#   grobTree(rectGrob(gp=gpar(fill=ii, alpha=0.5)), textGrob(ii))),
+#   layout_matrix = rbind(c(1,2,3),
+#                         c(1,2,3),
+#                         c(4,5,7),
+#                         c(4,6,7),
+#                         c(8,9,10),
+#                         c(8,9,10)))
+```
+
+```{r BNAM}
+css_fr <- ital_fr
+css_ad <- ital_ad
+# mat_size <- nrow(sili_fr)
+mat_size <- nrow(css_fr)
+np <- matrix(0.5,mat_size,mat_size)  # 21 x 21 matrix of Bernoulli parameters (since n=21)
+emp <- sapply(c(1,11),rep,mat_size)  # Beta(1,11) priors for false negatives
+epp <- sapply(c(1,11),rep,mat_size)  # Beta(1,11) priors for false positives
+# hist(rbeta(100000,3,11))  # This gives you a sense of what the priors look like!
+
+# Now, let's take some posterior draws for the friendship network, using 
+# various models (warning: slow)
+# fr.post.fixed<-bbnam.fixed(friendship_nets,nprior=np,em=3/(3+11),ep=3/(3+11))
+# fr.post.pooled<-bbnam.pooled(friendship_nets,nprior=np,em=emp[1,],ep=epp[1,])
+# fr.post.actor <- bbnam.actor(lapply(1:mat_size,function(x) as.network(sili_fr[x,,])),nprior=np,em=emp,ep=epp)
+fr.post.actor <- bbnam.actor(lapply(1:mat_size,function(x) as.network(css_fr[x,,])),nprior=np,em=emp,ep=epp)
+#summary(fr.post.actor)
+# plot(fr.post.actor)
+# gplot(as.network(apply(fr.post.actor$net, c(2, 3), median)))
+
+# advice
+# ad.post.actor <- bbnam.actor(lapply(1:mat_size,function(x) as.network(sili_ad[x,,])),nprior=np,em=emp,ep=epp)
+ad.post.actor <- bbnam.actor(lapply(1:mat_size,function(x) as.network(css_ad[x,,])),nprior=np,em=emp,ep=epp)
+# gplot(as.network(apply(ad.post.actor$net, c(2, 3), median)))
+
+#
+ad.true <- as.network(apply(ad.post.actor$net, c(2, 3), median))
+fr.true <- as.network(apply(fr.post.actor$net, c(2, 3), median))
+```
+
+```{r descriptive stats}
+table <- data.frame(Network = c('HM AFN','HM PFN', 'HM AANs','HM PANs'),
+                    People = c(network.size(fr.true),paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])),network.size)),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])),network.size)),2)),network.size(ad.true),paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])),network.size)),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])),network.size)),2))),
+                    Edges = c(network.edgecount(fr.true),paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])),network.edgecount)),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])),network.edgecount)),2)),network.edgecount(ad.true),paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])),network.edgecount)),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])),network.edgecount)),2))),
+                    Density = c(round(network.density(fr.true),2),paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])),network.density)),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])),network.density)),2)),round(network.density(ad.true),2),paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])),network.density)),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])),network.density)),2))),
+                    Mutual = c(dyad.census(fr.true)[[1,1]],paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])), function(x) dyad.census(x)[[1,1]])),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])), function(x) dyad.census(x)[[1,1]])),2)),dyad.census(ad.true)[[1,1]],paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])), function(x) dyad.census(x)[[1,1]])),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])), function(x) dyad.census(x)[[1,1]])),2))),
+                    Asymmetric = c(dyad.census(fr.true)[[1,2]],paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])), function(x) dyad.census(x)[[1,2]])),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])), function(x) dyad.census(x)[[1,2]])),2)),dyad.census(ad.true)[[1,2]],paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])), function(x) dyad.census(x)[[1,2]])),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])), function(x) dyad.census(x)[[1,2]])),2))),
+                    Null = c(dyad.census(fr.true)[[1,3]],paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])), function(x) dyad.census(x)[[1,3]])),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])), function(x) dyad.census(x)[[1,3]])),2)),dyad.census(ad.true)[[1,3]],paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])), function(x) dyad.census(x)[[1,3]])),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])), function(x) dyad.census(x)[[1,3]])),2))))
+
+table3 <- table
+table <- do.call('rbind',list(table1,table2,table3,table4))
+```
+
+
+```{r network plot}
+g_ad <- igraph::graph_from_adjacency_matrix(as.matrix(ad.true))
+layout <- igraph::layout_with_dh(g_ad)
+nplot(g_ad,
+        layout = layout,
+        vertex.label = NULL,
+        edge.curvature = pi/4,
+        edge.width = .8)
+g_fr <- igraph::graph_from_adjacency_matrix(as.matrix(fr.true))
+ad_1 <- as.network(css_ad[1,,])
+fr_1 <- as.network(css_fr[1,,])
+fr_fp <- igraph::graph_from_adjacency_matrix(
+  ifelse( (as.matrix(fr.true) - as.matrix(fr_1)) == -1,1,0)
+)
+fr_fn <- igraph::graph_from_adjacency_matrix(
+  ifelse( (as.matrix(fr.true) - as.matrix(fr_1)) == 1,1,0)
+)
+ad_fp <- igraph::graph_from_adjacency_matrix(
+  ifelse( (as.matrix(ad.true) - as.matrix(ad_1)) == -1,1,0)
+)
+ad_fn <- igraph::graph_from_adjacency_matrix(
+  ifelse( (as.matrix(ad.true) - as.matrix(ad_1)) == 1,1,0)
+)
+# png(file = 'netplot_v1.png')
+gviz <- grid.arrange(
+  arrangeGrob(nplot(
+        g_fr,
+        layout = layout,
+        vertex.label = NULL,
+        dge.curvature = pi/4,
+        edge.width = .8,
+        edge.col = ~ego(alpha=0, col = '#e88e2d') + alter(alpha = .7)), left = 'Friendship Network', top='Actual'),
+  arrangeGrob(nplot(fr_1,
+        layout = layout,
+        vertex.label = NULL,
+        edge.curvature = pi/4,
+        edge.line.lty = 3,
+        edge.width = .8,
+        edge.col = ~ego(alpha=0, col = '#e88e2d') + alter(alpha = .7)),top='Perceived by ID 1'),
+  arrangeGrob(nplot(fr_fp,
+        layout = layout,
+        vertex.label = NULL,
+        edge.curvature = pi/4,
+        edge.width = .8,
+        edge.col = ~ego(alpha=0, col = '#55B748') + alter(alpha = .7)),top='False Positive'),
+  arrangeGrob(nplot(fr_fn,
+        layout = layout,
+        vertex.label = NULL,
+        edge.curvature = pi/4,
+        edge.col = ~ego(alpha=0, col = '#DB2B27') + alter(alpha = .7)),top='False Negative'),
+  arrangeGrob(nplot(g_ad,
+        layout = layout,
+        vertex.label = NULL,
+        edge.curvature = pi/4,
+        edge.width = .8),left = 'Advice Network'),
+  arrangeGrob(nplot(ad_1,
+        layout = layout,
+        vertex.label = NULL,
+        edge.curvature = pi/4,
+        edge.line.lty = 3,
+        edge.width = .8)),
+  arrangeGrob(nplot(ad_fp,
+        layout = layout,
+        vertex.label = NULL,
+        edge.curvature = pi/4,
+        edge.width = .8,
+        edge.col = ~ego(alpha=0, col = '#55B748') + alter(alpha = .7))),
+  arrangeGrob(nplot(ad_fn,
+        layout = layout,
+        edge.curvature = pi/4,
+        edge.width = .8,
+        edge.col = ~ego(alpha=0, col = '#DB2B27') + alter(alpha = .7))),
+  ncol = 4, nrow = 2
+)
+# print(plot(gviz))
+# ggsave("netplot_v3.png",plot = gviz, width = 450, height = 250, units = 'mm') # take too long time to save it...
+# dev.off()
+```
+
+```{r rewiring}
+rewiring_css <- function(graph, nties = NULL){
+  
+  if (!length(nties))
+    nties <- sapply(graph, sum)
+  
+  graph[2:length(graph)] <- lapply(2:length(graph), function(i) {
+    as.matrix(rewire_graph(graph[[i]], p = 20 * nties[i], algorithm = "swap"))
+    })
+  
+  graph <- blockdiagonalize(graph)
+  
+  graph <- new_barry_graph(as.matrix(graph), n = length(nties)-1)
+
+  # out <- count_recip_errors(graph)
+  # out$name <- gsub("[(][0-9]+[)]", "", out$name)
+  # Census
+  census <- count_imaginary_census(graph)
+  census_tab <- data.frame(name = gsub("\\s\\([0-9]+\\)$", "", census$name, perl = TRUE),
+  count = census$value)
+  out <- aggregate(count ~ name, data = census_tab, mean)
+  return(out)
+}
+
+#' Rewiring algorithm preserving degree-sequence
+#' 
+#' @param nsim Integer. Number of simulations
+#' @param nets A list of CSS networks; the first one the original.
+#' @param ncores Integer. Number of cores to run the test (parallel computing).
+#' @param seed Integer. Seed for Pseudo RNG (passed to parallel::clusterSetRNGStream)
+rewire_test <- function(
+  nets,
+  nsim   = 1000,
+  ncores = 4,
+  seed   = sample.int(.Machine$integer.max, 1)
+  ) {
+
+  # Preparing the data
+  graph <- lapply(nets, as.matrix)
+  graph[2:length(graph)] <- lapply(graph[2:length(graph)], methods::as, "dgCMatrix")
+  nties <- sapply(graph, sum)
+
+  # Setting up the cluster
+  cl <- parallel::makePSOCKcluster(ncores)
+  on.exit(parallel::stopCluster(cl)) # The cluster will stop automatically
+  
+  parallel::clusterSetRNGStream(cl, seed)
+  
+  parallel::clusterEvalQ(cl, {
+    library(netdiffuseR)
+    library(ergmito)
+    library(imaginarycss)
+  })
+  
+  parallel::clusterExport(cl, c("graph", "nties"), envir = environment())
+  parallel::clusterExport(cl, "rewiring_css", envir = .GlobalEnv)
+  
+  # Making the call
+  ans <- parallel::parLapply(cl, X = 1:nsim, fun = function(i) {
+    rewiring_css(graph)
+  })
+  
+  ans <- do.call(rbind, ans)
+  return(ans)
+}
+
+# calculate empirical error rates
+emp_count <- function(nets = nets){
+  net0 <- new_barry_graph(as.matrix(blockdiagonalize(nets)),
+                                  n = length(nets)-1)
+  # ans0 <- count_recip_errors(net0)
+  # ans0$name <- gsub("[(][0-9]+[)]", "", ans0$name)
+  census <- count_imaginary_census(net0)
+  census_tab <- data.frame(name = gsub("\\s\\([0-9]+\\)$", "", census$name, perl = TRUE),
+  count = census$value)
+  return(census_tab)
+  # ans0 <- aggregate(count ~ name, data = census_tab, mean)
+  # return(ans0)
+}
+
+# set BNAM as a true graph
+# friendship 
+# nets <- lapply(advice_nets, as.matrix) # 
+nets <- c(list(fr.true), lapply(1:mat_size,function(x) as.network(css_fr[x,,])))
+# nets <- c(list(nets[[1]]), nets)
+
+fr.ans0 <- emp_count(nets = nets)
+fr.ans0$id <- with(fr.ans0, ave(rep(1, nrow(fr.ans0)), name, FUN = seq_along))
+fr.ans <- rewire_test(nsim = 2000,
+                        nets = nets)
+
+# advice
+nets <- c(list(ad.true), lapply(1:mat_size,function(x) as.network(css_ad[x,,])))
+ad.ans0 <- emp_count(nets = nets)
+ad.ans0$id <- with(ad.ans0, ave(rep(1, nrow(ad.ans0)), name, FUN = seq_along))
+
+set.seed(1231) # For reproducibility
+ad.ans <- rewire_test(nsim = 2000,
+                        nets = nets)
+```
+
+```{r Bootstrap Hypothesis Testing}
+bootstrap_testing <- function(meanobs,meansim){
+  # n <- length(meanobs)
+  ans <- vector("numeric",4)
+  ans[3] <- mean(meanobs)
+  ans[2] <- 2*min(mean(meansim <= ans[3]),
+                  mean(meansim >ans[3]))
+  ans[4] <- mean(meansim)
+  ans[5] <- sd(meansim)
+  # z-score
+  ans[1] <- (ans[3]-ans[4])/ans[5]
+  return(ans)
+}
+
+# id = c(0,20)
+# class = c(1,5)
+ind_test <- function(id = 0, class = 1, ans, ans0){
+  ans$class <- as.numeric(as.factor(ans$name))
+  ans0$class <- as.numeric(as.factor(ans0$name))
+  # sapply(ans,levels)
+  # sapply(ans0,levels)
+  ans[,c('name','class')] # check which name corresponds to class numeric
+  # define meansim as a simulated values vector
+  meansim <- ans[ans$id==id & ans$class==class,'count']
+  # define meanobs as a observed value
+  meanobs <- ans0[ans0$id==id & ans0$class==class,'count']
+  
+  # now run the bootstrap hypothesis test
+  ans <- bootstrap_testing(meanobs = meanobs, meansim = meansim)
+  return(ans)
+}
+
+# aggregated class test
+agg_test <- function(class = 1, ans, ans0){
+  ans$class <- as.numeric(as.factor(ans$name))
+  ans0$class <- as.numeric(as.factor(ans0$name))
+  meanobs <- ans0[ans0$class==class,'count']
+  meansim <- ans[ans$class==class,'count']
+  
+  # now run the bootstrap hypothesis test
+  out <- bootstrap_testing(meanobs = meanobs, meansim = meansim)
+  return(out)
+}
+
+
+# ind_test(id = 20, class = 5, ans = fr.ans, ans0 = fr.ans0)
+t(sapply(c(0:20),ind_test,1,fr.ans,fr.ans0))
+fr.table <- cbind(t(sapply(c(0:20),ind_test,1,fr.ans,fr.ans0)),
+      t(sapply(c(0:20),ind_test,2,fr.ans,fr.ans0)),
+      t(sapply(c(0:20),ind_test,3,fr.ans,fr.ans0)),
+      t(sapply(c(0:20),ind_test,4,fr.ans,fr.ans0)),
+      t(sapply(c(0:20),ind_test,5,fr.ans,fr.ans0)))
+colnames(fr.table) <- rep(c('Z' , 'p','obs','M','SD'),5)
+# the following function comes from https://stackoverflow.com/questions/13984470/possible-to-create-latex-multicolumns-in-xtable
+construct_header <- function(df, grp_names, span, align = "c", draw_line = T) {
+  if (length(align) == 1) align <- rep(align, length(grp_names))
+  if (!all.equal(length(grp_names), length(span), length(align)))
+    stop("grp_names and span have to have the same length!")
+
+  if (ncol(df) < sum(span)) stop("Span has to be less or equal to the number of columns of df") 
+
+  header <- mapply(function(s, a, grp) sprintf("\\multicolumn{%i}{%s}{%s}", s, a, grp),
+                   span, align, grp_names)
+  header <- paste(header, collapse = " & ")
+  header <- paste0(header, " \\\\")
+
+  if (draw_line) {
+    # where do we span the lines:
+    min_vals <- c(1, 1 + cumsum(span)[1:(length(span) - 1)])
+    max_vals <- cumsum(span)
+    line <- ifelse(grp_names == "", "", 
+                   sprintf("\\cmidrule(lr){%i-%i}", min_vals, max_vals))
+    line <- paste(line[line != ""], collapse = " ")
+
+    header <- paste0(header, "  ", line, "\n  ")
+  }
+
+  addtorow <- list(pos = list(-1, -1, nrow(df)),
+                   command = c("\\hline\n  ", header, "\\hline\n  "))
+  return(addtorow)
+}
+
+a_header <- construct_header(
+  fr.table,
+  grp_names = c('','(1) N-AC','(2) P-FP','(3) C-FN','(4) P-FN','(5) A-AC',
+                '(6) M-F','(7) P-FP','(8) C-FN','(9) P-FN','(10) M-AC'),
+  span = c(5,5,5,5,5,5,5,5,5,5,5),
+  align = 'c'
+)
+print(xtable(fr.table), add.to.row = a_header, scalebox = .57)
+# advice table
+ad.table <- cbind(t(sapply(c(0:20),ind_test,1,ad.ans,ad.ans0)),
+      t(sapply(c(0:20),ind_test,2,ad.ans,ad.ans0)),
+      t(sapply(c(0:20),ind_test,3,ad.ans,ad.ans0)),
+      t(sapply(c(0:20),ind_test,4,ad.ans,ad.ans0)),
+      t(sapply(c(0:20),ind_test,5,ad.ans,ad.ans0)))
+colnames(ad.table) <- rep(c('Z','p','obs','M','SD'),5)
+a_header <- construct_header(
+  ad.table,
+  grp_names = c('C-FP','C-FN','M-F','P-FP','P-FN'),
+  span = c(5,5,5,5,5),
+  align = 'c'
+)
+print(xtable(ad.table), add.to.row = a_header, scalebox = .52)
+
+# aggregate test
+agg.table <- cbind(t(sapply(1:10,agg_test,ans = fr.ans, ans0 = fr.ans0)),
+                   t(sapply(1:10,agg_test,ans = ad.ans, ans0 = ad.ans0)))
+agg_header <- construct_header(
+  agg.table,
+  grp_names = c('Friendship Network','Advice Network'),
+  span = c(5,5),
+  align = 'c'
+)
+print(xtable(agg.table), add.to.row = agg_header, scalebox = .57)
+```
+
+```{r result visualization}
+g_hist2 <- function(ans, ans0){
+  ghist2 <- ggplot(data = ans0,
+        aes(x = value, fill=name))+
+  geom_histogram(alpha=.6)+
+  geom_vline(data=ans0 %>% group_by(name) %>% mutate(avg=mean(count)), aes(xintercept = avg, color=name),
+             linetype = 2)+
+  scale_fill_manual(values = c('#55B748','#DB2B27','#FDBF11','#98CF90','#E9807D')) +
+  scale_color_manual(values = c('#55B748','#DB2B27','#FDBF11','#98CF90','#E9807D')) +
+  geom_text(data=ans0 %>% group_by(name) %>% mutate(avg=round(mean(count),2)), mapping = aes(x = Inf, y = Inf, label = paste0('M = ',avg), color = name), hjust = 1.05, vjust = 1.5)+
+  facet_grid(name~.,
+             labeller = labeller(name = as_labeller(c(`Partially false recip (omission) ` = 'P-FN',`Partially false recip (comission) ` = 'P-FP',`Completely false recip (omission) ` = 'C-FN',`Completely false recip (comission) ` = 'C-FP',`Mixed reciprocity errors ` = 'M-F'))))+
+  theme_classic(base_size = 14) +
+  theme(axis.title = element_text(face = "bold"),legend.position = 'none')
+  return(ghist2)
+}
+
+hist_save <- grid.arrange(arrangeGrob(g_hist2(ans = fr.ans,ans0 = fr.ans0), top = '(a) Friendship Network'),
+             arrangeGrob(g_hist2(ans = ad.ans,ans0 = ad.ans0), top = '(b) Advice Network'),
+             ncol = 2, nrow = 1)
+ggsave('hist_agg_v1.png', plot = hist_save, dpi = 800)
+```
+
