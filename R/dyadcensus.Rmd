@@ -12,17 +12,22 @@ library(ergmito)
 library(netdiffuseR)
 library(netplot)
 library(ggplot2)
+library(ggpubr)
 library(grid)
 library(gridExtra)
 library(xtable)
 library(dplyr)
+library(rstatix)
 set.seed(1231)
 ```
 
 ## Dyad census approach
 
 ```{r dyad censue}
-load('../data/data.list.Rdata')
+# load('../data/data.list.Rdata')
+load('../data/test3.RData')
+# load BNAM mixure code
+source('../R/mixture.code.R')
 # 1. Silicon System Advice Seeking
 # 2. Silicon Systems Friendship
 # 3. High Tech Managers Advice Seeking
@@ -72,6 +77,12 @@ epp <- sapply(c(1,11),rep,mat_size)  # Beta(1,11) priors for false positives
 # fr.post.pooled<-bbnam.pooled(friendship_nets,nprior=np,em=emp[1,],ep=epp[1,])
 # fr.post.actor <- bbnam.actor(lapply(1:mat_size,function(x) as.network(sili_fr[x,,])),nprior=np,em=emp,ep=epp)
 fr.post.actor <- bbnam.actor(lapply(1:mat_size,function(x) as.network(css_fr[x,,])),nprior=np,em=emp,ep=epp)
+# graph mixture priors
+fr.mix.actor <- bbnam.mix(lapply(1:mat_size,function(x) as.network(css_fr[x,,])),
+                          nprior = NULL, emprior = c(1, 11), epprior = c(1, 11), 
+                          diag = FALSE, mode = "digraph", reps = 5, draws = 1500, 
+                          burntime = 500, quiet = TRUE, anames = NULL, onames = NULL, 
+                          compute.sqrtrhat = TRUE) 
 #summary(fr.post.actor)
 # plot(fr.post.actor)
 # gplot(as.network(apply(fr.post.actor$net, c(2, 3), median)))
@@ -79,15 +90,25 @@ fr.post.actor <- bbnam.actor(lapply(1:mat_size,function(x) as.network(css_fr[x,,
 # advice
 # ad.post.actor <- bbnam.actor(lapply(1:mat_size,function(x) as.network(sili_ad[x,,])),nprior=np,em=emp,ep=epp)
 ad.post.actor <- bbnam.actor(lapply(1:mat_size,function(x) as.network(css_ad[x,,])),nprior=np,em=emp,ep=epp)
+# graph mixture priors
+ad.mix.actor <- bbnam.mix(lapply(1:mat_size,function(x) as.network(css_ad[x,,])),
+                          nprior = NULL, emprior = c(1, 11), epprior = c(1, 11), 
+                          diag = FALSE, mode = "digraph", reps = 5, draws = 1500, 
+                          burntime = 500, quiet = TRUE, anames = NULL, onames = NULL, 
+                          compute.sqrtrhat = TRUE)
 # gplot(as.network(apply(ad.post.actor$net, c(2, 3), median)))
 
 # extract an actual network and save it
 ad.true <- as.network(apply(ad.post.actor$net, c(2, 3), median))
+ad.mix <- as.network(apply(ad.mix.actor$net, c(2, 3), median))
 fr.true <- as.network(apply(fr.post.actor$net, c(2, 3), median))
+fr.mix <- as.network(apply(fr.mix.actor$net, c(2, 3), median))
 
 # save it as another obj
 # ital_ad.true <- ad.true
 # ital_fr.true <- fr.true
+# ital_ad.mix <- ad.mix
+# ital_fr.mix <- fr.mix
 # sili_ad.true <- ad.true
 # sili_fr.true <- fr.true
 # high_ad.true <- ad.true
@@ -99,12 +120,12 @@ fr.true <- as.network(apply(fr.post.actor$net, c(2, 3), median))
 
 ```{r descriptive stats}
 table <- data.frame(Network = c('HM AFN','HM PFN', 'HM AANs','HM PANs'),
-                    People = c(network.size(fr.true),paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])),network.size)),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])),network.size)),2)),network.size(ad.true),paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])),network.size)),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])),network.size)),2))),
-                    Edges = c(network.edgecount(fr.true),paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])),network.edgecount)),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])),network.edgecount)),2)),network.edgecount(ad.true),paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])),network.edgecount)),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])),network.edgecount)),2))),
-                    Density = c(round(network.density(fr.true),2),paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])),network.density)),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])),network.density)),2)),round(network.density(ad.true),2),paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])),network.density)),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])),network.density)),2))),
-                    Mutual = c(dyad.census(fr.true)[[1,1]],paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])), function(x) dyad.census(x)[[1,1]])),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])), function(x) dyad.census(x)[[1,1]])),2)),dyad.census(ad.true)[[1,1]],paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])), function(x) dyad.census(x)[[1,1]])),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])), function(x) dyad.census(x)[[1,1]])),2))),
-                    Asymmetric = c(dyad.census(fr.true)[[1,2]],paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])), function(x) dyad.census(x)[[1,2]])),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])), function(x) dyad.census(x)[[1,2]])),2)),dyad.census(ad.true)[[1,2]],paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])), function(x) dyad.census(x)[[1,2]])),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])), function(x) dyad.census(x)[[1,2]])),2))),
-                    Null = c(dyad.census(fr.true)[[1,3]],paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])), function(x) dyad.census(x)[[1,3]])),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])), function(x) dyad.census(x)[[1,3]])),2)),dyad.census(ad.true)[[1,3]],paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])), function(x) dyad.census(x)[[1,3]])),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])), function(x) dyad.census(x)[[1,3]])),2))))
+                    People = c(network.size(fr.mix),paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])),network.size)),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])),network.size)),2)),network.size(ad.mix),paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])),network.size)),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])),network.size)),2))),
+                    Edges = c(network.edgecount(fr.mix),paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])),network.edgecount)),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])),network.edgecount)),2)),network.edgecount(ad.mix),paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])),network.edgecount)),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])),network.edgecount)),2))),
+                    Density = c(round(network.density(fr.mix),2),paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])),network.density)),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])),network.density)),2)),round(network.density(ad.mix),2),paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])),network.density)),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])),network.density)),2))),
+                    Mutual = c(dyad.census(fr.mix)[[1,1]],paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])), function(x) dyad.census(x)[[1,1]])),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])), function(x) dyad.census(x)[[1,1]])),2)),dyad.census(ad.mix)[[1,1]],paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])), function(x) dyad.census(x)[[1,1]])),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])), function(x) dyad.census(x)[[1,1]])),2))),
+                    Asymmetric = c(dyad.census(fr.mix)[[1,2]],paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])), function(x) dyad.census(x)[[1,2]])),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])), function(x) dyad.census(x)[[1,2]])),2)),dyad.census(ad.mix)[[1,2]],paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])), function(x) dyad.census(x)[[1,2]])),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])), function(x) dyad.census(x)[[1,2]])),2))),
+                    Null = c(dyad.census(fr.mix)[[1,3]],paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])), function(x) dyad.census(x)[[1,3]])),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_fr[x,,])), function(x) dyad.census(x)[[1,3]])),2)),dyad.census(ad.mix)[[1,3]],paste(round(mean(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])), function(x) dyad.census(x)[[1,3]])),2),'\u00B1',round(sd(sapply(lapply(1:mat_size,function(x) as.network(css_ad[x,,])), function(x) dyad.census(x)[[1,3]])),2))))
 
 # table3 <- table
 # table <- do.call('rbind',list(table1,table2,table3,table4))
@@ -113,28 +134,37 @@ xtable(table,include.rownames = FALSE)
 
 
 ```{r network plot}
-g_ad <- igraph::graph_from_adjacency_matrix(as.matrix(ad.true))
+g_ad <- igraph::graph_from_adjacency_matrix(as.matrix(ad.mix))
 layout <- igraph::layout_with_dh(g_ad)
 nplot(g_ad,
         layout = layout,
         vertex.label = NULL,
         edge.curvature = pi/4,
         edge.width = .8)
-g_fr <- igraph::graph_from_adjacency_matrix(as.matrix(fr.true))
+g_fr <- igraph::graph_from_adjacency_matrix(as.matrix(fr.mix))
 ad_1 <- as.network(css_ad[1,,])
 fr_1 <- as.network(css_fr[1,,])
 fr_fp <- igraph::graph_from_adjacency_matrix(
-  ifelse( (as.matrix(fr.true) - as.matrix(fr_1)) == -1,1,0)
+  ifelse( (as.matrix(fr.mix) - as.matrix(fr_1)) == -1,1,0)
 )
 fr_fn <- igraph::graph_from_adjacency_matrix(
-  ifelse( (as.matrix(fr.true) - as.matrix(fr_1)) == 1,1,0)
+  ifelse( (as.matrix(fr.mix) - as.matrix(fr_1)) == 1,1,0)
 )
 ad_fp <- igraph::graph_from_adjacency_matrix(
-  ifelse( (as.matrix(ad.true) - as.matrix(ad_1)) == -1,1,0)
+  ifelse( (as.matrix(ad.mix) - as.matrix(ad_1)) == -1,1,0)
 )
 ad_fn <- igraph::graph_from_adjacency_matrix(
-  ifelse( (as.matrix(ad.true) - as.matrix(ad_1)) == 1,1,0)
+  ifelse( (as.matrix(ad.mix) - as.matrix(ad_1)) == 1,1,0)
 )
+
+# plot
+viz = nplot(igraph::graph_from_adjacency_matrix(as.matrix(high_fr.mix)),
+        layout = igraph::layout_with_dh(igraph::graph_from_adjacency_matrix(as.matrix(high_fr.mix))),
+        vertex.label = NULL,
+        dge.curvature = pi/4,
+        edge.width = .8,
+        edge.col = ~ego(alpha=0, col = '#e88e2d') + alter(alpha = .7))
+ggsave("highplot_v2.png",plot = viz, width = 100, height =200, units = 'mm')
 # png(file = 'netplot_v1.png')
 gviz <- grid.arrange(
   arrangeGrob(nplot(
@@ -350,6 +380,8 @@ ind_test <- function(id = 0, class = 1, ans, ans0){
   
   # now run the bootstrap hypothesis test
   ans <- bootstrap_testing(meanobs = meanobs, meansim = meansim)
+  ans[6]<- class
+  ans[7] <- id + 1
   return(ans)
 }
 
@@ -367,10 +399,10 @@ agg_test <- function(class = 1, ans, ans0){
 
 
 # ind_test(id = 20, class = 5, ans = fr.ans, ans0 = fr.ans0)
-t(sapply(c(0:20),ind_test,1,fr.ans,fr.ans0))
+t(sapply(c(0:1),ind_test,1,fr.ans,fr.ans0))
 # create a table for individual-level bootstrap hypothesis test by each category
 ind_table <- function(id_len = c(0:20),fr.ans,fr.ans0){
-  fr.table <- cbind(t(sapply(id_len,ind_test,1,fr.ans,fr.ans0)),
+  fr.table <- rbind(t(sapply(id_len,ind_test,1,fr.ans,fr.ans0)),
       t(sapply(id_len,ind_test,2,fr.ans,fr.ans0)),
       t(sapply(id_len,ind_test,3,fr.ans,fr.ans0)),
       t(sapply(id_len,ind_test,4,fr.ans,fr.ans0)),
@@ -380,7 +412,7 @@ ind_table <- function(id_len = c(0:20),fr.ans,fr.ans0){
       t(sapply(id_len,ind_test,8,fr.ans,fr.ans0)),
       t(sapply(id_len,ind_test,9,fr.ans,fr.ans0)),
       t(sapply(id_len,ind_test,10,fr.ans,fr.ans0)))
-  colnames(fr.table) <- rep(c('Z' , 'p','obs','M','SD'),10)
+  colnames(fr.table) <- c('Z' , 'p','obs','M','SD','class','id')
   return(fr.table)
 }
 
@@ -388,33 +420,152 @@ ind_table <- function(id_len = c(0:20),fr.ans,fr.ans0){
 high_fr.table <- ind_table(id_len = c(0:20),
                             fr.ans = high_fr.ans,
                             fr.ans0 = high_fr.ans0)
+# ital friendship data
+ital_fr.table <- ind_table(id_len = c(0:nrow(ital_fr)-1),
+                            fr.ans = ital_fr.ans,
+                            fr.ans0 = ital_fr.ans0)
+# paci friendship data
+paci_fr.table <- ind_table(id_len = c(1:nrow(paci_fr)-1),
+                            fr.ans = paci_fr.ans,
+                            fr.ans0 = paci_fr.ans0)
+# sili friendship data
+sili_fr.table <- ind_table(id_len = c(1:nrow(sili_fr)-1),
+                            fr.ans = sili_fr.ans,
+                            fr.ans0 = sili_fr.ans0)
+# join tables together
+fr.table <- do.call('rbind',
+                    list(high_fr.table %>% 
+                      as.data.frame() %>% 
+                      mutate(data = 'HM'),
+                    ital_fr.table %>% 
+                      as.data.frame() %>% 
+                      mutate(data = 'IU'),
+                    sili_fr.table %>% 
+                      as.data.frame() %>% 
+                      mutate(data = 'SS'),
+                    paci_fr.table %>% 
+                      as.data.frame() %>% 
+                      mutate(data = 'PD')))
 # high advice-seeking data
 high_ad.table <- ind_table(id_len = c(0:20),
                             fr.ans = high_ad.ans,
                             fr.ans0 = high_ad.ans0)
+# ital advice-seeking data
+ital_ad.table <- ind_table(id_len = c(1:nrow(ital_ad)-1),
+                            fr.ans = ital_ad.ans,
+                            fr.ans0 = ital_ad.ans0)
+# paci advice-seeking data
+paci_ad.table <- ind_table(id_len = c(1:nrow(paci_ad)-1),
+                            fr.ans = paci_ad.ans,
+                            fr.ans0 = paci_ad.ans0)
+# sili advice-seeking data
+sili_ad.table <- ind_table(id_len = c(1:nrow(sili_ad)-1),
+                            fr.ans = sili_ad.ans,
+                            fr.ans0 = sili_ad.ans0)
+# join tables together
+ad.table <- do.call('rbind',
+                    list(high_ad.table %>% 
+                      as.data.frame() %>% 
+                      mutate(data = 'HM'),
+                    ital_ad.table %>% 
+                      as.data.frame() %>% 
+                      mutate(data = 'IU'),
+                    sili_ad.table %>% 
+                      as.data.frame() %>% 
+                      mutate(data = 'SS'),
+                    paci_ad.table %>% 
+                      as.data.frame() %>% 
+                      mutate(data = 'PD')))
 
-# make a visual
-high_fr.table %>% 
-  muatate(id = c(1:21))
-  mutate(shape = ifelse(V1 > 0, T,F)) %>% 
-ggplot(data = .,
-        aes(x = class, y = V3, alpha = ifelse(V2 < 0.05, .8,.2)))+
-  geom_point(aes(fill = factor(class),shape=shape),size = 4)+
+# friendship plot
+fr.table %>% 
+  mutate(shape = ifelse(Z > 0, T,F)) %>% 
+  ggplot(data = .,
+        aes(x = class, y = Z))+
+  geom_jitter(aes(fill = factor(class),shape=shape,alpha = ifelse(p < 0.05, .8,.2)),
+              size = 2,width = 0.25)+
+  geom_rect(data=tibble(ymin = -1.96, ymax = 1.96, xmin = -Inf, xmax = Inf),
+            mapping = aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
+            alpha=.2,fill = '#d2d2d2',inherit.aes = FALSE)+
   # geom_errorbar(aes(ymin=V4-1.96*V5/sqrt(2000), ymax=V4+1.96*V5/sqrt(2000)), width=.2)+
-  geom_errorbar(aes(ymin=V4-V5, ymax=V4+V5), width=.3)+
+  # geom_errorbar(aes(ymin=V4-V5, ymax=V4+V5), width=.3)+
   scale_x_continuous(breaks = 1:10)+
-  scale_y_continuous(trans='log10')+
+  # scale_y_continuous(trans='log10')+
   scale_fill_manual(values = c('#5c5859','#55b748','#55b748','#db2b27','#5c5859',
                                '#fdbf11','#55b748','#db2b27','#db2b27','#5c5859')) +
+  scale_color_manual(values = c('#5c5859','#55b748','#55b748','#db2b27','#5c5859',
+                               '#fdbf11','#55b748','#db2b27','#db2b27','#5c5859')) +
   scale_shape_manual(values=c(25,24))+
-  facet_grid(factor(data, levels=c('SS','HM','IU','PD'))~
-               factor(network, levels=c('Friendship','Advice')),
+  facet_grid(factor(data, levels=c('SS','HM','IU','PD'))~.,
              scales='free_y')+
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),legend.position = 'none',
+        strip.background = element_blank())+
+  xlab('Class')+
+  ylab('Z score')
+  # geom_pointrange(data = fr.table %>% group_by(class,data) %>%
+  # summarise(sd.mpg = sd(Z, na.rm = TRUE),
+  #           Z = mean(Z, na.rm = TRUE),
+  #           n.mpg = n()) %>%
+  # mutate(se.mpg = sd.mpg / sqrt(n.mpg),
+  #        lower.ci.mpg = Z - qt(1 - (0.05 / 2), n.mpg - 1) * se.mpg,
+  #        upper.ci.mpg = Z + qt(1 - (0.05 / 2), n.mpg - 1) * se.mpg),
+  # aes(x = class, y= Z, ymin=lower.ci.mpg,ymax=upper.ci.mpg, color=factor(class)))
+
+# ID 1 in HM plot
+# make a copy of fr.table
+id1_fr.table <- fr.table
+# replace with NA except for id 1 in HM
+id1_fr.table[(id1_fr.table$id!=1) | (id1_fr.table$data!='HM'),
+             c('Z','p','obs','M','SD')] <- NA
+id1_fr.table %>% 
+  mutate(shape = ifelse(Z > 0, T,F)) %>% 
+  ggplot(data = .,
+        aes(x = class, y = Z))+
+  geom_jitter(aes(fill = factor(class),shape=shape,alpha = ifelse(p < 0.05, .8,.2)),
+              size = 2,width = 0.25)+
+  geom_rect(data=tibble(ymin = -1.96, ymax = 1.96, xmin = -Inf, xmax = Inf),
+            mapping = aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
+            alpha=.2,fill = '#d2d2d2',inherit.aes = FALSE)+
+  # geom_errorbar(aes(ymin=V4-1.96*V5/sqrt(2000), ymax=V4+1.96*V5/sqrt(2000)), width=.2)+
+  # geom_errorbar(aes(ymin=V4-V5, ymax=V4+V5), width=.3)+
+  scale_x_continuous(breaks = 1:10)+
+  # scale_y_continuous(trans='log10')+
+  scale_fill_manual(values = c('#5c5859','#55b748','#55b748','#db2b27','#5c5859',
+                               '#fdbf11','#55b748','#db2b27','#db2b27','#5c5859')) +
+  scale_color_manual(values = c('#5c5859','#55b748','#55b748','#db2b27','#5c5859',
+                               '#fdbf11','#55b748','#db2b27','#db2b27','#5c5859')) +
+  scale_shape_manual(values=c(25,24))+
+  facet_grid(factor(data, levels=c('SS','HM','IU','PD'))~.)+
   theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),legend.position = 'none')+
   xlab('Class')+
-  ylab('Count (log10 scale)')
-  
+  ylab('Z score')
+
+# advice plot
+ad.table %>% 
+  # as.data.frame %>% 
+  mutate(shape = ifelse(Z > 0, T,F)) %>% 
+  ggplot(data = .,
+        aes(x = class, y = Z, alpha = ifelse(p < 0.05, .8,.2)))+
+  geom_jitter(aes(fill = factor(class),shape=shape),size = 2,width = 0.25)+
+  geom_rect(data=tibble(ymin = -1.96, ymax = 1.96, xmin = -Inf, xmax = Inf),
+            mapping = aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
+            alpha=.2,fill = '#d2d2d2',inherit.aes = FALSE)+
+  # geom_errorbar(aes(ymin=V4-1.96*V5/sqrt(2000), ymax=V4+1.96*V5/sqrt(2000)), width=.2)+
+  # geom_errorbar(aes(ymin=V4-V5, ymax=V4+V5), width=.3)+
+  scale_x_continuous(breaks = 1:10)+
+  # scale_y_continuous(trans='log10')+
+  scale_fill_manual(values = c('#5c5859','#55b748','#55b748','#db2b27','#5c5859',
+                               '#fdbf11','#55b748','#db2b27','#db2b27','#5c5859')) +
+  scale_shape_manual(values=c(25,24))+
+  facet_grid(factor(data, levels=c('SS','HM','IU','PD'))~.,
+             scales='free_y')+
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),legend.position = 'none',
+        strip.background = element_blank())+
+  xlab('Class')+
+  ylab('Z score')
 
 # the following function comes from https://stackoverflow.com/questions/13984470/possible-to-create-latex-multicolumns-in-xtable
 construct_header <- function(df, grp_names, span, align = "c", draw_line = T) {
@@ -553,5 +704,208 @@ ggplot(data = .,
   theme(axis.title = element_text(face = "bold"),legend.position = 'none')+
   xlab('Class')+
   ylab('Count (log10 scale)')
+```
+
+```{r regression}
+# attr_df <- read.csv('../data/HIghTech_attr.csv',sep = ';')
+attr_creation <- function(data_name='HM'){
+  if (data_name == 'HM'){
+    fr_tb <- high_fr
+    fr_true <- high_fr.true
+    ad_tb <- high_ad
+    ad_true <- high_ad.true
+  } else if (data_name == 'SS'){
+    fr_tb <- sili_fr
+    fr_true <- sili_fr.true
+    ad_tb <- sili_ad
+    ad_true <- sili_ad.true
+  } else if (data_name == 'IU'){
+    fr_tb <- ital_fr
+    fr_true <- ital_fr.true
+    ad_tb <- ital_ad
+    ad_true <- ital_ad.true
+  } else {
+    fr_tb <- paci_fr
+    fr_true <- paci_fr.true
+    ad_tb <- paci_ad
+    ad_true <- paci_ad.true
+  }
+  attr_df <- data.frame('id'=seq(nrow(fr_tb)))
+  attr_df$data <- data_name
+  attr_df$fr_indegree <- degree(fr_true, cmode = 'indegree')
+  attr_df$fr_outdegree <- degree(fr_true, cmode = 'outdegree')
+  attr_df$ad_indegree <- degree(ad_true, cmode = 'indegree')
+  attr_df$ad_outdegree <- degree(ad_true, cmode = 'outdegree')
+  attr_df$fr_density <- sapply(1:nrow(fr_tb),function(x) network.density(as.network(fr_tb[x,,])))
+  attr_df$fr_true_density <- network.density(fr_true)
+  attr_df$fr_density_diff <- attr_df$fr_density - attr_df$fr_true_density
+  attr_df$ad_density <- sapply(1:nrow(ad_tb),function(x) network.density(as.network(ad_tb[x,,])))
+  attr_df$ad_true_density <- network.density(ad_true)
+  attr_df$ad_density_diff <- attr_df$ad_density - attr_df$ad_true_density
+  return(attr_df)
+}
+# create attr_df
+attr_df <- do.call('rbind',
+        list(attr_creation('SS'),
+             attr_creation('HM'),
+             attr_creation('IU'),
+             attr_creation('PD')))
+
+# create a scatter plot 
+twovars_plot <- function(df = fr.table, 
+                         var1 = fr_outdegree, 
+                         var2 = Z, 
+                         var1_name = 'Outdegree', 
+                         var2_name = 'Z-score'){
+  splot <- left_join(as.data.frame(df),
+          attr_df,
+          by = c('id' = 'id', 'data' = 'data')) %>% 
+  ggplot(data = .,
+         aes(x = !!enquo(var1),y = !!enquo(var2), color = factor(class)))+
+  geom_point(alpha = .5, size = .5)+
+  geom_smooth(method = 'lm',size = .5)+
+  geom_rect(data=tibble(ymin = -1.96, ymax = 1.96, xmin = -Inf, xmax = Inf),
+            mapping = aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
+            alpha=.2,fill = '#d2d2d2',inherit.aes = FALSE)+
+  stat_cor(cor.coef.name = 'r',p.accuracy = 0.001, r.accuracy = 0.01,
+           hjust = 0, vjust = 0.25, size = 1.78)+
+  scale_color_manual(values = c('#5c5859','#55b748','#55b748','#db2b27','#5c5859',
+                               '#fdbf11','#55b748','#db2b27','#db2b27','#5c5859')) +
+  facet_grid(factor(data, levels=c('SS','HM','IU','PD'))~class,
+             scales="free")+
+  theme_classic(base_size = 8) +
+  theme(axis.title = element_text(face = "bold"),legend.position = 'none',
+        strip.background = element_blank())+
+  ylab(var2_name)+
+  xlab(var1_name)
+  return(splot)
+}
+# plot
+fr_dn_plot <- twovars_plot(df = fr.table,
+             var1 = fr_density_diff,
+             var1_name = 'Friendship Network Density')
+ggsave('fr_Z_ND_v3.png', plot = fr_dn_plot, width = 19, height = 12, units = "cm", dpi = 800)
+twovars_plot(df = fr.table,
+             var1 = fr_indegree,
+             var1_name = 'Network Indegree')
+ad_dn_plot <- twovars_plot(df = ad.table,
+             var1 = ad_density_diff,
+             var1_name = 'Advice-seeking Network Density')
+ggsave('ad_Z_ND_v3.png', plot = ad_dn_plot, width = 19, height = 12, units = "cm", dpi = 800)
+# twovars_plot(df = high_fr.table,
+#              var1 = fr_outdegree)
+# twovars_plot(df = high_fr.table,
+#              var1 = fr_indegree)
+# twovars_plot(df = high_fr.table,
+#              var1 = fr_density,
+#              var1_name = 'Network Density')
+# twovars_plot(df = high_ad.table,
+#              var1 = ad_density,
+#              var1_name = 'Network Density')
+# twovars_plot(df = high_ad.table,
+#              var1 = tenure,
+#              var1_name = 'Network Density')
+```
+
+```{r corr b/w friendship and advice}
+# friendship vs. advice
+meta_df <- do.call('rbind',
+        list(data.frame('id'=1:nrow(high_fr),
+           'data'='HM',
+           'r' = sapply(1:nrow(high_fr),function(x){
+  gcor(high_fr[x,,],high_ad[x,,])
+})),data.frame('id'=1:nrow(ital_fr),
+           'data'='IU',
+           'r' = sapply(1:nrow(ital_fr),function(x){
+  gcor(ital_fr[x,,],ital_ad[x,,])
+})),data.frame('id'=1:nrow(sili_fr),
+           'data'='SS',
+           'r' = sapply(1:nrow(sili_fr),function(x){
+  gcor(sili_fr[x,,],sili_ad[x,,])
+})),data.frame('id'=1:nrow(paci_fr),
+           'data'='PD',
+           'r' = sapply(1:nrow(paci_fr),function(x){
+  gcor(paci_fr[x,,],paci_ad[x,,])
+}))))
+
+# friendship accuracy
+meta_df <- do.call('rbind',
+        list(data.frame('id'=1:nrow(high_fr),
+           'data'='HM',
+           'r' = sapply(1:nrow(high_fr),function(x){
+  gcor(as.matrix(high_fr.true),high_fr[x,,])
+})),data.frame('id'=1:nrow(ital_fr),
+           'data'='IU',
+           'r' = sapply(1:nrow(ital_fr),function(x){
+  gcor(as.matrix(ital_fr.true),ital_fr[x,,])
+})),data.frame('id'=1:nrow(sili_fr),
+           'data'='SS',
+           'r' = sapply(1:nrow(sili_fr),function(x){
+  gcor(as.matrix(sili_fr.true),sili_fr[x,,])
+})),data.frame('id'=1:nrow(paci_fr),
+           'data'='PD',
+           'r' = sapply(1:nrow(paci_fr),function(x){
+  gcor(as.matrix(paci_fr.true),paci_fr[x,,])
+}))))
+
+# advice accuracy
+meta_df <- do.call('rbind',
+        list(data.frame('id'=1:nrow(high_ad),
+           'data'='HM',
+           'r' = sapply(1:nrow(high_ad),function(x){
+  gcor(as.matrix(high_ad.true),high_ad[x,,])
+})),data.frame('id'=1:nrow(ital_ad),
+           'data'='IU',
+           'r' = sapply(1:nrow(ital_ad),function(x){
+  gcor(as.matrix(ital_ad.true),ital_ad[x,,])
+})),data.frame('id'=1:nrow(sili_ad),
+           'data'='SS',
+           'r' = sapply(1:nrow(sili_ad),function(x){
+  gcor(as.matrix(sili_ad.true),sili_ad[x,,])
+})),data.frame('id'=1:nrow(paci_ad),
+           'data'='PD',
+           'r' = sapply(1:nrow(paci_ad),function(x){
+  gcor(as.matrix(paci_ad.true),paci_ad[x,,])
+}))))
+
+meta_df %>% 
+  ggplot(data = .,
+        aes(x = factor(data, levels=c('PD','IU','HM','SS')), y = r))+
+  geom_jitter(alpha=.35,size = 2,width = 0.25)+
+  # geom_errorbar(aes(ymin=V4-1.96*V5/sqrt(2000), ymax=V4+1.96*V5/sqrt(2000)), width=.2)+
+  # geom_errorbar(aes(ymin=V4-V5, ymax=V4+V5), width=.3)+
+  # scale_x_continuous(breaks = 1:10)+
+  # scale_y_continuous(trans='log10')+
+  # scale_fill_manual(values = c('#5c5859','#55b748','#55b748','#db2b27','#5c5859',
+  #                              '#fdbf11','#55b748','#db2b27','#db2b27','#5c5859')) +
+  # scale_color_manual(values = c('#5c5859','#55b748','#55b748','#db2b27','#5c5859',
+  #                              '#fdbf11','#55b748','#db2b27','#db2b27','#5c5859')) +
+  # scale_shape_manual(values=c(25,24))+
+  # facet_grid(factor(data, levels=c('SS','HM','IU','PD'))~.,
+  #            scales='free_y')+
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),legend.position = 'none')+
+  xlab('Data')+
+  ylab('Pearson correlation coefficient')+
+  # stat_pvalue_manual(t_test(r~data, data=meta_df) %>% rstatix::add_y_position(),
+  #                    label = "p.adj.signif", tip.length = 0.01,
+  #                    coord.flip = TRUE)+
+  coord_flip()+
+  geom_pointrange(data = meta_df %>% group_by(data) %>%
+  summarise(sd.mpg = sd(r, na.rm = TRUE),
+            r = mean(r, na.rm = TRUE),
+            n.mpg = n()) %>%
+  mutate(se.mpg = sd.mpg / sqrt(n.mpg),
+         lower.ci.mpg = r - qt(1 - (0.05 / 2), n.mpg - 1) * se.mpg,
+         upper.ci.mpg = r + qt(1 - (0.05 / 2), n.mpg - 1) * se.mpg),
+  aes(x = data, y= r, ymin=lower.ci.mpg,ymax=upper.ci.mpg),
+  size = 1)
+compare_means(r~data, meta_df, method = "t.test")
+t_test(r~data, data=meta_df)
+```
+```{r mini networks}
+G <- network.initialize(n = 4)
+par(mar = c(0, 0, 0, 0))
+gplot(G)
 ```
 
