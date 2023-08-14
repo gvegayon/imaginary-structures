@@ -1,0 +1,62 @@
+---
+output: html_document
+title: ERGM models for CSS data
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+library(sna)
+library(ergm)
+library(netplot)
+knitr::opts_chunk$set(message = FALSE)
+```
+
+```{r}
+#| label: data
+# Loading the data
+load("data/replication1.RData")
+rm(list = ls(pattern = "[^mix]$")) # Keeping only mix
+```
+
+# Hightech data
+
+```{r}
+#| label: high-summary-stats
+gridExtra::grid.arrange(
+  nplot(high_ad.mix, bg.col = "lightgray") ,
+  nplot(high_fr.mix, vertex.color = "white", bg.col = "black"), nrow = 1
+)
+```
+
+# Ital
+
+```{r}
+#| label: ital-summary-stats
+gridExtra::grid.arrange(
+  nplot(ital_ad.mix, bg.col = "lightgray") ,
+  nplot(ital_fr.mix, vertex.color = "white", bg.col = "black"), nrow = 1
+)
+```
+
+# paci
+
+```{r}
+#| label: paci-summary-stats
+gridExtra::grid.arrange(
+  nplot(paci_ad.mix, bg.col = "lightgray") ,
+  nplot(paci_fr.mix, vertex.color = "white", bg.col = "black"), nrow = 1
+)
+```
+
+# sili
+
+```{r}
+#| label: sili-summary-stats
+gridExtra::grid.arrange(
+  nplot(sili_ad.mix, bg.col = "lightgray") ,
+  nplot(sili_fr.mix, vertex.color = "white", bg.col = "black"), nrow = 1
+)
+```
+
