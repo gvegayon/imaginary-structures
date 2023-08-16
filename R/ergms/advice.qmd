@@ -10,7 +10,6 @@ title: ERGM models for CSS data
 library(sna)
 library(ergm)
 library(netplot)
-knitr::opts_chunk$set(message = FALSE)
 ```
 
 ```{r}
@@ -29,6 +28,42 @@ gridExtra::grid.arrange(
   nplot(high_fr.mix, vertex.color = "white", bg.col = "black"), nrow = 1
 )
 ```
+
+```{r}
+# Baseline model
+ans_high_ad.mix00 <- ergm(
+  high_ad.mix ~ edges + mutual
+)
+
+summary(ans_high_ad.mix00)
+
+# Model with idegree distribution
+ans_high_ad.mix01 <- ergm(
+  high_ad.mix ~ edges + mutual + gwidegree(0.2, fixed = TRUE)
+)
+
+summary(ans_high_ad.mix01)
+plot(gof(ans_high_ad.mix01))
+
+# Model with odegree distribution
+ans_high_ad.mix02 <- ergm(
+  high_ad.mix ~ edges + mutual + gwidegree(0.2, fixed = TRUE) +
+    gwodegree(0.2, fixed = TRUE)
+)
+
+summary(ans_high_ad.mix02)
+
+# Model with odegree distribution
+ans_high_ad.mix03 <- ergm(
+  high_ad.mix ~ edges + mutual + gwidegree(0.2, fixed = TRUE) +
+    dgwdsp(decay = 0.2, fixed = TRUE, cutoff = 10)
+)
+
+summary(ans_high_ad.mix03)
+gof(ans_high_ad.mix03)
+
+```
+
 
 # Ital
 
