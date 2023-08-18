@@ -31,9 +31,10 @@ gridExtra::grid.arrange(
 
 ```{r}
 control_mcmc <- control.ergm(
-    MCMC.samplesize = 1024 * 4, # Twice the  default
-    MCMC.interval = 1024 * 2, # Eight times 
-    parallel = 4 # Four chains
+  seed = 112,
+  MCMC.samplesize = 1024 * 4, # Twice the  default
+  MCMC.interval = 1024 * 2, # Eight times 
+  parallel = 4 # Four chains
 )
 
 # Baseline model
@@ -49,24 +50,80 @@ ans_high_ad.mix01 <- ergm(
   control = control_mcmc)
 
 summary(ans_high_ad.mix01)
-plot(gof_high_ad.mix01 <- gof(ans_high_ad.mix01))
+(gof_high_ad.mix01 <- gof(ans_high_ad.mix01))
 
-# Model with odegree distribution
-ergm_model <- high_ad.mix ~ edges + mutual + gwidegree(0.1, fixed = TRUE) + esp(1:5)
-summary_formula(ergm_model)
-ans_high_ad.mix02 <- ergm(ergm_model, control = control_mcmc)
+saveRDS(ans_high_ad.mix01, "data/ergm_high_ad_mix.RDS")
+saveRDS(gof_high_ad.mix01, "data/ergm_gof_high_ad_mix.RDS")
+```
 
-summary(ans_high_ad.mix02)
+We now fit the ERGM for the Friendship network.
 
-# Model with odegree distribution
-ans_high_ad.mix03 <- ergm(
-  high_ad.mix ~ edges + mutual + gwidegree(0.2, fixed = TRUE) +
-    dgwdsp(decay = 0.2, fixed = TRUE, cutoff = 10)
+```{r}
+# Baseline model
+ans_high_fr.mix00 <- ergm(
+  high_fr.mix ~ edges + mutual
 )
 
-summary(ans_high_ad.mix03)
-gof(ans_high_ad.mix03)
+summary(ans_high_fr.mix00)
 
+# Model with idegree distribution
+ans_high_fr.mix01 <- ergm(
+  high_fr.mix ~ edges + mutual + gwidegree(0.25, fixed = TRUE),
+  control = control_mcmc)
+
+summary(ans_high_fr.mix01)
+
+# Model with odegree distribution 
+ans_high_fr.mix02 <- ergm(
+  high_fr.mix ~ edges + mutual + gwodegree(0.2, fixed = TRUE),
+  control = control_mcmc)
+
+summary(ans_high_fr.mix02) # Not significant
+
+# Model with idegree and isolates
+ans_high_fr.mix03 <- ergm(
+  high_fr.mix ~ edges + mutual + gwidegree(0.1, fixed = TRUE) + isolates,
+  control = control_mcmc)
+
+summary(ans_high_fr.mix03) # Not significant
+
+# Model with idegree and odegree
+ans_high_fr.mix04 <- ergm(
+  high_fr.mix ~ edges + mutual + gwidegree(0.25, fixed = TRUE) + gwodegree(0.1, fixed = TRUE),
+  control = control_mcmc)
+
+summary(ans_high_fr.mix04) # Not significant
+
+# Testing with idegree and odegree
+ans_high_fr.mix05 <- ergm(
+  high_fr.mix ~ edges + mutual + gwidegree(0.25, fixed = TRUE) + gwdsp(.1, fixed = TRUE)
+)
+
+summary(ans_high_fr.mix05) # Not significant
+
+# Now with gwesp
+ans_high_fr.mix06 <- ergm(
+  high_fr.mix ~ edges + mutual + gwidegree(0.25, fixed = TRUE) +
+  gwesp(0.05, fixed = TRUE)
+)
+
+summary(ans_high_fr.mix06) # Not significant
+
+# Now trying with gwesp alone
+ans_high_fr.mix07 <- ergm(
+  high_fr.mix ~ edges + mutual + gwesp(0.05, fixed = TRUE) 
+)
+
+summary(ans_high_fr.mix07)
+
+
+gof_high_fr.mix07 <- gof(ans_high_fr.mix07)
+
+# Saving the last model
+saveRDS(ans_high_fr.mix07, "data/ergm_high_fr_mix.RDS")
+saveRDS(gof_high_fr.mix07, "data/ergm_gof_high_fr_mix.RDS")
+  # ,
+  # control = control_mcmc)
 ```
 
 
@@ -78,6 +135,10 @@ gridExtra::grid.arrange(
   nplot(ital_ad.mix, bg.col = "lightgray") ,
   nplot(ital_fr.mix, vertex.color = "white", bg.col = "black"), nrow = 1
 )
+```
+
+```{r}
+# Baseline ergm
 ```
 
 # paci
