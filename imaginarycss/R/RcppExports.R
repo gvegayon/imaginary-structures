@@ -38,3 +38,12 @@ count_imaginary_census <- function(x) {
     .Call(`_imaginarycss_count_imaginary_census`, x)
 }
 
+#' Retrieves the edgelist of a barry_graph
+#' @param x An object of class barry_graph.
+#' @return A matrix with two columns, the first one with the source and the
+#'   second one with the target.
+#' @export
+barray_to_edgelist <- function(x) {
+    .Call(`_imaginarycss_barray_to_edgelist`, x)
+}
+

@@ -150,5 +150,41 @@ DataFrame count_imaginary_census(
   
 }
 
+//' Retrieves the edgelist of a barry_graph
+//' @param x An object of class barry_graph.
+//' @return A matrix with two columns, the first one with the source and the
+//'   second one with the target.
+//' @export
+// [[Rcpp::export(rng = false)]]
+IntegerMatrix barray_to_edgelist(SEXP x) {
+    
+  // checking the class attribute of x
+  if (Rf_inherits(x, "barry_graph") == false)
+    stop("x must be of class barry_graph");
+
+  Rcpp::XPtr< netcounters::Network >ptr(x);
+  
+  barry::Entries< double > entries = ptr->get_entries();
+  size_t nentries = entries.source.size();
+
+  IntegerMatrix out(nentries, 2);
+  
+  for (size_t i = 0u; i < nentries; ++i)
+  {
+      out(i, 0) = static_cast<int>(entries.source[i]) + 1;
+      out(i, 1) = static_cast<int>(entries.target[i]) + 1;
+  }
+
+  // Adding names
+  out.attr("dimnames") = List::create(
+      R_NilValue,
+      CharacterVector::create("source", "target")
+  );
+
+  return out;
+
+}
+
 #undef APPEND_COUNTER
+
 

@@ -74,7 +74,7 @@ graph <- new_barry_graph(
   )
 
 ans <- count_recip_errors(graph)
-ans
+head(ans)
 ```
 
 Now checking that none of these coincide completely
@@ -100,4 +100,14 @@ ggplot(data = ans, aes(y = value)) +
 ```
 
 
+Checking the tie level accuracy
+
+```{r tie-accuracy}
+taccuracy <- tie_level_accuracy(graph)
+boxplot(
+  taccuracy[,-1],
+  main = "Individual level true positive and true negative rates",
+  ylab = "Probability"
+  )# Keeping only the ones from the census
+```
 
