@@ -11,15 +11,15 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // new_barry_graph
-SEXP new_barry_graph(int n, std::vector< unsigned int > source, std::vector< unsigned int > target, int netsize, std::vector< unsigned int > endpoints);
+SEXP new_barry_graph(int n, const IntegerVector& source, const IntegerVector& target, int netsize, const IntegerVector& endpoints);
 RcppExport SEXP _imaginarycss_new_barry_graph(SEXP nSEXP, SEXP sourceSEXP, SEXP targetSEXP, SEXP netsizeSEXP, SEXP endpointsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< std::vector< unsigned int > >::type source(sourceSEXP);
-    Rcpp::traits::input_parameter< std::vector< unsigned int > >::type target(targetSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type source(sourceSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type target(targetSEXP);
     Rcpp::traits::input_parameter< int >::type netsize(netsizeSEXP);
-    Rcpp::traits::input_parameter< std::vector< unsigned int > >::type endpoints(endpointsSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type endpoints(endpointsSEXP);
     rcpp_result_gen = Rcpp::wrap(new_barry_graph(n, source, target, netsize, endpoints));
     return rcpp_result_gen;
 END_RCPP

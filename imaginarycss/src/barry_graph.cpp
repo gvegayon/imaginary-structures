@@ -9,20 +9,24 @@ using namespace Rcpp;
 // [[Rcpp::export(rng = false, name = "new_barry_graph_cpp")]]
 SEXP new_barry_graph(
     int n,
-    std::vector< unsigned int > source,
-    std::vector< unsigned int > target,
-    int                         netsize,
-    std::vector< unsigned int > endpoints
+    const IntegerVector & source,
+    const IntegerVector & target,
+    int netsize,
+    const IntegerVector & endpoints
     ) {
   
+  // Turning source, target, and endpoint to vector< size_t >
+  std::vector< size_t > source_(source.begin(), source.end());
+  std::vector< size_t > target_(target.begin(), target.end());
+
   // Creating network of size six with five ties
   Rcpp::XPtr< netcounters::Network > dat(
-      new netcounters::Network(n, n, source, target)
+      new netcounters::Network(n, n, source_, target_)
       );
   
   dat.attr("class")     = "barry_graph";
   dat.attr("netsize")   = netsize;
-  dat.attr("endpoints") = Rcpp::wrap(endpoints);
+  dat.attr("endpoints") = endpoints;
   
   return dat;
   
@@ -34,10 +38,15 @@ int print_barry_graph(SEXP x) {
   
   Rcpp::XPtr< netcounters::Network >ptr(x);
   
-  std::vector< unsigned int > end = ptr.attr("endpoints");
-  int                           n = ptr.attr("netsize");
+  const IntegerVector & end = ptr.attr("endpoints");
+  int n = ptr.attr("netsize");
   
-  ptr->print("A barry_graph with %i networks of size %i\n.", end.size() + 1, n);
+  ptr->print_n(
+    10, 10,
+    "A barry_graph with %lu networks of size %i\n.",
+    end.size() + 1,
+    n
+    );
   
   return 0;
   
@@ -57,7 +66,7 @@ DataFrame count_recip_errors(
   Rcpp::XPtr< netcounters::Network >ptr(x);
   netcounters::NetStatsCounter< netcounters::Network> counter(ptr);
   
-  std::vector< unsigned int > end = ptr.attr("endpoints");
+  std::vector< size_t > end = ptr.attr("endpoints");
   int                           n = ptr.attr("netsize");
   
   APPEND_COUNTER(counter_css_partially_false_recip_omiss)
@@ -114,8 +123,8 @@ DataFrame count_imaginary_census(
   Rcpp::XPtr< netcounters::Network >ptr(x);
   netcounters::NetStatsCounter< netcounters::Network> counter(ptr);
   
-  std::vector< unsigned int > end = ptr.attr("endpoints");
-  int                           n = ptr.attr("netsize");
+  std::vector< size_t > end = ptr.attr("endpoints");
+  int n = ptr.attr("netsize");
   
   APPEND_COUNTER(counter_css_census01)
   APPEND_COUNTER(counter_css_census02)

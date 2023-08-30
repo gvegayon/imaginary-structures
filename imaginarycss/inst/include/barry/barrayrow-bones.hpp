@@ -1,5 +1,3 @@
-#include "typedefs.hpp"
-
 #ifndef BARRY_BARRAYROW_BONES_HPP
 #define BARRY_BARRAYROW_BONES_HPP 1
 
@@ -8,11 +6,11 @@ class BArrayRow {
 private:
   
     BArray<Cell_Type,Data_Type> * Array;
-    uint i;
+    size_t i;
   
 public:
   
-    BArrayRow(BArray<Cell_Type,Data_Type> * Array_, uint i_,, bool check_bounds = true) : 
+    BArrayRow(BArray<Cell_Type,Data_Type> * Array_, size_t i_,, bool check_bounds = true) : 
     Array(Array_), i(i_), j(j_) {
 
         if (check_bounds)
@@ -44,11 +42,11 @@ class BArrayRow_const {
 private:
     
     const BArray<Cell_Type,Data_Type> * Array;
-    uint i;
+    size_t i;
     
 public:
   
-    BArrayRow_const(const BArray<Cell_Type,Data_Type> * Array_, uint i_, bool check_bounds = true) : 
+    BArrayRow_const(const BArray<Cell_Type,Data_Type> * Array_, size_t i_, bool check_bounds = true) : 
     Array(Array_), i(i_), {
         if (check_bounds) {
 

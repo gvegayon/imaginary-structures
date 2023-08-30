@@ -52,27 +52,27 @@ public:
 };
 
 /**
-  * @brief Data class used to store arbitrary uint or double vectors */
+  * @brief Data class used to store arbitrary size_t or double vectors */
 class NetCounterData {
 public:
     
-    std::vector< uint > indices;
+    std::vector< size_t > indices;
     std::vector< double > numbers;
     
     NetCounterData() : indices(0u), numbers(0u) {};
     NetCounterData(
-        const std::vector< uint > indices_,
+        const std::vector< size_t > indices_,
         const std::vector< double > numbers_
     ): indices(indices_), numbers(numbers_) {};
     
     ~NetCounterData() {};
     
-    // const uint get_uint
+    // const size_t get_size_t
     
 };
 
-#define NET_C_DATA_IDX(i) (data->indices[i])
-#define NET_C_DATA_NUM(i) (data->numbers[i])
+#define NET_C_DATA_IDX(i) (data.indices[i])
+#define NET_C_DATA_NUM(i) (data.numbers[i])
 
 
 /**
@@ -113,16 +113,16 @@ using NetRules =  Rules<Tnet, bool>;
 /**Function for definition of a network counter function*/
 #define NETWORK_COUNTER(a) \
 template<typename Tnet = Network>\
-inline double (a) (const Tnet & Array, uint i, uint j, NetCounterData * data)
+inline double (a) (const Tnet & Array, size_t i, size_t j, NetCounterData & data)
 
 /**Lambda function for definition of a network counter function*/
 #define NETWORK_COUNTER_LAMBDA(a) \
 Counter_fun_type<Tnet, NetCounterData> a = \
-    [](const Tnet & Array, uint i, uint j, NetCounterData * data)
+    [](const Tnet & Array, size_t i, size_t j, NetCounterData & data)
 
 #define NETWORKDENSE_COUNTER_LAMBDA(a) \
 Counter_fun_type<NetworkDense, NetCounterData> a = \
-    [](const NetworkDense & Array, uint i, uint j, NetCounterData * data)
+    [](const NetworkDense & Array, size_t i, size_t j, NetCounterData & data)
 ///@}
 
 
@@ -132,12 +132,12 @@ Counter_fun_type<NetworkDense, NetCounterData> a = \
 /**Function for definition of a network counter function*/
 #define NETWORK_RULE(a) \
 template<typename Tnet = Network>\
-inline bool (a) (const Tnet & Array, uint i, uint j, bool * data)
+inline bool (a) (const Tnet & Array, size_t i, size_t j, bool & data)
 
 /**Lambda function for definition of a network counter function*/
 #define NETWORK_RULE_LAMBDA(a) \
 Rule_fun_type<Tnet, bool> a = \
-[](const Tnet & Array, uint i, uint j, bool * data)
+[](const Tnet & Array, size_t i, size_t j, bool & data)
 ///@}
 
 /**
@@ -158,7 +158,8 @@ inline void counter_edges(NetCounters<Tnet> * counters)
     };
     
     counters->add_counter(
-        count_edges, nullptr, nullptr, false, 
+        count_edges, nullptr, nullptr,
+        NetCounterData(), 
         "Edge counts", 
         "Number of edges"
         );
@@ -201,8 +202,11 @@ inline void counter_isolates(NetCounters<Tnet> * counters)
     };
     
     counters->add_counter(
-        tmp_count,
-        tmp_init, nullptr, false, "Isolates", "Number of isolate vertices");
+        tmp_count, tmp_init, nullptr,
+        NetCounterData(),
+        "Isolates",
+        "Number of isolate vertices"
+        );
 
     return;
 }
@@ -237,8 +241,10 @@ inline void counter_isolates(NetCounters<NetworkDense> * counters)
     };
     
     counters->add_counter(
-        tmp_count,
-        tmp_init, nullptr, false, "Isolates", "Number of isolate vertices");
+        tmp_count, tmp_init, nullptr,
+        NetCounterData(),
+        "Isolates", "Number of isolate vertices"
+        );
 
     return;
 
@@ -277,10 +283,10 @@ inline void counter_mutual(NetCounters<Tnet> * counters)
         if (Array.nrow() != Array.ncol())
             throw std::logic_error("The -mutual- counter only works on square arrays.");
         
-        if (Array.D() == nullptr)
+        if (Array.D_ptr() == nullptr)
             throw std::logic_error("The array data has not been initialized");
         
-        if (!Array.D()->directed)
+        if (!Array.D_ptr()->directed)
             throw std::logic_error(
                 "The -mutual- counter only works on directed (non-symmetric) arrays."
                 );
@@ -290,7 +296,9 @@ inline void counter_mutual(NetCounters<Tnet> * counters)
     };
     
     counters->add_counter(
-        tmp_count, tmp_init, nullptr, false, "Reciprocity",
+        tmp_count, tmp_init, nullptr,
+        NetCounterData(),
+        "Reciprocity",
         "Number of mutual ties"
         );
 
@@ -316,7 +324,12 @@ inline void counter_istar2(NetCounters<Tnet> * counters)
 
     };
     
-    counters->add_counter(tmp_count, nullptr, nullptr, false, "Istar 2", "Indegree 2-star");
+    counters->add_counter(
+        tmp_count, nullptr, nullptr,
+        NetCounterData(),
+        "Istar 2",
+        "Indegree 2-star"
+        );
     
     return ;
 }
@@ -330,7 +343,7 @@ inline void counter_istar2(NetCounters<NetworkDense> * counters)
         // Need to check the receiving, if he/she is getting a new set of stars
         // when looking at triads
         // int indeg = 1;
-        // for (unsigned int k = 0u; k < Array.nrow(); ++k)
+        // for (size_t k = 0u; k < Array.nrow(); ++k)
         // {
         //     if (i == k)
         //         continue;
@@ -347,7 +360,12 @@ inline void counter_istar2(NetCounters<NetworkDense> * counters)
 
     };
     
-    counters->add_counter(tmp_count, nullptr, nullptr, false, "Istar 2", "Indegree 2-star");
+    counters->add_counter(
+        tmp_count, nullptr, nullptr,
+        NetCounterData(),
+        "Istar 2",
+        "Indegree 2-star"
+        );
     
     return ;
 }
@@ -371,7 +389,12 @@ inline void counter_ostar2(NetCounters<Tnet> * counters)
 
     };
     
-    counters->add_counter(tmp_count, nullptr, nullptr, false, "Ostar 2", "Outdegree 2-star");
+    counters->add_counter(
+        tmp_count, nullptr, nullptr,
+        NetCounterData(),
+        "Ostar 2",
+        "Outdegree 2-star"
+        );
 
     return ;
     
@@ -387,7 +410,7 @@ inline void counter_ostar2(NetCounters<NetworkDense> * counters)
         // Need to check the receiving, if he/she is getting a new set of stars
         // when looking at triads
         // int nties = 0;
-        // for (unsigned int k = 0u; k < Array.ncol(); ++k)
+        // for (size_t k = 0u; k < Array.ncol(); ++k)
         // {
         //     if (Array(i, k) != BARRY_ZERO_NETWORK_DENSE)
         //         ++nties;
@@ -401,7 +424,12 @@ inline void counter_ostar2(NetCounters<NetworkDense> * counters)
 
     };
     
-    counters->add_counter(tmp_count, nullptr, nullptr, false, "Ostar 2", "Outdegree 2-star");
+    counters->add_counter(
+        tmp_count, nullptr, nullptr,
+        NetCounterData(),
+        "Ostar 2",
+        "Outdegree 2-star"
+        );
 
     return ;
     
@@ -478,10 +506,10 @@ inline void counter_ttriads(NetCounters<Tnet> * counters)
     NETWORK_COUNTER_LAMBDA(tmp_init)
     {
         
-        if (Array.D() == nullptr)
+        if (Array.D_ptr() == nullptr)
             throw std::logic_error("The array data has not been initialized");
         
-        if (!(Array.D()->directed))
+        if (!(Array.D_ptr()->directed))
             throw std::invalid_argument("The ttriads counter is only valid for directed networks. This is undirected.");
 
         return 0.0;
@@ -489,7 +517,9 @@ inline void counter_ttriads(NetCounters<Tnet> * counters)
     };
     
     counters->add_counter(
-        tmp_count, tmp_init, nullptr, false, "Balance",
+        tmp_count, tmp_init, nullptr,
+        NetCounterData(),
+        "Balance",
         "Number of directed triangles"
     );
     
@@ -505,7 +535,7 @@ inline void counter_ttriads(NetCounters<NetworkDense> * counters)
     {
 
         const auto & dat = Array.get_data();
-        unsigned int N = Array.nrow();
+        size_t N = Array.nrow();
 
         // Self ties do not count
         if (i == j)
@@ -517,7 +547,7 @@ inline void counter_ttriads(NetCounters<NetworkDense> * counters)
 
         
         double ans = 0.0;
-        for (unsigned int k = 0u; k < N; ++k)
+        for (size_t k = 0u; k < N; ++k)
         {
 
             // In all cases k receives, so if not, then continue
@@ -553,10 +583,10 @@ inline void counter_ttriads(NetCounters<NetworkDense> * counters)
     NETWORKDENSE_COUNTER_LAMBDA(tmp_init)
     {
         
-        if (Array.D() == nullptr)
+        if (Array.D_ptr() == nullptr)
             throw std::logic_error("The array data has not been initialized");
         
-        if (!(Array.D()->directed))
+        if (!(Array.D_ptr()->directed))
             throw std::invalid_argument("The ttriads counter is only valid for directed networks. This is undirected.");
 
         return 0.0;
@@ -564,7 +594,9 @@ inline void counter_ttriads(NetCounters<NetworkDense> * counters)
     };
     
     counters->add_counter(
-        tmp_count, tmp_init, nullptr, false, "Balance",
+        tmp_count, tmp_init, nullptr,
+        NetCounterData(),
+        "Balance",
         "Number of directed triangles"
     );
     
@@ -607,10 +639,10 @@ inline void counter_ctriads(NetCounters<Tnet> * counters)
     NETWORK_COUNTER_LAMBDA(tmp_init)
     {
 
-        if (Array.D() == nullptr)
+        if (Array.D_ptr() == nullptr)
             throw std::logic_error("The array data has not been initialized");
         
-        if (!(Array.D()->directed))
+        if (!(Array.D_ptr()->directed))
             throw std::invalid_argument(
                 "The ctriads counter is only valid for directed networks. This is undirected."
                 );
@@ -620,7 +652,9 @@ inline void counter_ctriads(NetCounters<Tnet> * counters)
     };
     
     counters->add_counter(
-        tmp_count, tmp_init, nullptr, false, "Cyclical triads"
+        tmp_count, tmp_init, nullptr,
+        NetCounterData(),
+        "Cyclical triads"
     );
 
     return;
@@ -641,10 +675,8 @@ inline void counter_ctriads(NetCounters<NetworkDense> * counters)
         double ans = 0.0;
         #ifdef __OPENM 
         #pragma omp simd reduction(+:ans)
-        #else
-        #pragma GCC ivdep
         #endif
-        for (unsigned int k = 0u; k < Array.nrow(); ++k)
+        for (size_t k = 0u; k < Array.nrow(); ++k)
         {
 
             // If isolated, then next
@@ -670,10 +702,10 @@ inline void counter_ctriads(NetCounters<NetworkDense> * counters)
     NETWORKDENSE_COUNTER_LAMBDA(tmp_init)
     {
 
-        if (Array.D() == nullptr)
+        if (Array.D_ptr() == nullptr)
             throw std::logic_error("The array data has not been initialized");
         
-        if (!(Array.D()->directed))
+        if (!(Array.D_ptr()->directed))
             throw std::invalid_argument(
                 "The ctriads counter is only valid for directed networks. This is undirected."
                 );
@@ -683,7 +715,9 @@ inline void counter_ctriads(NetCounters<NetworkDense> * counters)
     };
     
     counters->add_counter(
-        tmp_count, tmp_init, nullptr, false, "Cyclical triads"
+        tmp_count, tmp_init, nullptr,
+        NetCounterData(),
+        "Cyclical triads"
     );
 
     return;
@@ -700,7 +734,7 @@ inline void counter_density(NetCounters<Tnet> * counters)
         
         return
             1.0/(Array.nrow() * (Array.ncol() - 1.0)) / (
-                (Array.D()->directed)? 1.0 : 2.0
+                (Array.D_ptr()->directed)? 1.0 : 2.0
             );
         
     };
@@ -708,7 +742,9 @@ inline void counter_density(NetCounters<Tnet> * counters)
     // Preparing the counter data and returning. We make sure that the memory is 
     // released so we set delete_data = true.
     counters->add_counter(
-        tmp_count, nullptr, nullptr, false, "Density",
+        tmp_count, nullptr, nullptr,
+        NetCounterData(),
+        "Density",
         "Proportion of present ties"
     );
 
@@ -736,7 +772,9 @@ inline void counter_idegree15(NetCounters<Tnet> * counters)
     };
     
     counters->add_counter(
-        tmp_count, nullptr, nullptr, false, "Indegree^(1.5)"
+        tmp_count, nullptr, nullptr,
+        NetCounterData(),
+        "Indegree^(1.5)"
     );
 
     return;
@@ -752,7 +790,7 @@ inline void counter_idegree15(NetCounters<NetworkDense> * counters)
         
         // In case of the first, we need to add
         int ideg = 0;
-        for (unsigned int k = 0u; k < Array.nrow(); ++k)
+        for (size_t k = 0u; k < Array.nrow(); ++k)
         {
             if (k == j)
                 continue;
@@ -761,19 +799,30 @@ inline void counter_idegree15(NetCounters<NetworkDense> * counters)
                 ideg++;
 
         }
+
+        if (ideg == 0)
+            return 0.0;
         
         if (ideg == 1)
             return 1.0;
+
+        double res = std::pow(static_cast<double> (ideg), 1.5) -
+            std::pow(static_cast<double> (ideg - 1.0), 1.5);
+
+        if (std::isnan(res))
+            throw std::domain_error("Resulting indeg is undefined.");
         
         return 
-            pow(static_cast<double> (ideg), 1.5) -
-            pow(static_cast<double> (ideg - 1), 1.5)
+            std::pow(static_cast<double> (ideg), 1.5) -
+            std::pow(static_cast<double> (ideg - 1.0), 1.5)
             ;
         
     };
     
     counters->add_counter(
-        tmp_count, nullptr, nullptr, false, "Indegree^(1.5)"
+        tmp_count, nullptr, nullptr,
+        NetCounterData(),
+        "Indegree^(1.5)"
     );
 
     return;
@@ -800,7 +849,9 @@ inline void counter_odegree15(NetCounters<Tnet> * counters)
     };
     
     counters->add_counter(
-        tmp_count, nullptr, nullptr, false, "Outdegree^(1.5)"
+        tmp_count, nullptr, nullptr,
+        NetCounterData(),
+        "Outdegree^(1.5)"
     );
 
     return;
@@ -816,7 +867,7 @@ inline void counter_odegree15(NetCounters<NetworkDense> * counters)
         
         // In case of the first, we need to add
         int odeg = 0;
-        for (unsigned int k = 0u; k < Array.ncol(); ++k)
+        for (size_t k = 0u; k < Array.ncol(); ++k)
         {
 
             if (k == i)
@@ -826,6 +877,9 @@ inline void counter_odegree15(NetCounters<NetworkDense> * counters)
                 odeg++;
 
         }
+
+        if (odeg == 0)
+            return 0.0;
 
         if (odeg == 1)
             return 1.0;
@@ -838,7 +892,9 @@ inline void counter_odegree15(NetCounters<NetworkDense> * counters)
     };
     
     counters->add_counter(
-        tmp_count, nullptr, nullptr, false, "Outdegree^(1.5)"
+        tmp_count, nullptr, nullptr,
+        NetCounterData(),
+        "Outdegree^(1.5)"
     );
 
     return;
@@ -851,7 +907,7 @@ inline void counter_odegree15(NetCounters<NetworkDense> * counters)
 template<typename Tnet = Network>
 inline void counter_absdiff(
     NetCounters<Tnet> * counters,
-    uint attr_id,
+    size_t attr_id,
     double alpha = 1.0
 ) {
     
@@ -859,8 +915,8 @@ inline void counter_absdiff(
     {
         
         return std::pow(std::fabs(
-                Array.D()->vertex_attr[NET_C_DATA_IDX(0u)][i] - 
-                    Array.D()->vertex_attr[NET_C_DATA_IDX(0u)][j]
+                Array.D_ptr()->vertex_attr[NET_C_DATA_IDX(0u)][i] - 
+                    Array.D_ptr()->vertex_attr[NET_C_DATA_IDX(0u)][j]
         ), NET_C_DATA_NUM(0u));
         
     };
@@ -868,13 +924,13 @@ inline void counter_absdiff(
     NETWORK_COUNTER_LAMBDA(tmp_init)
     {
         
-        if (Array.D() == nullptr)
+        if (Array.D_ptr() == nullptr)
             throw std::logic_error("The array data has not been initialized");
         
-        if (Array.D()->vertex_attr.size() == 0u)
+        if (Array.D_ptr()->vertex_attr.size() == 0u)
             throw std::range_error("No attributes in the Array.");
         
-        if ((NET_C_DATA_IDX(0u) != 0u) && (Array.D()->vertex_attr.size() <= (NET_C_DATA_IDX(0u) - 1u)))
+        if ((NET_C_DATA_IDX(0u) != 0u) && (Array.D_ptr()->vertex_attr.size() <= (NET_C_DATA_IDX(0u) - 1u)))
             throw std::range_error("Attribute index out of range.");
         
         return 0.0;
@@ -882,9 +938,9 @@ inline void counter_absdiff(
     };
     
     counters->add_counter(
-        tmp_count, tmp_init,
-        new NetCounterData({attr_id}, {alpha}),
-        true, "Absdiff"
+        tmp_count, tmp_init, nullptr,
+        NetCounterData({attr_id}, {alpha}),
+        "Absdiff"
     );
     
     return;
@@ -896,7 +952,7 @@ inline void counter_absdiff(
 template<typename Tnet = Network>
 inline void counter_diff(
     NetCounters<Tnet> * counters,
-    uint attr_id,
+    size_t attr_id,
     double alpha     = 1.0,
     double tail_head = true
 ) {
@@ -905,8 +961,8 @@ inline void counter_diff(
     {
         
         return std::pow(NET_C_DATA_NUM(1u) * (
-                Array.D()->vertex_attr[NET_C_DATA_IDX(0u)][i] - 
-                    Array.D()->vertex_attr[NET_C_DATA_IDX(0u)][j]
+                Array.D_ptr()->vertex_attr[NET_C_DATA_IDX(0u)][i] - 
+                    Array.D_ptr()->vertex_attr[NET_C_DATA_IDX(0u)][j]
         ), NET_C_DATA_NUM(0u));
         
     };
@@ -914,13 +970,13 @@ inline void counter_diff(
     NETWORK_COUNTER_LAMBDA(tmp_init)
     {
         
-        if (Array.D() == nullptr)
+        if (Array.D_ptr() == nullptr)
             throw std::logic_error("The array data has not been initialized");
         
-        if (Array.D()->vertex_attr.size() == 0u)
+        if (Array.D_ptr()->vertex_attr.size() == 0u)
             throw std::range_error("No attributes in the Array.");
         
-        if ((NET_C_DATA_IDX(0u) != 0u) && (Array.D()->vertex_attr.size() <= (NET_C_DATA_IDX(0u) - 1u)))
+        if ((NET_C_DATA_IDX(0u) != 0u) && (Array.D_ptr()->vertex_attr.size() <= (NET_C_DATA_IDX(0u) - 1u)))
             throw std::range_error("Attribute index out of range.");
         
         return 0.0;
@@ -928,9 +984,9 @@ inline void counter_diff(
     };
     
     counters->add_counter(
-        tmp_count, tmp_init,
-        new NetCounterData({attr_id}, {alpha, tail_head ? 1.0: -1.0}),
-        true, "Absdiff^(" + std::to_string(alpha) + ")"
+        tmp_count, tmp_init, nullptr,
+        NetCounterData({attr_id}, {alpha, tail_head ? 1.0: -1.0}),
+        "Absdiff^(" + std::to_string(alpha) + ")"
     );
     
     return;
@@ -941,13 +997,13 @@ inline void counter_diff(
 NETWORK_COUNTER(init_single_attr)
 {
     
-    if (Array.D() == nullptr)
+    if (Array.D_ptr() == nullptr)
         throw std::logic_error("The array data has not been initialized");
     
-    if (Array.D()->vertex_attr.size() == 0u)
+    if (Array.D_ptr()->vertex_attr.size() == 0u)
         throw std::range_error("No attributes in the Array.");
     
-    if ((NET_C_DATA_IDX(0u) != 0u) && (Array.D()->vertex_attr.size() <= (NET_C_DATA_IDX(0u) - 1u)))
+    if ((NET_C_DATA_IDX(0u) != 0u) && (Array.D_ptr()->vertex_attr.size() <= (NET_C_DATA_IDX(0u) - 1u)))
         throw std::range_error("Attribute index out of range.");
     
     return 0.0;
@@ -959,20 +1015,20 @@ NETWORK_COUNTER(init_single_attr)
 template<typename Tnet = Network>
 inline void counter_nodeicov(
     NetCounters<Tnet> * counters,
-    uint attr_id
+    size_t attr_id
 ) {
     
     NETWORK_COUNTER_LAMBDA(tmp_count)
     {
         
-        return Array.D()->vertex_attr[NET_C_DATA_IDX(0u)][j];
+        return Array.D_ptr()->vertex_attr[NET_C_DATA_IDX(0u)][j];
         
     };
     
     counters->add_counter(
-        tmp_count, init_single_attr<Tnet>,
-        new NetCounterData({attr_id}, {}),
-        true, "nodeicov", "Sum of ego attribute"
+        tmp_count, init_single_attr<Tnet>, nullptr,
+        NetCounterData({attr_id}, {}),
+        "nodeicov", "Sum of ego attribute"
     );
       
     return;
@@ -984,20 +1040,20 @@ inline void counter_nodeicov(
 template<typename Tnet = Network>
 inline void counter_nodeocov(
     NetCounters<Tnet> * counters,
-    uint attr_id
+    size_t attr_id
 ) {
     
     NETWORK_COUNTER_LAMBDA(tmp_count)
     {
         
-        return Array.D()->vertex_attr[NET_C_DATA_IDX(0u)][i];
+        return Array.D_ptr()->vertex_attr[NET_C_DATA_IDX(0u)][i];
         
     };
     
     counters->add_counter(
-        tmp_count, init_single_attr<Tnet>,
-        new NetCounterData({attr_id}, {}),
-        true, "nodeocov", "Sum of alter attribute"
+        tmp_count, init_single_attr<Tnet>, nullptr,
+        NetCounterData({attr_id}, {}),
+        "nodeocov", "Sum of alter attribute"
     );
     
     return;
@@ -1009,21 +1065,21 @@ inline void counter_nodeocov(
 template<typename Tnet = Network>
 inline void counter_nodecov(
     NetCounters<Tnet> * counters,
-    uint attr_id
+    size_t attr_id
 ) {
     
     NETWORK_COUNTER_LAMBDA(tmp_count)
     {
         
-        return Array.D()->vertex_attr[NET_C_DATA_IDX(0u)][i] +
-            Array.D()->vertex_attr[NET_C_DATA_IDX(0u)][j];
+        return Array.D_ptr()->vertex_attr[NET_C_DATA_IDX(0u)][i] +
+            Array.D_ptr()->vertex_attr[NET_C_DATA_IDX(0u)][j];
         
     };
     
     counters->add_counter(
-        tmp_count, init_single_attr<Tnet>,
-        new NetCounterData({attr_id}, {}),
-        true, "nodecov", "Sum of nodes covariates"
+        tmp_count, init_single_attr<Tnet>, nullptr,
+        NetCounterData({attr_id}, {}),
+        "nodecov", "Sum of nodes covariates"
     );
     
     return;
@@ -1034,7 +1090,7 @@ inline void counter_nodecov(
 template<typename Tnet = Network>
 inline void counter_nodematch(
     NetCounters<Tnet> * counters,
-    uint attr_id
+    size_t attr_id
 ) {
     
     NETWORK_COUNTER_LAMBDA(tmp_count)
@@ -1042,8 +1098,8 @@ inline void counter_nodematch(
         
         return 
         (
-                Array.D()->vertex_attr[NET_C_DATA_IDX(0u)][i] == 
-                    Array.D()->vertex_attr[NET_C_DATA_IDX(0u)][j]
+                Array.D_ptr()->vertex_attr[NET_C_DATA_IDX(0u)][i] == 
+                    Array.D_ptr()->vertex_attr[NET_C_DATA_IDX(0u)][j]
         )? 1.0 : 0.0;
         
     };
@@ -1051,9 +1107,10 @@ inline void counter_nodematch(
     // Preparing the counter data and returning. We make sure that the memory is 
     // released so we set delete_data = true.
     counters->add_counter(
-        tmp_count, init_single_attr<Tnet>,
-        new NetCounterData({attr_id}, {}),
-        true, "Homophily", "Number of homophilic ties"
+        tmp_count, init_single_attr<Tnet>, nullptr,
+        NetCounterData({attr_id}, {}),
+        "Homophily",
+        "Number of homophilic ties"
     );
     
     return ;
@@ -1065,13 +1122,13 @@ inline void counter_nodematch(
 template<typename Tnet = Network>
 inline void counter_idegree(
     NetCounters<Tnet> * counters,
-    std::vector< uint > d
+    std::vector< size_t > d
 ) {
 
     NETWORK_COUNTER_LAMBDA(tmp_count)
     {
         
-        uint d = Array.col(j).size();
+        size_t d = Array.col(j).size();
         if (d == NET_C_DATA_IDX(0u))
             return 1.0;
         else if (d == (NET_C_DATA_IDX(0u) + 1))
@@ -1084,10 +1141,10 @@ inline void counter_idegree(
     NETWORK_COUNTER_LAMBDA(tmp_init)
     {
         
-        if (Array.D() == nullptr)
+        if (Array.D_ptr() == nullptr)
             throw std::logic_error("The array data has not been initialized");
         
-        if (!Array.D()->directed)
+        if (!Array.D_ptr()->directed)
             throw std::logic_error("-odegree- counter is only valid for directed graphs");
         
         if (NET_C_DATA_IDX(0u) == 0u)
@@ -1099,9 +1156,9 @@ inline void counter_idegree(
     
     for (auto iter = d.begin(); iter != d.end(); ++iter)
         counters->add_counter(
-            tmp_count, tmp_init,
-            new NetCounterData({*iter}, {}),
-            true, "Nodes indeg " + std::to_string(*iter),
+            tmp_count, tmp_init, nullptr,
+            NetCounterData({*iter}, {}),
+            "Nodes indeg " + std::to_string(*iter),
             "Number of nodes with indigree " + std::to_string(*iter)
         );
     
@@ -1112,14 +1169,14 @@ inline void counter_idegree(
 template<>
 inline void counter_idegree(
     NetCounters<NetworkDense> * counters,
-    std::vector< uint > d
+    std::vector< size_t > d
 ) {
 
     NETWORKDENSE_COUNTER_LAMBDA(tmp_count)
     {
         
-        unsigned int indeg = 0u;
-        for (unsigned int k = 0u; k < Array.nrow(); ++k)
+        size_t indeg = 0u;
+        for (size_t k = 0u; k < Array.nrow(); ++k)
             if (Array(k, j) != BARRY_ZERO_NETWORK_DENSE)
                 indeg++;
 
@@ -1135,10 +1192,10 @@ inline void counter_idegree(
     NETWORKDENSE_COUNTER_LAMBDA(tmp_init)
     {
         
-        if (Array.D() == nullptr)
+        if (Array.D_ptr() == nullptr)
             throw std::logic_error("The array data has not been initialized");
         
-        if (!Array.D()->directed)
+        if (!Array.D_ptr()->directed)
             throw std::logic_error("-odegree- counter is only valid for directed graphs");
         
         if (NET_C_DATA_IDX(0u) == 0u)
@@ -1150,9 +1207,9 @@ inline void counter_idegree(
     
     for (auto iter = d.begin(); iter != d.end(); ++iter)
         counters->add_counter(
-            tmp_count, tmp_init,
-            new NetCounterData({*iter}, {}),
-            true, "Nodes indeg " + std::to_string(*iter),
+            tmp_count, tmp_init, nullptr,
+            NetCounterData({*iter}, {}),
+            "Nodes indeg " + std::to_string(*iter),
             "Number of nodes with indigree " + std::to_string(*iter)
         );
     
@@ -1165,13 +1222,13 @@ inline void counter_idegree(
 template<typename Tnet = Network>
 inline void counter_odegree(
     NetCounters<Tnet> * counters,
-    std::vector<uint> d
+    std::vector<size_t> d
 ) {
     
     NETWORK_COUNTER_LAMBDA(tmp_count)
     {
         
-        uint d = Array.row(i).size();
+        size_t d = Array.row(i).size();
         if (d == NET_C_DATA_IDX(0u))
             return 1.0;
         else if (d == (NET_C_DATA_IDX(0u) + 1))
@@ -1184,10 +1241,10 @@ inline void counter_odegree(
     NETWORK_COUNTER_LAMBDA(tmp_init)
     {
         
-        if (Array.D() == nullptr)
+        if (Array.D_ptr() == nullptr)
             throw std::logic_error("The array data has not been initialized");
         
-        if (!Array.D()->directed)
+        if (!Array.D_ptr()->directed)
             throw std::logic_error("-odegree- counter is only valid for directed graphs");
         
         if (NET_C_DATA_IDX(0u) == 0u)
@@ -1200,9 +1257,9 @@ inline void counter_odegree(
         
     for (auto iter = d.begin(); iter != d.end(); ++iter) 
         counters->add_counter(
-            tmp_count, tmp_init,
-            new NetCounterData({*iter}, {}),
-            true, "Nodes w/ outdeg " + std::to_string(*iter),
+            tmp_count, tmp_init, nullptr,
+            NetCounterData({*iter}, {}),
+            "Nodes w/ outdeg " + std::to_string(*iter),
             "Number of nodes with outdegree " + std::to_string(*iter)
         );
     
@@ -1213,14 +1270,14 @@ inline void counter_odegree(
 template<>
 inline void counter_odegree(
     NetCounters<NetworkDense> * counters,
-    std::vector<uint> d
+    std::vector<size_t> d
 ) {
     
     NETWORKDENSE_COUNTER_LAMBDA(tmp_count)
     {
         
-        uint d = 0;
-        for (unsigned int k = 0u; k < Array.ncol(); ++k)
+        size_t d = 0;
+        for (size_t k = 0u; k < Array.ncol(); ++k)
             if (Array(i, k) != BARRY_ZERO_NETWORK_DENSE)
                 d++;
         
@@ -1236,10 +1293,10 @@ inline void counter_odegree(
     NETWORKDENSE_COUNTER_LAMBDA(tmp_init)
     {
         
-        if (Array.D() == nullptr)
+        if (Array.D_ptr() == nullptr)
             throw std::logic_error("The array data has not been initialized");
         
-        if (!Array.D()->directed)
+        if (!Array.D_ptr()->directed)
             throw std::logic_error("-odegree- counter is only valid for directed graphs");
         
         if (NET_C_DATA_IDX(0u) == 0u)
@@ -1252,9 +1309,9 @@ inline void counter_odegree(
         
     for (auto iter = d.begin(); iter != d.end(); ++iter) 
         counters->add_counter(
-            tmp_count, tmp_init,
-            new NetCounterData({*iter}, {}),
-            true, "Nodes w/ outdeg " + std::to_string(*iter),
+            tmp_count, tmp_init, nullptr,
+            NetCounterData({*iter}, {}),
+            "Nodes w/ outdeg " + std::to_string(*iter),
             "Number of nodes with outdegree " + std::to_string(*iter)
         );
     
@@ -1268,12 +1325,12 @@ inline void counter_odegree(
 template<typename Tnet = Network>
 inline void counter_degree(
     NetCounters<Tnet> * counters,
-    std::vector<uint> d
+    std::vector<size_t> d
 ) {
     
     NETWORK_COUNTER_LAMBDA(tmp_count) {
         
-        uint d = Array.row(i).size();
+        size_t d = Array.row(i).size();
         if (d == NET_C_DATA_IDX(0u))
             return 1.0;
         else if (d == (NET_C_DATA_IDX(0u) + 1))
@@ -1284,10 +1341,10 @@ inline void counter_degree(
     
     NETWORK_COUNTER_LAMBDA(tmp_init) {
         
-        if (Array.D() == nullptr)
+        if (Array.D_ptr() == nullptr)
             throw std::logic_error("The array data has not been initialized");
         
-        if (Array.D()->directed)
+        if (Array.D_ptr()->directed)
             throw std::logic_error("-degree- counter is only valid for undirected graphs");
         
         if (NET_C_DATA_IDX(0u) == 0u)
@@ -1300,9 +1357,8 @@ inline void counter_degree(
     for (auto iter = d.begin(); iter != d.end(); ++iter)
     {
         counters->add_counter(
-            tmp_count, tmp_init,
-            new NetCounterData({*iter}, {}),
-            true
+            tmp_count, tmp_init, nullptr,
+            NetCounterData({*iter}, {})
         );
     }
     
@@ -1328,7 +1384,11 @@ inline void rules_zerodiag(NetRules<Tnet> * rules) {
         return i != j;
     };
     
-    rules->add_rule(no_self_tie);
+    rules->add_rule(
+        no_self_tie, false,
+        "No self-ties",
+        "No self-ties"
+        );
     
     return;
 }

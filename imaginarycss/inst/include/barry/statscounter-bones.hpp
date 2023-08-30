@@ -1,8 +1,3 @@
-#include "typedefs.hpp"
-#include "barray-bones.hpp"
-#include "statsdb.hpp"
-#include "counters-bones.hpp"
-
 #ifndef BARRY_STATSCOUNTER_BONES_HPP 
 #define BARRY_STATSCOUNTER_BONES_HPP 1
 
@@ -15,7 +10,7 @@ class NetCounterData;
  * Users can a list of functions that can be used with this. The baseline set of
  * arguments is a pointer to a binary array and a dataset to add the counts to.
  */ 
-template <typename Array_Type = BArray<>, typename Data_Type = bool>
+template <typename Array_Type, typename Data_Type>
 class StatsCounter {
 
 private:
@@ -72,7 +67,6 @@ public:
      */
     void reset_array(const Array_Type * Array_);
     
-    void add_counter(Counter<Array_Type,Data_Type> * f_);
     void add_counter(Counter<Array_Type,Data_Type> f_);
     void set_counters(Counters<Array_Type,Data_Type> * counters_);
     
@@ -81,13 +75,15 @@ public:
      * This function recurses through the entries of `Array` and at each step of
      * adding a new cell it uses the functions to list the statistics.
      */
-    void count_init(uint i, uint j);
-    void count_current(uint i, uint j);
+    void count_init(size_t i, size_t j);
+    void count_current(size_t i, size_t j);
     std::vector< double > count_all();
 
     Counters<Array_Type,Data_Type> * get_counters();
     std::vector< std::string > get_names() const;
     std::vector< std::string > get_descriptions() const;
+
+    size_t size() const {return counters->size();};
     
 };
 

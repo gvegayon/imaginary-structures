@@ -1,6 +1,3 @@
-#include "typedefs.hpp"
-#include "barray-bones.hpp"
-
 #ifndef BARRY_COUNTERS_BONES_HPP
 #define BARRY_COUNTERS_BONES_HPP 1
 
@@ -40,8 +37,9 @@ public:
     
     Counter_fun_type<Array_Type,Data_Type> count_fun;
     Counter_fun_type<Array_Type,Data_Type> init_fun;
-    Data_Type * data = nullptr;
-    bool delete_data = false;
+    Hasher_fun_type<Array_Type,Data_Type> hasher_fun;
+
+    Data_Type data;
     std::string  name = "";
     std::string  desc = "";
 
@@ -56,17 +54,17 @@ public:
      * in the main data.
      */
     ///@{
-    Counter() : count_fun(nullptr), init_fun(nullptr) {};
+    Counter() : count_fun(nullptr), init_fun(nullptr), hasher_fun(nullptr) {};
     
     Counter(
         Counter_fun_type<Array_Type,Data_Type> count_fun_,
-        Counter_fun_type<Array_Type,Data_Type> init_fun_    = nullptr,
-        Data_Type *                            data_        = nullptr,
-        bool                                   delete_data_ = false,
+        Counter_fun_type<Array_Type,Data_Type> init_fun_,
+        Hasher_fun_type<Array_Type,Data_Type>  hasher_fun_,
+        Data_Type                              data_,
         std::string                            name_        = "",   
         std::string                            desc_        = ""
-        ): count_fun(count_fun_), init_fun(init_fun_), data(data_),
-            delete_data(delete_data_), name(name_), desc(desc_) {};
+        ): count_fun(count_fun_), init_fun(init_fun_), hasher_fun(hasher_fun_), data(data_),
+            name(name_), desc(desc_) {};
     
     Counter(const Counter<Array_Type,Data_Type> & counter_); ///< Copy constructor
     Counter(Counter<Array_Type,Data_Type> && counter_) noexcept; ///< Move constructor
@@ -74,19 +72,28 @@ public:
     Counter<Array_Type,Data_Type>& operator=(Counter<Array_Type,Data_Type> && counter_) noexcept; ///< Move assignment
     ///@}
 
-    ~Counter() {
-        // delete data;
-        if (delete_data)
-            delete data;
-    };
+    ~Counter() {};
     
     /***
       * ! Main functions.
       */
-    double count(Array_Type & Array, uint i, uint j);
-    double init(Array_Type & Array, uint i, uint j);
+    double count(Array_Type & Array, size_t i, size_t j);
+    double init(Array_Type & Array, size_t i, size_t j);
     std::string get_name() const;
     std::string get_description() const;
+
+    /**
+     * @brief Get and set the hasher function
+     * 
+     * The hasher function is used to characterize the support of the array.
+     * This way, if possible, the support enumeration is recycled.
+     * 
+     * @param fun 
+     */
+    ///@{
+    void set_hasher(Hasher_fun_type<Array_Type,Data_Type> fun);
+    Hasher_fun_type<Array_Type,Data_Type> get_hasher();
+    ///@}
     
 };
 
@@ -101,10 +108,8 @@ template <typename Array_Type = BArray<>, typename Data_Type = bool>
 class Counters {
     
 private:
-    std::vector< Counter<Array_Type,Data_Type >* > *        data = nullptr;
-    std::vector< uint > *                          to_be_deleted = nullptr;
-    bool                                             delete_data = false;
-    bool                                    delete_to_be_deleted = false;
+    std::vector< Counter<Array_Type,Data_Type > > data;
+    Hasher_fun_type<Array_Type,Data_Type> hasher;
     
 public: 
     
@@ -112,9 +117,7 @@ public:
     Counters();
     
     // Destructor needs to deal with the pointers
-    ~Counters() {
-        this->clear();
-    }
+    ~Counters() {};
 
     /**
      * @brief Copy constructor
@@ -151,32 +154,49 @@ public:
      * @param idx Id of the counter
      * @return Counter<Array_Type,Data_Type>* 
      */
-    Counter<Array_Type,Data_Type> & operator[](uint idx);
+    Counter<Array_Type,Data_Type> & operator[](size_t idx);
 
     /**
      * @brief Number of counters in the set.
      * 
-     * @return uint 
+     * @return size_t 
      */
     std::size_t size() const noexcept {
-        return data->size();
+        return data.size();
         };
     
     // Functions to add counters
-    void add_counter(Counter<Array_Type, Data_Type> & counter);
-    void add_counter(Counter<Array_Type, Data_Type> * counter);
+    void add_counter(Counter<Array_Type, Data_Type> counter);
     void add_counter(
         Counter_fun_type<Array_Type,Data_Type> count_fun_,
-        Counter_fun_type<Array_Type,Data_Type> init_fun_    = nullptr,
-        Data_Type *                            data_        = nullptr,
-        bool                                   delete_data_ = false,
+        Counter_fun_type<Array_Type,Data_Type> init_fun_,
+        Hasher_fun_type<Array_Type,Data_Type>  hasher_fun_,
+        Data_Type                              data_,
         std::string                            name_        = "",   
         std::string                            desc_        = ""
     );
-    void clear();
+    
     std::vector< std::string > get_names() const;
     std::vector< std::string > get_descriptions() const;
+
+    /**
+     * @brief Generates a hash for the given array according to the counters.
+     * 
+     * @param array 
+     * @param add_dims When `true` (default) the dimmension of the array will
+     * be added to the hash.
+     * @return std::vector< double > That can be hashed later.
+     */
+    std::vector< double > gen_hash(
+      const Array_Type & array,
+      bool add_dims = true
+      );
+
+    void add_hash(
+      Hasher_fun_type<Array_Type,Data_Type> fun_
+    );
     
 };
 
 #endif
+

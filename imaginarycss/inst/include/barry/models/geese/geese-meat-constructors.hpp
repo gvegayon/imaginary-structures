@@ -8,29 +8,29 @@ inline Geese::Geese() {
     // In order to start...
     this->rengine         = new std::mt19937;
     this->delete_rengine  = true;
-    this->model           = new phylocounters::PhyloModel();
+    this->model           = new PhyloModel();
     this->delete_support  = true;
 
-    this->model->set_keygen(keygen_full);
+    this->model->add_hasher(keygen_full);
     this->model->store_psets();
 
     return;
 }
 
 inline Geese::Geese(
-    std::vector< std::vector<unsigned int> > & annotations,
-    std::vector< unsigned int > &              geneid,
-    std::vector< int > &                       parent,
-    std::vector< bool > &                      duplication
+    std::vector< std::vector<size_t> > & annotations,
+    std::vector< size_t > &              geneid,
+    std::vector< int > &                 parent,
+    std::vector< bool > &                duplication
 ) {
 
     // In order to start...
     this->rengine         = new std::mt19937;
     this->delete_rengine  = true;
-    this->model           = new phylocounters::PhyloModel();
+    this->model           = new PhyloModel();
     this->delete_support  = true;
 
-    this->model->set_keygen(keygen_full);
+    this->model->add_hasher(keygen_full);
     this->model->store_psets();
 
     // Check the lengths
@@ -39,21 +39,23 @@ inline Geese::Geese(
 
     nfunctions = annotations.at(0u).size();
 
-    // unsigned int n = annotations.size();
+    // size_t n = annotations.size();
     for (auto& iter : annotations)
     {
 
         if (iter.size() != nfunctions)
-            throw std::length_error("Not all the annotations have the same length");
+            throw std::length_error(
+                "Not all the annotations have the same length"
+                );
 
     }
 
     // Grouping up the data by parents -----------------------------------------
-    for (unsigned int i = 0u; i < geneid.size(); ++i)
+    for (size_t i = 0u; i < geneid.size(); ++i)
     {
 
         // Temp vector with the annotations
-        std::vector< unsigned int > & funs(annotations.at(i));
+        std::vector< size_t > & funs(annotations.at(i));
 
         // Case 1: Not the root node, and the parent does not exists
         if ((parent.at(i) >= 0) && (nodes.find(parent.at(i)) == nodes.end()))
@@ -62,7 +64,7 @@ inline Geese::Geese(
             // Adding parent
             auto key_par = nodes.insert({
                 parent.at(i),
-                Node(parent.at(i), UINT_MAX, true)
+                Node(parent.at(i), std::numeric_limits< size_t >::max(), true)
             });
 
             // Case 1a: i does not exists
@@ -89,6 +91,7 @@ inline Geese::Geese(
                 nodes[geneid.at(i)].annotations = funs;
                 nodes[geneid.at(i)].parent      = &nodes[parent.at(i)];
                 nodes[geneid.at(i)].ord         = i;
+                nodes[geneid.at(i)].id          = geneid.at(i);
 
                 nodes[parent.at(i)].offspring.push_back(
                     &nodes[geneid.at(i)]
@@ -127,6 +130,7 @@ inline Geese::Geese(
                 nodes[geneid.at(i)].duplication = duplication.at(i);
                 nodes[geneid.at(i)].annotations = funs;
                 nodes[geneid.at(i)].ord         = i;
+                nodes[geneid.at(i)].id          = geneid.at(i);
 
                 if (parent.at(i) >= 0)
                 {
@@ -143,14 +147,16 @@ inline Geese::Geese(
 
     }
 
-    // Verifying that all have the variable ord
+    // Verifying that all have the variable ord, and that
+    // ord does not repeat
+    std::vector< size_t > ord_count(geneid.size(), 0u);
     for (auto& n : nodes)
     {
 
         Node & node = n.second;
 
         // Checking variable
-        if (node.ord == UINT_MAX)
+        if (node.ord == std::numeric_limits< size_t >::max())
         {
 
             const char *fmt = "Node id %i was not included in geneid.";
@@ -196,6 +202,17 @@ inline Geese::Geese(
 
         }
 
+        if (++ord_count[node.ord] > 1u)
+        {
+
+            const char *fmt = "Node id %i's ord was repeated.";
+            int sz = std::snprintf(nullptr, 0, fmt, node.id);
+            std::vector<char> buf(sz + 1);
+            std::snprintf(&buf[0], buf.size(), fmt, node.id);
+            throw std::logic_error(&buf[0]);
+
+        }
+
     }
 
 
@@ -219,7 +236,7 @@ inline Geese::Geese(const Geese & model_, bool copy_data) :
     n_spec_events(model_.n_spec_events),
     nfunctions(model_.nfunctions),
     nodes(model_.nodes),
-    map_to_nodes(model_.map_to_nodes),
+    map_to_state_id(model_.map_to_state_id),
     pset_loc(model_.pset_loc),
     sequence(model_.sequence),
     reduced_sequence(model_.reduced_sequence),
@@ -238,7 +255,7 @@ inline Geese::Geese(const Geese & model_, bool copy_data) :
 
         if (model_.model != nullptr)
         {
-            model = new phylocounters::PhyloModel(*(model_.model));
+            model = new PhyloModel(*(model_.model));
             delete_support = true;
         }
 
@@ -300,7 +317,7 @@ inline Geese::Geese(Geese && x) noexcept :
     n_spec_events(std::move(x.n_spec_events)),
     nfunctions(x.nfunctions),
     nodes(std::move(x.nodes)),
-    map_to_nodes(std::move(x.map_to_nodes)),
+    map_to_state_id(std::move(x.map_to_state_id)),
     pset_loc(std::move(x.pset_loc)),
     sequence(std::move(x.sequence)),
     reduced_sequence(std::move(x.reduced_sequence)),
@@ -323,7 +340,7 @@ inline Geese::Geese(Geese && x) noexcept :
     if (x.delete_support)
     {
 
-        model = new phylocounters::PhyloModel(*x.model);
+        model = new PhyloModel(*x.model);
         delete_support = true;
 
     } else {
@@ -341,14 +358,6 @@ inline Geese::Geese(Geese && x) noexcept :
 
 }
 
-// // Copy assignment
-// inline Geese & Geese::operator=(const Geese & model_) {
 
-// }
-
-// // Move assignment
-// inline Geese & Geese::operator=(Geese && model_) noexcept {
-
-// }
 
 #endif

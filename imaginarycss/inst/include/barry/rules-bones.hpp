@@ -1,10 +1,8 @@
-#include "typedefs.hpp"
-
 #ifndef BARRY_RULES_BONES_HPP
 #define BARRY_RULES_BONES_HPP 1
 
 template <typename Array_Type, typename Data_Type>
-bool rule_fun_default(const Array_Type * array, uint i, uint j, Data_Type * dat) {
+bool rule_fun_default(const Array_Type * array, size_t i, size_t j, Data_Type * dat) {
     return false;
 }
 
@@ -23,8 +21,10 @@ class Rule {
     
 private:
     Rule_fun_type<Array_Type,Data_Type> fun;
-    Data_Type * dat = nullptr;
-    bool delete_dat = false;
+    Data_Type dat;
+    
+    std::string  name = "";
+    std::string  desc = "";
     
 public:
 
@@ -41,20 +41,23 @@ public:
     Rule() : fun(rule_fun_default<Array_Type,Data_Type>) {};
     Rule(
         Rule_fun_type<Array_Type,Data_Type> fun_,
-        Data_Type * dat_ = nullptr,
-        bool delete_dat_ = false
-        ) : fun(fun_), dat(dat_), delete_dat(delete_dat_) {};
+        Data_Type dat_,
+        std::string name_        = "",   
+        std::string desc_        = ""
+        ) : fun(fun_), dat(dat_), name(name_), desc(desc_) {};
     ///@}
 
-    ~Rule() {
-        if (delete_dat)
-            delete dat;
-        return;
-    }
+    ~Rule() {};
 
-    Data_Type * D(); ///< Read/Write access to the data.
+    Data_Type & D(); ///< Read/Write access to the data.
     
-    bool operator()(const Array_Type & a, uint i, uint j);
+    bool operator()(const Array_Type & a, size_t i, size_t j);
+
+    std::string & get_name();
+    std::string & get_description();
+
+    std::string get_name() const;
+    std::string get_description() const;
     
 };
 
@@ -68,8 +71,7 @@ template<typename Array_Type, typename Data_Type>
 class Rules {
 
 private:
-    std::vector< Rule<Array_Type,Data_Type> * > data = {};
-    std::vector< uint > to_be_deleted                = {};
+    std::vector< Rule<Array_Type,Data_Type> > data;
     
 public:
     Rules() {};
@@ -77,12 +79,9 @@ public:
     Rules(const Rules<Array_Type,Data_Type> & rules_);
     Rules<Array_Type,Data_Type> operator=(const Rules<Array_Type,Data_Type> & rules_);
 
-    ~Rules() {
-        this->clear();
-        return;
-    }
+    ~Rules() {};
 
-    uint size() const noexcept {
+    size_t size() const noexcept {
         return data.size();
     };
     
@@ -92,12 +91,12 @@ public:
       * @param rule 
       */
     ///@{
-    void add_rule(Rule<Array_Type, Data_Type> & rule);
-    void add_rule(Rule<Array_Type, Data_Type> * rule);
+    void add_rule(Rule<Array_Type, Data_Type> rule);
     void add_rule(
         Rule_fun_type<Array_Type,Data_Type> rule_,
-        Data_Type *                         data_        = nullptr,
-        bool                                delete_data_ = false
+        Data_Type data_,
+        std::string name_ = "",
+        std::string description_ = ""
     );
     ///@}
 
@@ -111,9 +110,7 @@ public:
      * @return false If the cell is free
      */
 
-    bool operator()(const Array_Type & a, uint i, uint j);
-    
-    void clear();
+    bool operator()(const Array_Type & a, size_t i, size_t j);
     
     /**
      * @brief Computes the sequence of free and locked cells in an BArray
@@ -129,6 +126,17 @@ public:
         std::vector< size_t > * free,
         std::vector< size_t > * locked = nullptr
     );
+
+    std::vector< std::string > get_names() const;
+    std::vector< std::string > get_descriptions() const;
+
+    // Iterator
+    typename std::vector< Rule<Array_Type,Data_Type> >::iterator begin() {
+        return data.begin();
+    };
+    typename std::vector< Rule<Array_Type,Data_Type> >::iterator end() {
+        return data.end();
+    };
     
 };
 

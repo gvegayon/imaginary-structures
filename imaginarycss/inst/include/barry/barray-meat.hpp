@@ -1,5 +1,5 @@
 // #include <stdexcept>
-#include "barray-bones.hpp"
+// #include "barray-bones.hpp"
 
 template<typename Cell_Type>
 class Cell;
@@ -22,14 +22,14 @@ class Cell_const;
 
 
 template<typename Cell_Type, typename Data_Type>
-Cell<Cell_Type> BArray<Cell_Type,Data_Type>::Cell_default = Cell<Cell_Type>(); 
+Cell<Cell_Type> BArray<Cell_Type,Data_Type>::Cell_default = Cell<Cell_Type>(static_cast<Cell_Type>(1.0)); 
 
 
 // Edgelist with data
 BARRAY_TEMPLATE(,BArray) (
-    uint N_, uint M_,
-    const std::vector< uint > & source,
-    const std::vector< uint > & target,
+    size_t N_, size_t M_,
+    const std::vector< size_t > & source,
+    const std::vector< size_t > & target,
     const std::vector< Cell_Type > & value,
     bool add
 ) {
@@ -48,7 +48,7 @@ BARRAY_TEMPLATE(,BArray) (
     
     
     // Writing the data
-    for (uint i = 0u; i < source.size(); ++i) {
+    for (size_t i = 0u; i < source.size(); ++i) {
       
         // Checking range
         bool empty = this->is_empty(source[i], target[i], true);
@@ -69,9 +69,9 @@ BARRAY_TEMPLATE(,BArray) (
 
 // Edgelist with data
 BARRAY_TEMPLATE(,BArray) (
-    uint N_, uint M_,
-    const std::vector< uint > & source,
-    const std::vector< uint > & target,
+    size_t N_, size_t M_,
+    const std::vector< size_t > & source,
+    const std::vector< size_t > & target,
     bool add
 ) {
   
@@ -91,10 +91,10 @@ BARRAY_TEMPLATE(,BArray) (
     
     
     // Writing the data
-    for (uint i = 0u; i < source.size(); ++i) {
+    for (size_t i = 0u; i < source.size(); ++i) {
       
         // Checking range
-        if ((source[i] >= N_) | (target[i] >= M_))
+        if ((source[i] >= N_) || (target[i] >= M_))
             throw std::range_error("Either source or target point to an element outside of the range by (N,M).");
         
         // Checking if it exists
@@ -111,7 +111,7 @@ BARRAY_TEMPLATE(,BArray) (
         
         // Adding the value and creating a pointer to it
         ROW(source[i]).emplace(
-            std::pair<uint, Cell< Cell_Type> >(
+            std::pair<size_t, Cell< Cell_Type> >(
                 target[i],
                 Cell< Cell_Type >(value[i], visited)
             )
@@ -144,7 +144,7 @@ BARRAY_TEMPLATE(,BArray) (
     std::copy(Array_.el_ji.begin(), Array_.el_ji.end(), std::back_inserter(el_ji));
 
     // Taking care of the pointers
-    for (uint i = 0u; i < N; ++i)
+    for (size_t i = 0u; i < N; ++i)
     {
 
         for (auto& r: row(i, false))
@@ -190,7 +190,7 @@ BARRAY_TEMPLATE(BARRAY_TYPE() &, operator=) (
         this->resize(Array_.N, Array_.M);
         
         // Entries
-        for (uint i = 0u; i < N; ++i)
+        for (size_t i = 0u; i < N; ++i)
         {
           
             if (Array_.nnozero() == nnozero())
@@ -239,7 +239,7 @@ BARRAY_TEMPLATE(,BArray) (
     this->resize(x.N, x.M);
     
     // Entries
-    for (uint i = 0u; i < N; ++i) {
+    for (size_t i = 0u; i < N; ++i) {
       
         if (x.nnozero() == nnozero())
             break;
@@ -280,7 +280,7 @@ BARRAY_TEMPLATE(BARRAY_TYPE() &, operator=) (
         this->resize(x.N, x.M);
         
         // Entries
-        for (uint i = 0u; i < N; ++i) {
+        for (size_t i = 0u; i < N; ++i) {
           
             if (x.nnozero() == nnozero())
                 break;
@@ -358,15 +358,26 @@ BARRAY_TEMPLATE(void, set_data) (
     
 }
 
-BARRAY_TEMPLATE(Data_Type *, D) ()
+BARRAY_TEMPLATE(Data_Type *, D_ptr) ()
 {
     return this->data;
 }
 
 template<typename Cell_Type, typename Data_Type>
-inline const Data_Type * BArray<Cell_Type,Data_Type>::D() const
+inline const Data_Type * BArray<Cell_Type,Data_Type>::D_ptr() const
 {
     return this->data;
+}
+
+BARRAY_TEMPLATE(Data_Type &, D) ()
+{
+    return *this->data;
+}
+
+template<typename Cell_Type, typename Data_Type>
+inline const Data_Type & BArray<Cell_Type,Data_Type>::D() const
+{
+    return *this->data;
 }
 
 template<typename Cell_Type, typename Data_Type>
@@ -386,8 +397,8 @@ inline void BArray<Cell_Type,Data_Type>::flush_data()
 }
 
 BARRAY_TEMPLATE(void, out_of_range) (
-    uint i,
-    uint j
+    size_t i,
+    size_t j
 ) const {
 
     if (i >= N)
@@ -399,8 +410,8 @@ BARRAY_TEMPLATE(void, out_of_range) (
 }
     
 BARRAY_TEMPLATE(Cell_Type, get_cell) (
-    uint i,
-    uint j,
+    size_t i,
+    size_t j,
     bool check_bounds
 ) const {
     
@@ -422,7 +433,7 @@ BARRAY_TEMPLATE(Cell_Type, get_cell) (
 }
 
 BARRAY_TEMPLATE(std::vector< Cell_Type >, get_row_vec) (
-    uint i,
+    size_t i,
     bool check_bounds
 ) const {
 
@@ -440,7 +451,7 @@ BARRAY_TEMPLATE(std::vector< Cell_Type >, get_row_vec) (
 
 BARRAY_TEMPLATE(void, get_row_vec) (
     std::vector< Cell_Type > * x,
-    uint i,
+    size_t i,
     bool check_bounds
 ) const {
 
@@ -454,7 +465,7 @@ BARRAY_TEMPLATE(void, get_row_vec) (
 }
 
 BARRAY_TEMPLATE(std::vector< Cell_Type >, get_col_vec) (
-    uint i,
+    size_t i,
     bool check_bounds
 ) const {
 
@@ -472,7 +483,7 @@ BARRAY_TEMPLATE(std::vector< Cell_Type >, get_col_vec) (
 
 BARRAY_TEMPLATE(void, get_col_vec) (
     std::vector<Cell_Type> * x,
-    uint i,
+    size_t i,
     bool check_bounds
 ) const {
 
@@ -486,7 +497,7 @@ BARRAY_TEMPLATE(void, get_col_vec) (
 }
 
 BARRAY_TEMPLATE(const Row_type< Cell_Type > &, row) (
-    uint i,
+    size_t i,
     bool check_bounds
 ) const {
 
@@ -498,7 +509,7 @@ BARRAY_TEMPLATE(const Row_type< Cell_Type > &, row) (
 }
 
 BARRAY_TEMPLATE(const Col_type< Cell_Type > &, col) (
-    uint i,
+    size_t i,
     bool check_bounds
 ) const {
 
@@ -513,7 +524,7 @@ BARRAY_TEMPLATE(Entries< Cell_Type >, get_entries) () const {
     
     Entries<Cell_Type> res(NCells);
     
-    for (uint i = 0u; i < N; ++i) {
+    for (size_t i = 0u; i < N; ++i) {
         
         if (ROW(i).size() == 0u)
             continue;
@@ -529,8 +540,8 @@ BARRAY_TEMPLATE(Entries< Cell_Type >, get_entries) () const {
 }
 
 BARRAY_TEMPLATE(bool, is_empty) (
-    uint i,
-    uint j,
+    size_t i,
+    size_t j,
     bool check_bounds
 ) const {
     
@@ -550,17 +561,17 @@ BARRAY_TEMPLATE(bool, is_empty) (
 }
 
 
-BARRAY_TEMPLATE(unsigned int, nrow) () const noexcept {
+BARRAY_TEMPLATE(size_t, nrow) () const noexcept {
     return N;
 }
 
 
-BARRAY_TEMPLATE(unsigned int, ncol) () const noexcept {
+BARRAY_TEMPLATE(size_t, ncol) () const noexcept {
     return M;
 }
 
 
-BARRAY_TEMPLATE(unsigned int, nnozero) () const noexcept {
+BARRAY_TEMPLATE(size_t, nnozero) () const noexcept {
     return NCells;
 }
 
@@ -569,7 +580,7 @@ BARRAY_TEMPLATE(Cell< Cell_Type >, default_val) () const {
 }
 
 BARRAY_TEMPLATE(BARRAY_TYPE() &, operator+=) (
-    const std::pair<uint,uint> & coords
+    const std::pair<size_t,size_t> & coords
 ) {
     
     this->insert_cell(
@@ -584,7 +595,7 @@ BARRAY_TEMPLATE(BARRAY_TYPE() &, operator+=) (
 }
 
 BARRAY_TEMPLATE(BARRAY_TYPE() &, operator-=) (
-    const std::pair<uint,uint> & coords
+    const std::pair<size_t,size_t> & coords
 ) {
     
     this->rm_cell(
@@ -599,8 +610,8 @@ BARRAY_TEMPLATE(BARRAY_TYPE() &, operator-=) (
 
 template BARRAY_TEMPLATE_ARGS()
 inline BArrayCell<Cell_Type,Data_Type> BARRAY_TYPE()::operator()(  
-    uint i,
-    uint j,
+    size_t i,
+    size_t j,
     bool check_bounds
 ) {
     
@@ -610,8 +621,8 @@ inline BArrayCell<Cell_Type,Data_Type> BARRAY_TYPE()::operator()(
 
 template BARRAY_TEMPLATE_ARGS()
 inline const Cell_Type BARRAY_TYPE()::operator() (  
-    uint i,
-    uint j,
+    size_t i,
+    size_t j,
     bool check_bounds
 ) const {
     
@@ -620,8 +631,8 @@ inline const Cell_Type BARRAY_TYPE()::operator() (
 }
 
 BARRAY_TEMPLATE(void, rm_cell) (
-    uint i,
-    uint j,
+    size_t i,
+    size_t j,
     bool check_bounds,
     bool check_exists
 ) {
@@ -655,8 +666,8 @@ BARRAY_TEMPLATE(void, rm_cell) (
 }
 
 BARRAY_TEMPLATE(void, insert_cell) (
-        uint i,
-        uint j,
+        size_t i,
+        size_t j,
         const Cell< Cell_Type> & v,
         bool check_bounds,
         bool check_exists
@@ -670,7 +681,7 @@ BARRAY_TEMPLATE(void, insert_cell) (
         // Checking if nothing here, then we move along
         if (ROW(i).size() == 0u) {
             
-            ROW(i).insert(std::pair< uint, Cell<Cell_Type>>(j, v));
+            ROW(i).insert(std::pair< size_t, Cell<Cell_Type>>(j, v));
             COL(j).emplace(i, &ROW(i)[j]);
             NCells++;
             return;
@@ -680,7 +691,7 @@ BARRAY_TEMPLATE(void, insert_cell) (
         // In this case, the row exists, but we are checking that the value is empty  
         if (ROW(i).find(j) == ROW(i).end()) {
             
-            ROW(i).insert(std::pair< uint, Cell<Cell_Type>>(j, v)); 
+            ROW(i).insert(std::pair< size_t, Cell<Cell_Type>>(j, v)); 
             COL(j).emplace(i, &ROW(i)[j]);
             NCells++;
             
@@ -691,7 +702,7 @@ BARRAY_TEMPLATE(void, insert_cell) (
         
     } else {
         
-        ROW(i).insert(std::pair< uint, Cell<Cell_Type>>(j, v));
+        ROW(i).insert(std::pair< size_t, Cell<Cell_Type>>(j, v));
         COL(j).emplace(i, &ROW(i)[j]);
         NCells++;
         
@@ -702,8 +713,8 @@ BARRAY_TEMPLATE(void, insert_cell) (
 }
 
 BARRAY_TEMPLATE(void, insert_cell) (
-        uint i,
-        uint j,
+        size_t i,
+        size_t j,
         Cell< Cell_Type> && v,
         bool check_bounds,
         bool check_exists
@@ -717,7 +728,7 @@ BARRAY_TEMPLATE(void, insert_cell) (
         // Checking if nothing here, then we move along
         if (ROW(i).size() == 0u) {
             
-            ROW(i).insert(std::pair< uint, Cell<Cell_Type>>(j, v));
+            ROW(i).insert(std::pair< size_t, Cell<Cell_Type>>(j, v));
             COL(j).emplace(i, &ROW(i)[j]);
             NCells++;
             return;
@@ -727,7 +738,7 @@ BARRAY_TEMPLATE(void, insert_cell) (
         // In this case, the row exists, but we are checking that the value is empty  
         if (ROW(i).find(j) == ROW(i).end()) {
             
-            ROW(i).insert(std::pair< uint, Cell<Cell_Type>>(j, v)); 
+            ROW(i).insert(std::pair< size_t, Cell<Cell_Type>>(j, v)); 
             COL(j).emplace(i, &ROW(i)[j]);
             NCells++;
             
@@ -738,7 +749,7 @@ BARRAY_TEMPLATE(void, insert_cell) (
         
     } else {
         
-        ROW(i).insert(std::pair< uint, Cell<Cell_Type>>(j, v));
+        ROW(i).insert(std::pair< size_t, Cell<Cell_Type>>(j, v));
         COL(j).emplace(i, &ROW(i)[j]);
         NCells++;
         
@@ -749,8 +760,8 @@ BARRAY_TEMPLATE(void, insert_cell) (
 }
 
 BARRAY_TEMPLATE(void, insert_cell) (
-    uint i,
-    uint j,
+    size_t i,
+    size_t j,
     Cell_Type v,
     bool check_bounds,
     bool check_exists
@@ -761,8 +772,8 @@ BARRAY_TEMPLATE(void, insert_cell) (
 }
 
 BARRAY_TEMPLATE(void, swap_cells) (
-    uint i0, uint j0,
-    uint i1, uint j1,
+    size_t i0, size_t j0,
+    size_t i1, size_t j1,
     bool check_bounds,
     int check_exists,
     int * report
@@ -864,8 +875,8 @@ BARRAY_TEMPLATE(void, swap_cells) (
 }
 
 BARRAY_TEMPLATE(void, toggle_cell) (
-    uint i,
-    uint j,
+    size_t i,
+    size_t j,
     bool check_bounds,
     int check_exists
 ) {
@@ -897,8 +908,8 @@ BARRAY_TEMPLATE(void, toggle_cell) (
 }
 
 BARRAY_TEMPLATE(void, swap_rows) (
-    uint i0,
-    uint i1,
+    size_t i0,
+    size_t i1,
     bool check_bounds
 ) {
   
@@ -943,8 +954,8 @@ BARRAY_TEMPLATE(void, swap_rows) (
 
 // This swapping is more expensive overall
 BARRAY_TEMPLATE(void, swap_cols) (
-    uint j0,
-    uint j1,
+    size_t j0,
+    size_t j1,
     bool check_bounds
 ) {
   
@@ -1014,7 +1025,7 @@ BARRAY_TEMPLATE(void, swap_cols) (
 }
 
 BARRAY_TEMPLATE(void, zero_row) (
-    uint i,
+    size_t i,
     bool check_bounds
 ) {
   
@@ -1035,7 +1046,7 @@ BARRAY_TEMPLATE(void, zero_row) (
 }
 
 BARRAY_TEMPLATE(void, zero_col) (
-    uint j,
+    size_t j,
     bool check_bounds
 ) {
   
@@ -1064,9 +1075,9 @@ BARRAY_TEMPLATE(void, transpose) () {
     if      (N > M) el_ji.resize(N);
     else if (N < M) el_ij.resize(M);
     
-    // uint N0 = N, M0 = M;
+    // size_t N0 = N, M0 = M;
     int status;
-    for (uint i = 0u; i < N; ++i)
+    for (size_t i = 0u; i < N; ++i)
     {
         
         // Do we need to move anything?
@@ -1132,7 +1143,7 @@ BARRAY_TEMPLATE(void, clear) (
       
     } else {
         
-        for (unsigned int i = 0u; i < N; ++i)
+        for (size_t i = 0u; i < N; ++i)
             zero_row(i, false);
         
     }
@@ -1142,18 +1153,18 @@ BARRAY_TEMPLATE(void, clear) (
 }
 
 BARRAY_TEMPLATE(void, resize) (
-    uint N_,
-    uint M_
+    size_t N_,
+    size_t M_
 ) {
   
     // Removing rows
     if (N_ < N)
-        for (uint i = N_; i < N; ++i)
+        for (size_t i = N_; i < N; ++i)
             zero_row(i, false);
     
     // Removing cols
     if (M_ < M)
-        for (uint j = M_; j < M; ++j)
+        for (size_t j = M_; j < M; ++j)
             zero_col(j, false);
     
     // Resizing will invalidate pointers and values out of range
@@ -1174,10 +1185,10 @@ BARRAY_TEMPLATE(void, resize) (
 
 BARRAY_TEMPLATE(void, reserve) () {
 #ifdef BARRAY_USE_UNORDERED_MAP
-    for (uint i = 0u; i < N; i++)
+    for (size_t i = 0u; i < N; i++)
         ROW(i).reserve(M);
     
-    for (uint i = 0u; i < M; i++)
+    for (size_t i = 0u; i < M; i++)
         COL(i).reserve(N);
 #endif
     return;
@@ -1189,12 +1200,35 @@ BARRAY_TEMPLATE(void, print) (
     ...
 ) const {
   
+
     std::va_list args;
     va_start(args, fmt);
-    vprintf(fmt, args);
+    print_n(N, M, fmt, args);
+    va_end(args);    
+    
+    return;
+
+}
+
+BARRAY_TEMPLATE(void, print_n) (
+    size_t nrow,
+    size_t ncol,
+    const char * fmt,
+    ...
+) const {
+
+    if (nrow > N)
+        nrow = N;
+
+    if (ncol > M)
+        ncol = M;
+
+    std::va_list args;
+    va_start(args, fmt);
+    printf_barry(fmt, args);
     va_end(args);
 
-    for (uint i = 0u; i < N; ++i)
+    for (size_t i = 0u; i < nrow; ++i)
     {
 
         #ifdef BARRY_DEBUG_LEVEL
@@ -1204,7 +1238,7 @@ BARRAY_TEMPLATE(void, print) (
         #else
         printf_barry("[%3i,] ", i);
         #endif
-        for (uint j = 0u; j < M; ++j) {
+        for (size_t j = 0u; j < ncol; ++j) {
             if (this->is_empty(i, j, false))
                 printf_barry("    . ");
             else 
@@ -1215,6 +1249,15 @@ BARRAY_TEMPLATE(void, print) (
         printf_barry("\n");
 
     }
+
+    if (nrow < N)
+        printf_barry("Skipping %lu rows. ", nrow);
+
+    if (ncol < M)
+        printf_barry("Skipping %lu columns. ", ncol);
+
+    if (nrow < N || ncol < M)
+        printf_barry("\n");
     
     
     return;

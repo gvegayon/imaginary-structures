@@ -24,7 +24,7 @@ inline double Geese::likelihood(
     Node * n_off;
 
     // Following the prunning sequence
-    std::vector< unsigned int > * preseq;
+    std::vector< size_t > * preseq;
 
     if (use_reduced_sequence)
     {
@@ -55,17 +55,17 @@ inline double Geese::likelihood(
         Node & node = nodes[i];
 
         // Iterating through states
-        for (unsigned int s = 0u; s < states.size(); ++s)
+        for (size_t s = 0u; s < states.size(); ++s)
         {
 
             // Starting the prob
             double totprob = 0.0;
 
             // Retrieving the sets of arrays
-            const std::vector< phylocounters::PhyloArray > * psets =
+            const std::vector< PhyloArray > * psets =
                 model->get_pset(node.narray[s]);
 
-            const std::vector< std::vector<double> > * psets_stats =
+            const std::vector<double> * psets_stats =
                 model->get_pset_stats(node.narray[s]);
 
             std::vector< std::vector< size_t > > & locations = pset_loc[
@@ -73,8 +73,8 @@ inline double Geese::likelihood(
                 ];
             
             // Summation over all possible values of X
-            unsigned int nstate = 0u;
-            unsigned int narray = 0u;
+            size_t nstate = 0u;
+            size_t narray = 0u;
             for (auto x = psets->begin(); x != psets->end(); ++x)
             {
 
@@ -136,11 +136,35 @@ inline double Geese::likelihood(
                 }
 
                 // Multiplying by P(x|x_n), the transition probability
-                off_mult *= model->likelihood(
-                    par0,
-                    psets_stats->operator[](nstate++),
-                    node.narray[s]
-                );
+                std::vector< double > temp_stats(par0.size(), 0.0);
+                for (auto p = 0u; p < par0.size(); ++p)
+                    temp_stats[p] = psets_stats->operator[](par0.size() * nstate + p);
+
+                nstate++;
+
+                // Use try catch in the following line
+                try {
+                    off_mult *= model->likelihood(
+                        par0,
+                        temp_stats,
+                        node.narray[s]
+                    );
+                } catch (std::exception & e) {
+
+                    auto err = std::string(e.what());
+
+                    std::string state_str = "";
+                    for (const auto & ss : states[s])
+                        state_str += std::to_string(ss) + " ";
+
+                    err = "Error computing the likelihood at node " +
+                        std::to_string(node.id) + " with state " + state_str +
+                        ". Error message:\n" +
+                        err;
+
+                    throw std::runtime_error(err);
+                    
+                }
 
                 // Adding to the total probabilities
                 totprob += off_mult;
@@ -156,7 +180,7 @@ inline double Geese::likelihood(
         if (node.parent == nullptr)
         {
 
-            for (unsigned int s = 0u; s < states.size(); ++s)
+            for (size_t s = 0u; s < states.size(); ++s)
             {
 
                 double tmpll = 1.0;

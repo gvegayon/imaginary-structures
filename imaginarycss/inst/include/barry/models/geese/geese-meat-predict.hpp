@@ -6,7 +6,7 @@
 inline std::vector< std::vector<double> > Geese::predict_backend(
     const std::vector< double > & par,
     bool use_reduced_sequence,
-    const std::vector< uint > & preorder
+    const std::vector< size_t > & preorder
 )
 {
 
@@ -20,34 +20,49 @@ inline std::vector< std::vector<double> > Geese::predict_backend(
 
     // Generating probabilities at the root-level (root state)
     std::vector< double > rootp(this->states.size(), 1.0);
-    for (unsigned int s = 0u; s < rootp.size(); ++s)
+    for (size_t s = 0u; s < rootp.size(); ++s)
     {
 
-        for (unsigned int f = 0u; f < nfuns(); ++f)
+        for (size_t f = 0u; f < nfuns(); ++f)
             rootp[s] *= states[s][f] ? par_root[f] : (1.0 - par_root[f]);
         
     }
 
     // Making room 
     std::vector< std::vector<double> > res(
-        nnodes(), std::vector<double>(nfuns()));
+        nnodes(), std::vector<double>(nfuns())
+        );
 
     // Step 1: Computing the probability at the root node
-    std::vector< double > tmp_prob(nfuns(), 0.0);
-    unsigned int root_id = preorder[0u];
-    Node * tmp_node      = &nodes[root_id];
+    std::vector< double > tmp_prob(nfuns(), 0.0); 
+    size_t root_id = preorder[0u];
+    Node * tmp_node = &nodes[root_id];
     tmp_node->probability.resize(states.size(), 0.0);
     double tmp_likelihood = likelihood(par, false, use_reduced_sequence);
 
-    for (unsigned int s = 0u; s < states.size(); ++s)
+    if (!std::isfinite(tmp_likelihood))
+    {
+        throw std::runtime_error("Likelihood is not finite");
+    }
+
+    for (size_t s = 0u; s < states.size(); ++s)
     {
 
         // Overall state probability P(x_s | D)
         tmp_node->probability[s] = tmp_node->subtree_prob[s] * rootp[s] /
             tmp_likelihood;
 
+        if (!std::isfinite(tmp_node->probability[s]))
+        {
+            throw std::runtime_error("Probability is not finite");
+        }
+            
+            
+
+        
+
         // Marginalizing the probabilities P(x_sf | D)
-        for (unsigned int f = 0u; f < nfuns(); ++f)
+        for (size_t f = 0u; f < nfuns(); ++f)
         {
 
             // Since the probability, the expected value, is for
@@ -62,8 +77,10 @@ inline std::vector< std::vector<double> > Geese::predict_backend(
     }
 
     // Storing the final prob
-    res[nodes[preorder[0u]].ord] = tmp_prob;
+    res[nodes[root_id].ord] = tmp_prob;
+    size_t n_pars = par_terms.size();
 
+    // This will start from the root node and go down
     for (auto & i : preorder)
     {
 
@@ -75,7 +92,11 @@ inline std::vector< std::vector<double> > Geese::predict_backend(
         // Creating space.
         std::vector< std::vector< double > > everything_below(states.size());
         std::vector< std::vector< double > > everything_above(states.size());
-        std::vector< std::vector< phylocounters::PhyloArray > > psets(states.size());
+        
+        // All combinations of the the parent states
+        // So psets[s] = combinations of offspring given state s.
+        //    psets[s][i] = The ith combination of offspring given state s.
+        std::vector< std::vector< PhyloArray > > psets(states.size());
 
         // Making space for the offspring
         for (auto & off : parent.offspring)
@@ -85,24 +106,24 @@ inline std::vector< std::vector<double> > Geese::predict_backend(
         }
 
         // Iterating through the parent states
-        for (unsigned int s = 0u; s < states.size(); ++s)
+        for (size_t s = 0u; s < states.size(); ++s)
         {
 
             // Retrieving powerset of stats and arrays
-            // it is not const since we will flip the states back and forth
-            // to generate the key
             const auto & pset_arrays = model->get_pset(parent.narray[s]);
-            const auto & pset_target = model->get_pset_stats(parent.narray[s]);
+            const std::vector<double> * pset_target = model->get_pset_stats(
+                parent.narray[s]
+                );
 
-            for (unsigned int p = 0u; p < pset_arrays->size(); ++p)
+            // Going over all possible combinations given parent is state s
+            for (size_t p = 0u; p < pset_arrays->size(); ++p)
             {
 
                 // Corresponding graph and target stats
-                const phylocounters::PhyloArray & array_p = pset_arrays->at(p);
-                const std::vector<double> & target_p = pset_target->at(p);
-
-                phylocounters::PhyloArray tmp_array(nfuns(), array_p.ncol());
-                tmp_array += array_p;
+                const PhyloArray & array_p = pset_arrays->at(p);
+                std::vector<double> target_p(n_pars, 0.0);
+                for (size_t par_i = 0u; par_i < target_p.size(); ++par_i)
+                    target_p[par_i] = pset_target->operator[](p * n_pars + par_i);
 
                 // Adding to the map, we only do this during the first run,
                 // afterwards, we need to actually look for the array.
@@ -111,7 +132,7 @@ inline std::vector< std::vector<double> > Geese::predict_backend(
                 // Everything below just need to be computed only once
                 // and thus, if already added, no need to go through all of this!
                 double everything_below_p = 1.0;
-                for (unsigned int off = 0u; off < parent.offspring.size(); ++off)
+                for (size_t off = 0u; off < parent.offspring.size(); ++off)
                 {
 
                     // Below leafs, the everything below is 1.
@@ -121,7 +142,7 @@ inline std::vector< std::vector<double> > Geese::predict_backend(
                         // But we can only includ it if the current state actually
                         // matches the leaf data (otherwise the prob is 0)
                         const auto & off_ann = parent.offspring[off]->annotations;
-                        for (unsigned int f = 0u; f < nfuns(); ++f)
+                        for (size_t f = 0u; f < nfuns(); ++f)
                         {
 
                             if ((off_ann[f] != 9u) && (off_ann[f] != array_p(f, off)))
@@ -142,7 +163,7 @@ inline std::vector< std::vector<double> > Geese::predict_backend(
                         // Getting the offspring state, and how it maps, only
                         // if it is not an offspring
                         const auto & off_state = array_p.get_col_vec(off);
-                        unsigned int loc = this->map_to_nodes[off_state];
+                        size_t loc = this->map_to_state_id[off_state];
 
                         everything_below_p *= parent.offspring[off]->subtree_prob[loc];
 
@@ -155,6 +176,10 @@ inline std::vector< std::vector<double> > Geese::predict_backend(
                     continue;
 
                 psets[s].push_back(array_p); // Generating a copy
+                
+                // - With focal node, conditioning on it beening status s.
+                // - But the offspring probabilities are the central ones here.
+                // - So the saved values are for computing P(x_offspring | Data)
                 everything_below[s].push_back(everything_below_p);
 
                 // The first run, we only need to grow the list
@@ -169,10 +194,11 @@ inline std::vector< std::vector<double> > Geese::predict_backend(
             
         } // end for states
 
-        // Marginalizing at the state level
-        for (unsigned int s = 0u; s < states.size(); ++s)
+        // Marginalizing at the state level for each offspring
+        for (size_t s = 0u; s < states.size(); ++s)
         {
-            for (unsigned int p = 0u; p < everything_above[s].size(); ++p)
+
+            for (size_t p = 0u; p < everything_above[s].size(); ++p)
             {
 
                 // p-th pset
@@ -181,12 +207,21 @@ inline std::vector< std::vector<double> > Geese::predict_backend(
                 // Updating the probability (it is the product)
                 everything_above[s][p] *= everything_below[s][p];
 
-                for (unsigned int off = 0u; off < parent.offspring.size(); ++off)
+                for (size_t off = 0u; off < parent.offspring.size(); ++off)
                 {
 
                     // Figuring out the state of the offspring
-                    unsigned int off_s = this->map_to_nodes[pset_p.get_col_vec(off)];
+                    auto cvec = pset_p.get_col_vec(off);
+                    size_t off_s = this->map_to_state_id[cvec];
                     parent.offspring[off]->probability[off_s] += everything_above[s][p];
+
+                    // We integrate over the offspring itsefl
+                    for (size_t f = 0u; f < nfuns(); ++f)
+                    {
+                        if (cvec[f] == 1u)
+                            res[parent.offspring[off]->ord][f] += everything_above[s][p];
+                    }
+                    
 
 
                 }
@@ -198,17 +233,17 @@ inline std::vector< std::vector<double> > Geese::predict_backend(
         // gene function level.
         for (const auto & off : parent.offspring)
         {
-            for (unsigned int s = 0u; s < states.size(); ++s)
-            {
+            // for (size_t s = 0u; s < states.size(); ++s)
+            // {
 
-                for (unsigned int f = 0u; f < nfuns(); ++f)
-                    if (states[s][f]) 
-                        res[off->ord][f] += off->probability[s];
+            //     for (size_t f = 0u; f < nfuns(); ++f)
+            //         if (states[s][f]) 
+            //             res[off->ord][f] += off->probability[s];
 
-            }
+            // }
 
             // Checking that probabilities add up to one
-            for (unsigned int f = 0u; f < nfuns(); ++f)
+            for (size_t f = 0u; f < nfuns(); ++f)
             {
                 if ((res[off->ord][f] > 1.00001) || (res[off->ord][f] < -.0000009))
                 {
@@ -227,7 +262,6 @@ inline std::vector< std::vector<double> > Geese::predict_backend(
                     res[off->ord][f] = 0.0;
 
             }
-   
 
         }
 
@@ -249,7 +283,7 @@ inline std::vector< std::vector<double> > Geese::predict(
     INITIALIZED()
 
     // Inverse sequence
-    std::vector< unsigned int > preorder;
+    std::vector< size_t > preorder;
     if (only_annotated)
         preorder = this->reduced_sequence;
     else
@@ -279,11 +313,12 @@ inline std::vector< std::vector<double> > Geese::predict(
     if (leave_one_out)
     {
 
-        std::vector< unsigned int > default_empty(nfuns(), 9u);
+        std::vector< size_t > default_empty(nfuns(), 9u);
         for (auto& n : nodes)
         {
 
-            if (n.second.is_leaf()) {
+            if (n.second.is_leaf())
+            {
 
                 Node & ntmp = n.second;
 
@@ -318,7 +353,6 @@ inline std::vector< std::vector<double> > Geese::predict(
 
                 if (res_prob != nullptr)
                     res_prob->operator[](ntmp.ord) = ntmp.probability;
-
 
             }
 

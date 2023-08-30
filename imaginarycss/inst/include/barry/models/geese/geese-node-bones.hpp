@@ -11,21 +11,22 @@
 class Node {
 public:
 
-    unsigned int id; ///< Id of the node (as specified in the input)
-    unsigned int ord; ///< Order in which the node was created
+    size_t id; ///< Id of the node (as specified in the input)
+    size_t ord; ///< Order in which the node was created
 
-    phylocounters::PhyloArray array;
-    std::vector< unsigned int >              annotations;         ///< Observed annotations (only defined for Geese)
-    bool                                     duplication;
+    PhyloArray array;       ///< Array of the node
+    std::vector< size_t >     annotations; ///< Observed annotations (only defined for Geese)
+    bool                      duplication;
 
-    std::vector< phylocounters::PhyloArray > arrays    = {};      ///< Arrays given all possible states
-    Node *                                   parent    = nullptr; ///< Parent node
-    std::vector< Node* >                     offspring = {};      ///< Offspring nodes
-    std::vector< unsigned int >              narray    = {};      ///< ID of the array in the model
-    bool                                     visited   = false;
+    std::vector< PhyloArray > arrays = {}; ///< Arrays given all possible states
 
-    std::vector< double >                    subtree_prob;        ///< Induced subtree probabilities
-    std::vector< double >                    probability;         ///< The probability of observing each state
+    Node *                parent    = nullptr; ///< Parent node
+    std::vector< Node* >  offspring = {};      ///< Offspring nodes
+    std::vector< size_t > narray    = {};      ///< ID of the array in the model
+    bool                  visited   = false;
+
+    std::vector< double > subtree_prob; ///< Induced subtree probabilities
+    std::vector< double > probability;  ///< The probability of observing each state
     
     /**
      * @name Construct a new Node object
@@ -33,9 +34,9 @@ public:
      */
     ///@{
     
-    Node() : ord(UINT_MAX) {};
-    Node(unsigned int id_, unsigned int ord_, bool duplication_);
-    Node(unsigned int id_, unsigned int ord_, std::vector< unsigned int > annotations_, bool duplication_);
+    Node() : ord(std::numeric_limits< size_t >::max()) {};
+    Node(size_t id_, size_t ord_, bool duplication_);
+    Node(size_t id_, size_t ord_, std::vector< size_t > annotations_, bool duplication_);
     
     // Move constructor
     Node(Node && x) noexcept;
@@ -48,26 +49,27 @@ public:
 
     int get_parent() const;
 
-    unsigned int noffspring() const noexcept;
+    size_t noffspring() const noexcept;
     bool is_leaf() const noexcept;
 
 };
 
-inline Node::Node(unsigned int id_, unsigned int ord_, bool duplication_)
+inline Node::Node(size_t id_, size_t ord_, bool duplication_)
     : id(id_), ord(ord_), duplication(duplication_) {
 
     return;
 }
 
 inline Node::Node(
-    unsigned int id_,
-    unsigned int ord_,
-    std::vector< unsigned int > annotations_,
+    size_t id_,
+    size_t ord_,
+    std::vector< size_t > annotations_,
     bool duplication_
     ) : id(id_), ord(ord_), annotations(annotations_), duplication(duplication_) {}
 
 inline Node::Node(Node && x) noexcept :
-    id(x.id), ord(x.ord), array(std::move(x.array)), annotations(std::move(x.annotations)),
+    id(x.id), ord(x.ord), array(std::move(x.array)),
+    annotations(std::move(x.annotations)),
     duplication(x.duplication), arrays(std::move(x.arrays)),
     parent(std::move(x.parent)),
     offspring(std::move(x.offspring)),
@@ -81,7 +83,8 @@ inline Node::Node(Node && x) noexcept :
 }
 
 inline Node::Node(const Node & x) :
-    id(x.id), ord(x.ord), array(x.array), annotations(x.annotations),
+    id(x.id), ord(x.ord), array(x.array), 
+    annotations(x.annotations),
     duplication(x.duplication), arrays(x.arrays),
     parent(x.parent),
     offspring(x.offspring),
@@ -100,7 +103,7 @@ inline int Node::get_parent() const {
     else
         return static_cast<int>(parent->id);
 }
-inline unsigned int Node::noffspring() const noexcept {
+inline size_t Node::noffspring() const noexcept {
 
     return this->offspring.size();
 

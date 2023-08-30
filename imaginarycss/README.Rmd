@@ -62,27 +62,36 @@ count_recip_errors(graph)
 
 ```{r example-krackhardt}
 krack_data <- read.csv("data-raw/advice_nets.csv")
+krack_data <- as.matrix(krack_data)
 n          <- 21
 
-graph <- new_barry_graph(n*22, krack_data[,1] - 1, krack_data[,2] - 1)
-ans   <- count_recip_errors(graph, 21, end_points)
+krack_adjmat <- matrix(0L, nrow = n*22, ncol = n*22)
+krack_adjmat[krack_data] <- 1L
 
-ans$name <- gsub("[(][0-9]+[)]", "", ans$name)
+graph <- new_barry_graph(
+  krack_adjmat,
+  n = n
+  )
+
+ans <- count_recip_errors(graph)
 ans
 ```
 
 Now checking that none of these coincide completely
 
 ```{r}
-tmp <- table(ans$value, ans$name)
-tmp <- apply(tmp, 2, paste, collapse = "")
-length(unique(tmp))  == 4 # Should be true
+# Removing the network id
+ans$name <- gsub("\\([0-9]+\\)$", "", ans$name)
 ```
 
 Checking out the distribution
 
 ```{r dist}
 library(ggplot2)
+
+# keeping the onces from the census only
+ans <- subset(ans, grepl("^\\([0-9]", name))
+
 ggplot(data = ans, aes(y = value)) +
   geom_histogram() + 
   facet_wrap(vars(name)) +

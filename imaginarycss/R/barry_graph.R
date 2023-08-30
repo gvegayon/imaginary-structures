@@ -1,3 +1,23 @@
+to_integer <- function(x) {
+
+  fcall <- as.character(match.call()[[2]])
+
+  if (any(abs(round(x) - x) > .Machine$double.eps ^ 0.5))
+    stop("Values in ", fcall, " must be integer")
+
+  # Case of a vector 
+  if (!length(dim(x))) {
+    as.integer(x)
+  }
+
+  # Case of a matrix
+  structure(
+    as.integer(x),
+    dim = dim(x)
+  )
+
+}
+
 #' Binary Array Graph
 #' @param x Either a matrix or a list of matrices.
 #' @param ... Currently ignored. 
@@ -30,11 +50,20 @@ new_barry_graph.matrix <- function(x, n, ...) {
     stop("-n- cannot less than 1L", call. = FALSE)
   
   # Identifying the endpoints
-  n_nets    <- N %/% n 
+  n <- as.integer(n)
+  n_nets    <- as.integer(N %/% n)
+
+  # It cannot be a single network
+  if (n_nets < 2L)
+    stop("The number of networks must be at least 2L.", call. = FALSE)
+
   endpoints <- cumsum(rep(n, times = n_nets - 1L)) + n
   
   edgelist <- which(x != 0L, arr.ind = TRUE) - 1L
   
+  edgelist <- to_integer(edgelist)
+  endpoints <- to_integer(endpoints)
+
   new_barry_graph_cpp(N, edgelist[, 1L], edgelist[, 2L], n, endpoints)
   
 }
@@ -68,6 +97,15 @@ new_barry_graph.list <- function(x, ...) {
   # Identifying the endpoints
   n_nets    <- length(x)
   endpoints <- cumsum(rep(n, times = n_nets - 1L)) + n
+
+  edgelists <- to_integer(edgelists)
+  endpoints <- to_integer(endpoints)
+
+  if (any(edgelists < 0))
+    stop("Edgelist cannot have negative values")
+
+  if (any(endpoints < 0))
+    stop("Endpoints cannot have negative values")
   
   # Creating the edgelist
   new_barry_graph_cpp(n * n_nets, edgelists[, 1], edgelists[, 2], n, endpoints)
