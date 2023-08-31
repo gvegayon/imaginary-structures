@@ -2,17 +2,49 @@
 % Please edit documentation in R/random.R
 \name{tie_level_accuracy}
 \alias{tie_level_accuracy}
+\alias{sample_css_network}
 \title{Null distribution for Cognitive Imaginary Structures}
 \usage{
 tie_level_accuracy(graph, which_nets = NULL)
+
+sample_css_network(
+  graph,
+  prob = tie_level_accuracy(graph),
+  i = 1L:attr(graph, "netsize"),
+  keep_baseline = TRUE
+)
 }
 \arguments{
 \item{graph}{A barry_graph object.}
 
 \item{which_nets}{Integer vector. The networks to sample from.}
+
+\item{prob}{A numeric vector of length 4L or a data frame (see details).}
+}
+\value{
+A data frame with the following columns:
+\itemize{
+\item \code{i}: The ego id.
+\item \code{p_0_ego}: The probability of no tie between an ego and an alter.
+\item \code{p_1_ego}: The probability of a tie between an ego and an alter.
+\item \code{p_0_alter}: The probability of no tie between two alters.
+\item \code{p_1_alter}: The probability of a tie between two alters.
+}
 }
 \description{
 Null distribution for Cognitive Imaginary Structures
+}
+\details{
+The function \code{sample_css_network} samples perceived networks from the
+baseline network. The baseline network is the first network in the
+\code{graph} object. The function \code{tie_level_accuracy} can be used to
+generate the probability vector.
+
+The probability vector is a numeric vector of length 4L. The first
+two elements are the probability of a tie/no tie between an ego and an alter.
+The third and fourth elements are the probability of a tie/no tie between
+two alters. When \code{prob} is a data frame, the function will sample from
+each row of the data frame (returned from the function \code{tie_level_accuracy}).
 }
 \examples{
 \dontrun{

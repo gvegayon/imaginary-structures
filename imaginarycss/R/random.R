@@ -1,6 +1,21 @@
 #' Null distribution for Cognitive Imaginary Structures
+#' 
+#' These functions can be used to generate null distributions for testing the
+#' prevalence of imaginary CSS. The null is a function of the individual level
+#' accuracy rates, in other words. Pr(i perceives a one| there is a one) and
+#' Pr(i perceives a zero| there is a zero).
+#' 
 #' @param graph A barry_graph object.
 #' @param which_nets Integer vector. The networks to sample from.
+#' @return
+#' The function `tie_level_accuracy` returns a data frame with the following columns:
+#' \itemize{
+#'  \item \code{i}: The ego id.
+#'  \item \code{p_0_ego}: The probability of no tie between an ego and an alter.
+#'  \item \code{p_1_ego}: The probability of a tie between an ego and an alter.
+#'  \item \code{p_0_alter}: The probability of no tie between two alters.
+#'  \item \code{p_1_alter}: The probability of a tie between two alters.
+#' }
 #' @examples 
 #' \dontrun{
 #' taccuracy <- tie_level_accuracy(graph)
@@ -47,6 +62,8 @@ tie_level_accuracy <- function(
   g_0 <- matrix(0L, nrow = netsize, ncol = netsize)
   g_0[elist0] <- 1L
 
+  # NA diagonal
+  diag(g_0) <- NA
 
   # Identifying 
   edgelist <- lapply(which_nets, function(i) {
@@ -63,24 +80,28 @@ tie_level_accuracy <- function(
     g_i <- matrix(0L, nrow = netsize, ncol = netsize)
     g_i[e_i] <- 1L
 
+    # NA diagonal
+    diag(g_i) <- NA
+
     # Computing the true positive rate
     p_1_alter <- g_0[-i, -i, drop = FALSE]
     p_1_alter <- which(p_1_alter == 1, arr.ind = TRUE)
 
-    p_1_alter <- mean(g_i[-i, -i, drop=FALSE][p_1_alter] == 1)
+    p_1_alter <- mean(g_i[-i, -i, drop=FALSE][p_1_alter] == 1, na.rm = TRUE)
 
     # The same but for 0
     p_0_alter <- g_0[-i, -i, drop = FALSE]
     p_0_alter <- which(p_0_alter == 0, arr.ind = TRUE)
 
-    p_0_alter <- mean(g_i[-i, -i, drop=FALSE][p_0_alter] == 0)
+    p_0_alter <- mean(g_i[-i, -i, drop=FALSE][p_0_alter] == 0, na.rm = TRUE)
 
     # Now only for i
     p_1_ego <- c(g_0[i,], g_0[, i])
     p_1_ego <- which(p_1_ego == 1)
 
     p_1_ego <- mean(
-      c(g_i[i, ], g_i[, i])[p_1_ego] == 1
+      c(g_i[i, ], g_i[, i])[p_1_ego] == 1,
+      na.rm = TRUE
       )
 
     # The same but for 0
@@ -88,24 +109,149 @@ tie_level_accuracy <- function(
     p_0_ego <- which(p_0_ego == 0)
 
     p_0_ego <- mean(
-      c(g_i[i, ], g_i[, i])[p_0_ego] == 0
+      c(g_i[i, ], g_i[, i])[p_0_ego] == 0,
+      na.rm = TRUE
       )
-
 
     data.frame(
       i         = i,
-      p_1_alter = p_1_alter,
-      p_0_alter = p_0_alter,
+      p_0_ego   = p_0_ego,
       p_1_ego   = p_1_ego,
-      p_0_ego   = p_0_ego
+      p_0_alter = p_0_alter,
+      p_1_alter = p_1_alter
     )
 
 
   })
 
   # Generating the samples
-  do.call(rbind, edgelist)
+  res <- do.call(rbind, edgelist)
+  class(res) <- c(class(res), "tie_level_accuracy")
+  res
 
 }
 
+#' @rdname tie_level_accuracy
+#' @param prob A numeric vector of length 4L or a data frame (see details).
+#' @param i Integer vector. The network to sample from.
+#' @param keep_baseline Logical scalar. When `TRUE`, the function returns
+#' the baseline network as the first element of the list.
+#' @details
+#' The function `sample_css_network` samples perceived networks from the
+#' baseline network. The baseline network is the first network in the
+#' `graph` object. The function `tie_level_accuracy` can be used to
+#' generate the probability vector. 
+#' 
+#' The probability vector is a numeric vector of length 4L. The first
+#' two elements are the probability of a tie/no tie between an ego and an alter.
+#' The third and fourth elements are the probability of a tie/no tie between
+#' two alters. When `prob` is a data frame, the function will sample from
+#' each row of the data frame (returned from the function `tie_level_accuracy`).
+#' 
+#' @export
+#' @return 
+#' The function `sample_css_network` returns a list of square matrices of size
+#' `attr(graph, "netsize")`. If `keep_baseline = TRUE`, the first element of
+#' the list is the baseline network. Otherwise, it is not returned.
+sample_css_network <- function(
+  graph,
+  prob = tie_level_accuracy(graph),
+  i = 1L:attr(graph, "netsize"),
+  keep_baseline = TRUE) {
 
+  if (!inherits(graph, "barry_graph"))
+    stop("The graph is not a barry_graph.", call. = FALSE)
+
+  # Getting the edgelist
+  elist <- barray_to_edgelist(graph)
+
+  # And other graph attributes
+  netsize   <- attr(graph, "netsize")
+
+  # Generating the baseline graph
+  elist0 <- elist[
+    which((elist[, 1] <= netsize) & (elist[, 2] <= netsize)), ,
+    drop = FALSE
+  ]
+
+  g_0 <- matrix(0L, nrow = netsize, ncol = netsize)
+  g_0[elist0] <- 1L
+
+  # Sampling the network
+  if (inherits(prob, "numeric")) {
+
+    if (length(prob) != 4L)
+      stop("The probability vector must have length 4L.", call. = FALSE)
+
+    if (missing(i))
+      stop("The network to sample from must be specified.", call. = FALSE)
+
+    # Generating the sample
+    list(
+      if (keep_baseline) g_0 else NULL,
+      sample_css_network_vector(g_0, prob, i)
+    )
+  
+  } else if (inherits(prob, "data.frame")) {
+
+    # Generating the sample
+    c(
+      if (keep_baseline) list(g_0) else NULL,
+      sample_css_network_dataframe(g_0, prob)
+    )
+
+  } else
+    stop("The probability must be a numeric vector or a data.frame.", call. = FALSE)
+
+}
+
+sample_css_network_dataframe <- function(g_0, prob) {
+
+  # Splitting the prob data.frame by row
+  lapply(seq_len(nrow(prob)), function(i) {
+
+    # Getting the probabilities
+    p <- unlist(
+      prob[i, c("p_0_ego", "p_1_ego", "p_0_alter", "p_1_alter")]
+      )
+
+    # Generating the sample
+    sample_css_network_vector(g_0, p, i)
+
+  })
+
+}
+
+sample_css_network_vector <- function(g_0, prob, i) {
+
+  # Creating empty matrix
+  g <- matrix(0L, nrow = nrow(g_0), ncol = ncol(g_0))
+
+  # Inverting the first and third of prob, so that way
+  # all are "probability of the entry to be equal to 1"
+  prob[c(1, 3)] <- 1 - prob[c(1, 3)]
+
+  # Greating the matrix of probabilities (first and second position)
+  pmat <- g_0
+  pmat[] <- prob[g_0 + 1]
+
+  # Editing ego probs (third and fourth position)
+  pmat[i,] <- prob[g_0[i,] + 3]
+  pmat[,i] <- prob[g_0[,i] + 3]
+
+  # Sampling
+  n <- nrow(g_0)
+  res <- matrix(
+    as.integer(runif(n*n) < as.vector(pmat)),
+    nrow = n
+  )
+
+  diag(pmat) <- NA_real_
+  diag(res)  <- 0L
+
+  structure(
+    res,
+    probs = pmat
+    )
+
+}

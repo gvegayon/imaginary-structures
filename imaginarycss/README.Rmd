@@ -109,5 +109,12 @@ boxplot(
   main = "Individual level true positive and true negative rates",
   ylab = "Probability"
   )# Keeping only the ones from the census
+
+# Sampling
+scss <- sample_css_network(graph)
+```
+
+```{r}
+
 ```
 

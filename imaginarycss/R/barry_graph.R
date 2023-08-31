@@ -92,7 +92,7 @@ new_barry_graph.list <- function(x, ...) {
   for (i in seq_along(edgelists))
     edgelists[[i]] <- (edgelists[[i]] - 1L) + (i - 1L) * n
   
-  edgelists <- do.call(cbind, edgelists)
+  edgelists <- do.call(rbind, edgelists)
   
   # Identifying the endpoints
   n_nets    <- length(x)

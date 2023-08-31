@@ -21,7 +21,7 @@ LazyData: true
 Roxygen: list(markdown = TRUE, load = "source")
 RoxygenNote: 7.2.3
 SystemRequirements: C++11
-LinkingTo: 
-    Rcpp
+LinkingTo: Rcpp
 Imports: 
     Rcpp
+Suggests: tinytest
