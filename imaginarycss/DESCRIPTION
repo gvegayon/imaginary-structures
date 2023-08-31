@@ -20,8 +20,8 @@ Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE, load = "source")
 RoxygenNote: 7.2.3
-SystemRequirements: C++11
 LinkingTo: Rcpp
 Imports: 
-    Rcpp
+    Rcpp,
+    stats
 Suggests: tinytest

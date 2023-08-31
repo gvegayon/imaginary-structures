@@ -222,6 +222,8 @@ sample_css_network_dataframe <- function(g_0, prob) {
 
 }
 
+#' @importFrom stats runif
+#' @noRd
 sample_css_network_vector <- function(g_0, prob, i) {
 
   # Creating empty matrix
@@ -242,7 +244,7 @@ sample_css_network_vector <- function(g_0, prob, i) {
   # Sampling
   n <- nrow(g_0)
   res <- matrix(
-    as.integer(runif(n*n) < as.vector(pmat)),
+    as.integer(stats::runif(n*n) < as.vector(pmat)),
     nrow = n
   )
 

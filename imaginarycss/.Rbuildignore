@@ -1,3 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^README\.Rmd$
+\.vscode$
+^Makefile$
+^README\.html$
+^data-raw$

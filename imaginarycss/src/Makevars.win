@@ -1,5 +1,5 @@
-# CXX = $(BINPREF)g++ -std=c++11
-# CXXFLAGS=-O2 -fdebug-prefix-map=/build/r-base-EkOYxp/r-base-4.0.4=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2
-CXX_STD = CXX11
-PKG_CXXFLAGS= -I../inst/include/ -O3 -Wall -pedantic -Dprintf_barry=Rprintf
+PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
+
+# This is necesary since ARMADILLO now supports OpenMP
+PKG_CXXFLAGS=$(SHLIB_OPENMP_CXXFLAGS) -Dprintf_barry=Rprintf
 #CXXFLAGS=-O3 -Wall -pedantic

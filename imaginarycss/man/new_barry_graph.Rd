@@ -2,6 +2,7 @@
 % Please edit documentation in R/barry_graph.R
 \name{new_barry_graph}
 \alias{new_barry_graph}
+\alias{barry_graph}
 \alias{new_barry_graph.matrix}
 \alias{new_barry_graph.list}
 \title{Binary Array Graph}

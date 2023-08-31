@@ -110,11 +110,11 @@ boxplot(
   ylab = "Probability"
   )# Keeping only the ones from the census
 
-# Sampling
-scss <- sample_css_network(graph)
-```
+# Sampling and using that to generate a new barray graph
 
-```{r}
-
+graph_sampled <- new_barry_graph(
+  sample_css_network(graph)
+)
+graph_sampled
 ```
 

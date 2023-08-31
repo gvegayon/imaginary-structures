@@ -20,9 +20,14 @@ sample_css_network(
 \item{which_nets}{Integer vector. The networks to sample from.}
 
 \item{prob}{A numeric vector of length 4L or a data frame (see details).}
+
+\item{i}{Integer vector. The network to sample from.}
+
+\item{keep_baseline}{Logical scalar. When \code{TRUE}, the function returns
+the baseline network as the first element of the list.}
 }
 \value{
-A data frame with the following columns:
+The function \code{tie_level_accuracy} returns a data frame with the following columns:
 \itemize{
 \item \code{i}: The ego id.
 \item \code{p_0_ego}: The probability of no tie between an ego and an alter.
@@ -30,9 +35,16 @@ A data frame with the following columns:
 \item \code{p_0_alter}: The probability of no tie between two alters.
 \item \code{p_1_alter}: The probability of a tie between two alters.
 }
+
+The function \code{sample_css_network} returns a list of square matrices of size
+\code{attr(graph, "netsize")}. If \code{keep_baseline = TRUE}, the first element of
+the list is the baseline network. Otherwise, it is not returned.
 }
 \description{
-Null distribution for Cognitive Imaginary Structures
+These functions can be used to generate null distributions for testing the
+prevalence of imaginary CSS. The null is a function of the individual level
+accuracy rates, in other words. Pr(i perceives a one| there is a one) and
+Pr(i perceives a zero| there is a zero).
 }
 \details{
 The function \code{sample_css_network} samples perceived networks from the

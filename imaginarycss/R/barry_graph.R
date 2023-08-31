@@ -22,6 +22,7 @@ to_integer <- function(x) {
 #' @param x Either a matrix or a list of matrices.
 #' @param ... Currently ignored. 
 #' @export
+#' @aliases barry_graph
 new_barry_graph <- function(x, ...) UseMethod("new_barry_graph")
 
 #' @export
@@ -112,3 +113,8 @@ new_barry_graph.list <- function(x, ...) {
  
 }
 
+
+#' @export
+print.barry_graph <- function(x, ...) {
+  print_barry_graph_cpp(x)
+}

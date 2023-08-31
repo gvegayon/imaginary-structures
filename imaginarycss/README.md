@@ -42,7 +42,9 @@ adjmat[cbind(source_, target_)] <- 1L
 
 graph <- new_barry_graph(adjmat, n = 4)
 graph
-#> A barry_graph with 140734486251520 networks of size 10
+#> A barry_graph with 2 networks of size 4
+#> .
+#> Warning in print.barry_graph(x): printing of extremely long output is truncated
 #> .    .  1.00     .  1.00     .     .     .     . 
 #>  1.00     .     .     .     .     .     .     . 
 #>     .     .     .  1.00     .     .     .     . 
@@ -138,3 +140,27 @@ boxplot(
 ```
 
 <img src="man/figures/README-tie-accuracy-1.png" width="100%" />
+
+``` r
+
+# Sampling and using that to generate a new barray graph
+
+graph_sampled <- new_barry_graph(
+  sample_css_network(graph)
+)
+graph_sampled
+#> A barry_graph with 22 networks of size 21
+#> .
+#> Warning in print.barry_graph(x): printing of extremely long output is truncated
+#> .    .  1.00  1.00  1.00  1.00     .     .  1.00     .  1.00 
+#>  1.00     .  1.00  1.00  1.00     .  1.00  1.00     .  1.00 
+#>     .  1.00     .     .  1.00     .  1.00  1.00     .  1.00 
+#>  1.00  1.00     .     .     .  1.00  1.00  1.00     .     . 
+#>  1.00  1.00     .     .     .  1.00  1.00  1.00     .  1.00 
+#>     .  1.00     .     .     .     .  1.00     .     .     . 
+#>     .  1.00     .     .     .  1.00     .     .     .     . 
+#>  1.00  1.00     .  1.00     .     .  1.00     .     .     . 
+#>     .  1.00     .     .  1.00     .  1.00     .     .     . 
+#>     .  1.00     .     .     .     .  1.00  1.00     .     . 
+#> Skipping 452 rows. Skipping 452 columns.
+```

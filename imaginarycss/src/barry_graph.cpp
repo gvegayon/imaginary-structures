@@ -4,8 +4,6 @@ using namespace Rcpp;
 
 // #include "geese-utils.h"
 
-//' Creates a new network
-//' @export
 // [[Rcpp::export(rng = false, name = "new_barry_graph_cpp")]]
 SEXP new_barry_graph(
     int n,
@@ -32,21 +30,25 @@ SEXP new_barry_graph(
   
 }
 
-//' @export
-// [[Rcpp::export(name = "print.barry_graph", invisible = true, rng = false)]]
+// [[Rcpp::export(name = "print_barry_graph_cpp", invisible = true, rng = false)]]
 int print_barry_graph(SEXP x) {
   
   Rcpp::XPtr< netcounters::Network >ptr(x);
   
-  const IntegerVector & end = ptr.attr("endpoints");
+  
+  // Retrieving an attribute from x
+  IntegerVector end = ptr.attr("endpoints");
+  auto nnets = end.size();
+
   int n = ptr.attr("netsize");
   
-  ptr->print_n(
-    10, 10,
-    "A barry_graph with %lu networks of size %i\n.",
-    end.size() + 1,
+  Rprintf(
+    "A barry_graph with %i networks of size %i\n.",
+    static_cast<int>(nnets) + 1,
     n
-    );
+  ); 
+
+  ptr->print_n(10u, 10u);
   
   return 0;
   
