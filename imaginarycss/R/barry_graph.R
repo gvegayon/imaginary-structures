@@ -116,5 +116,5 @@ new_barry_graph.list <- function(x, ...) {
 
 #' @export
 print.barry_graph <- function(x, ...) {
-  print_barry_graph_cpp(x)
+  suppressWarnings(print_barry_graph_cpp(x))
 }

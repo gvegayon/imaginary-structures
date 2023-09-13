@@ -4,7 +4,7 @@
 \alias{count_imaginary_census}
 \title{Computes census of imaginary errors}
 \usage{
-count_imaginary_census(x)
+count_imaginary_census(x, counter_type = 0L)
 }
 \arguments{
 \item{x}{An object of class \link{barry_graph}.}

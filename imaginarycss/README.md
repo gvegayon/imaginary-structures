@@ -68,7 +68,7 @@ count_recip_errors(graph)
 #> 3   0   Completely false recip (omission) (0)     0
 #> 4   0  Completely false recip (comission) (0)     0
 #> 5   0            Mixed reciprocity errors (0)     0
-#> 6   0                  (01) Accurate null (0)     3
+#> 6   0                  (01) Accurate null (0)     9
 #> 7   0  (02) Partial false positive (null) (0)     0
 #> 8   0 (03) Complete false positive (null) (0)     0
 #> 9   0 (04) Partial false negative (assym) (0)     0
@@ -176,10 +176,10 @@ microbenchmark::microbenchmark(
   sample_css_network(graph)  
 )
 #> Unit: milliseconds
-#>                       expr      min       lq     mean   median       uq     max
-#>  sample_css_network(graph) 8.743284 9.612201 12.72552 10.19865 11.17799 170.571
-#>  neval
-#>    100
+#>                       expr      min       lq     mean   median       uq
+#>  sample_css_network(graph) 11.39905 11.63366 12.96151 11.79813 12.34478
+#>       max neval
+#>  32.94299   100
 
 # Retrieving 1000 samples
 set.seed(331)
@@ -187,4 +187,23 @@ samp <- replicate(n = 100, sample_css_network(graph), simplify = FALSE)
 census <- lapply(samp, \(net) {
   count_imaginary_census(new_barry_graph(net))
 })
+```
+
+## Self perception
+
+We can also separate the counts as a function of whether the perceiver
+is looking into all ties, only ties including them, or only ties not
+including them.
+
+``` r
+census_all            <- count_imaginary_census(graph, counter_type = 0)
+census_perceiver_only <- count_imaginary_census(graph, counter_type = 1)
+census_no_perceiver   <- count_imaginary_census(graph, counter_type = 2)
+
+# Should be zero
+which_not <- census_all$value -
+  (census_perceiver_only$value + census_no_perceiver$value)
+
+length(census_all$name[which(which_not != 0)]) == 0L
+#> [1] TRUE
 ```

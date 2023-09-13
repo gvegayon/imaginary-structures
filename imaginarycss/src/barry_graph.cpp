@@ -22,6 +22,10 @@ SEXP new_barry_graph(
       new netcounters::Network(n, n, source_, target_)
       );
   
+  // Adding data
+  dat->set_data(new netcounters::NetworkData(), true);
+  dat->D().directed = true;
+
   dat.attr("class")     = "barry_graph";
   dat.attr("netsize")   = netsize;
   dat.attr("endpoints") = endpoints;
@@ -55,21 +59,31 @@ int print_barry_graph(SEXP x) {
 }
 
 #define APPEND_COUNTER(a) netcounters:: a <netcounters::Network>(\
-  counter.get_counters(), n, end );
+  counter.get_counters(), n, end, counter_type );
 
 //' Add a counter for reciprocity errors
 //' @param x An object of class [barry_graph].
+//' @param counter_type An integer indicating the type of census to compute (see details).
+//' @details
+//' We can also separate the counts as a function of whether the perceiver is looking
+//' into all ties, only ties including them, or only ties not including them.
+//' This is controlled by the \code{counter_type} argument:
+//' 
+//' - 0: All ties
+//' - 1: Only ties including the perceiver
+//' - 2: Only ties not including the perceiver
 //' @export
 // [[Rcpp::export(rng = false)]]
 DataFrame count_recip_errors(
-    SEXP x
+    SEXP x,
+    int counter_type = 0
   ) {
   
   Rcpp::XPtr< netcounters::Network >ptr(x);
   netcounters::NetStatsCounter< netcounters::Network> counter(ptr);
   
   std::vector< size_t > end = ptr.attr("endpoints");
-  int                           n = ptr.attr("netsize");
+  int                     n = ptr.attr("netsize");
   
   APPEND_COUNTER(counter_css_partially_false_recip_omiss)
   APPEND_COUNTER(counter_css_partially_false_recip_commi)
@@ -104,7 +118,16 @@ DataFrame count_recip_errors(
 
 //' Computes census of imaginary errors
 //' @param x An object of class [barry_graph].
+//' @param counter_type An integer indicating the type of census to compute (see details).
 //' @details
+//' We can also separate the counts as a function of whether the perceiver is looking
+//' into all ties, only ties including them, or only ties not including them.
+//' This is controlled by the \code{counter_type} argument:
+//' 
+//' - 0: All ties
+//' - 1: Only ties including the perceiver
+//' - 2: Only ties not including the perceiver
+//' 
 //' There are ten (10) values:
 //' - (01) Accurate null
 //' - (02) Partial false positive (null)
@@ -119,7 +142,8 @@ DataFrame count_recip_errors(
 //' @export
 // [[Rcpp::export(rng = false)]]
 DataFrame count_imaginary_census(
-    SEXP x
+    SEXP x,
+    int counter_type = 0
 ) {
   
   Rcpp::XPtr< netcounters::Network >ptr(x);

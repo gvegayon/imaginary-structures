@@ -12,8 +12,8 @@ print_barry_graph_cpp <- function(x) {
 #' Add a counter for reciprocity errors
 #' @param x An object of class [barry_graph].
 #' @export
-count_recip_errors <- function(x) {
-    .Call(`_imaginarycss_count_recip_errors`, x)
+count_recip_errors <- function(x, counter_type = 0L) {
+    .Call(`_imaginarycss_count_recip_errors`, x, counter_type)
 }
 
 #' Computes census of imaginary errors
@@ -31,8 +31,8 @@ count_recip_errors <- function(x) {
 #' - (09) Partial false negative (full)
 #' - (10) Accurate full
 #' @export
-count_imaginary_census <- function(x) {
-    .Call(`_imaginarycss_count_imaginary_census`, x)
+count_imaginary_census <- function(x, counter_type = 0L) {
+    .Call(`_imaginarycss_count_imaginary_census`, x, counter_type)
 }
 
 #' Retrieves the edgelist of a barry_graph

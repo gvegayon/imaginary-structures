@@ -144,3 +144,20 @@ census <- lapply(samp, \(net) {
 })
 ```
 
+## Self perception
+
+We can also separate the counts as a function of whether the perceiver is looking
+into all ties, only ties including them, or only ties not including them.
+
+```{r self-perception}
+census_all            <- count_imaginary_census(graph, counter_type = 0)
+census_perceiver_only <- count_imaginary_census(graph, counter_type = 1)
+census_no_perceiver   <- count_imaginary_census(graph, counter_type = 2)
+
+# Should be zero
+which_not <- census_all$value -
+  (census_perceiver_only$value + census_no_perceiver$value)
+
+length(census_all$name[which(which_not != 0)]) == 0L
+```
+

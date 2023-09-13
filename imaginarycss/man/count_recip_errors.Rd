@@ -4,7 +4,7 @@
 \alias{count_recip_errors}
 \title{Add a counter for reciprocity errors}
 \usage{
-count_recip_errors(x)
+count_recip_errors(x, counter_type = 0L)
 }
 \arguments{
 \item{x}{An object of class \link{barry_graph}.}
