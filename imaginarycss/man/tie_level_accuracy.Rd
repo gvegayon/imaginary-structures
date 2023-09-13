@@ -29,9 +29,9 @@ the baseline network as the first element of the list.}
 \value{
 The function \code{tie_level_accuracy} returns a data frame with the following columns:
 \itemize{
-\item \code{i}: The ego id.
-\item \code{p_0_ego}: The probability of no tie between an ego and an alter.
-\item \code{p_1_ego}: The probability of a tie between an ego and an alter.
+\item \code{k}: The perceiver id.
+\item \code{p_0_ego}: The probability of no tie between the perceiver (ego) and an alter.
+\item \code{p_1_ego}: The probability of a tie between the perceiver and an alter.
 \item \code{p_0_alter}: The probability of no tie between two alters.
 \item \code{p_1_alter}: The probability of a tie between two alters.
 }

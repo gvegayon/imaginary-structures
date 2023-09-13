@@ -65,7 +65,7 @@ krack_data <- read.csv("data-raw/advice_nets.csv")
 krack_data <- as.matrix(krack_data)
 n          <- 21
 
-krack_adjmat <- matrix(0L, nrow = n*22, ncol = n*22)
+krack_adjmat <- matrix(0L, nrow = n * 22, ncol = n * 22)
 krack_adjmat[krack_data] <- 1L
 
 graph <- new_barry_graph(
@@ -75,6 +75,23 @@ graph <- new_barry_graph(
 
 ans <- count_recip_errors(graph)
 head(ans)
+```
+
+Another example passing a list
+
+```{r}
+library(network)
+library(ergmito)
+knet <- as.network(krack_adjmat)
+knet %v% "id" <- rep(0:n, each = n)
+
+netlist <- splitnetwork(knet, "id")
+netlist <- lapply(netlist, as.matrix)
+
+graph2 <- new_barry_graph(netlist)
+
+all(barray_to_edgelist(graph2) ==
+  barray_to_edgelist(graph))
 ```
 
 Now checking that none of these coincide completely
@@ -111,10 +128,19 @@ boxplot(
   )# Keeping only the ones from the census
 
 # Sampling and using that to generate a new barray graph
-
 graph_sampled <- new_barry_graph(
   sample_css_network(graph)
 )
-graph_sampled
+
+microbenchmark::microbenchmark(
+  sample_css_network(graph)  
+)
+
+# Retrieving 1000 samples
+set.seed(331)
+samp <- replicate(n = 100, sample_css_network(graph), simplify = FALSE)
+census <- lapply(samp, \(net) {
+  count_imaginary_census(new_barry_graph(net))
+})
 ```
 

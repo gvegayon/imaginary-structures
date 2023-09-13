@@ -44,7 +44,8 @@ graph <- new_barry_graph(adjmat, n = 4)
 graph
 #> A barry_graph with 2 networks of size 4
 #> .
-#> Warning in print.barry_graph(x): printing of extremely long output is truncated
+#> Warning in print_barry_graph_cpp(x): printing of extremely long output is
+#> truncated
 #> .    .  1.00     .  1.00     .     .     .     . 
 #>  1.00     .     .     .     .     .     .     . 
 #>     .     .     .  1.00     .     .     .     . 
@@ -84,7 +85,7 @@ krack_data <- read.csv("data-raw/advice_nets.csv")
 krack_data <- as.matrix(krack_data)
 n          <- 21
 
-krack_adjmat <- matrix(0L, nrow = n*22, ncol = n*22)
+krack_adjmat <- matrix(0L, nrow = n * 22, ncol = n * 22)
 krack_adjmat[krack_data] <- 1L
 
 graph <- new_barry_graph(
@@ -101,6 +102,29 @@ head(ans)
 #> 4  3 Partially false recip (omission) (3)    63
 #> 5  4 Partially false recip (omission) (4)    56
 #> 6  5 Partially false recip (omission) (5)    56
+```
+
+Another example passing a list
+
+``` r
+library(network)
+#> 
+#> 'network' 1.18.1 (2023-01-24), part of the Statnet Project
+#> * 'news(package="network")' for changes since last version
+#> * 'citation("network")' for citation information
+#> * 'https://statnet.org' for help, support, and other information
+library(ergmito)
+knet <- as.network(krack_adjmat)
+knet %v% "id" <- rep(0:n, each = n)
+
+netlist <- splitnetwork(knet, "id")
+netlist <- lapply(netlist, as.matrix)
+
+graph2 <- new_barry_graph(netlist)
+
+all(barray_to_edgelist(graph2) ==
+  barray_to_edgelist(graph))
+#> [1] TRUE
 ```
 
 Now checking that none of these coincide completely
@@ -144,23 +168,23 @@ boxplot(
 ``` r
 
 # Sampling and using that to generate a new barray graph
-
 graph_sampled <- new_barry_graph(
   sample_css_network(graph)
 )
-graph_sampled
-#> A barry_graph with 22 networks of size 21
-#> .
-#> Warning in print.barry_graph(x): printing of extremely long output is truncated
-#> .    .  1.00  1.00  1.00  1.00     .     .  1.00     .  1.00 
-#>  1.00     .  1.00  1.00  1.00     .  1.00  1.00     .  1.00 
-#>     .  1.00     .     .  1.00     .  1.00  1.00     .  1.00 
-#>  1.00  1.00     .     .     .  1.00  1.00  1.00     .     . 
-#>  1.00  1.00     .     .     .  1.00  1.00  1.00     .  1.00 
-#>     .  1.00     .     .     .     .  1.00     .     .     . 
-#>     .  1.00     .     .     .  1.00     .     .     .     . 
-#>  1.00  1.00     .  1.00     .     .  1.00     .     .     . 
-#>     .  1.00     .     .  1.00     .  1.00     .     .     . 
-#>     .  1.00     .     .     .     .  1.00  1.00     .     . 
-#> Skipping 452 rows. Skipping 452 columns.
+
+microbenchmark::microbenchmark(
+  sample_css_network(graph)  
+)
+#> Unit: milliseconds
+#>                       expr      min       lq     mean   median       uq     max
+#>  sample_css_network(graph) 8.743284 9.612201 12.72552 10.19865 11.17799 170.571
+#>  neval
+#>    100
+
+# Retrieving 1000 samples
+set.seed(331)
+samp <- replicate(n = 100, sample_css_network(graph), simplify = FALSE)
+census <- lapply(samp, \(net) {
+  count_imaginary_census(new_barry_graph(net))
+})
 ```

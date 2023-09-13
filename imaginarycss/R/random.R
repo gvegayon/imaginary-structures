@@ -10,9 +10,9 @@
 #' @return
 #' The function `tie_level_accuracy` returns a data frame with the following columns:
 #' \itemize{
-#'  \item \code{i}: The ego id.
-#'  \item \code{p_0_ego}: The probability of no tie between an ego and an alter.
-#'  \item \code{p_1_ego}: The probability of a tie between an ego and an alter.
+#'  \item \code{k}: The perceiver id.
+#'  \item \code{p_0_ego}: The probability of no tie between the perceiver (ego) and an alter.
+#'  \item \code{p_1_ego}: The probability of a tie between the perceiver and an alter.
 #'  \item \code{p_0_alter}: The probability of no tie between two alters.
 #'  \item \code{p_1_alter}: The probability of a tie between two alters.
 #' }
@@ -114,7 +114,7 @@ tie_level_accuracy <- function(
       )
 
     data.frame(
-      i         = i,
+      k         = i,
       p_0_ego   = p_0_ego,
       p_1_ego   = p_1_ego,
       p_0_alter = p_0_alter,
@@ -235,11 +235,11 @@ sample_css_network_vector <- function(g_0, prob, i) {
 
   # Greating the matrix of probabilities (first and second position)
   pmat <- g_0
-  pmat[] <- prob[g_0 + 1]
+  pmat[] <- prob[g_0 + 3]
 
   # Editing ego probs (third and fourth position)
-  pmat[i,] <- prob[g_0[i,] + 3]
-  pmat[,i] <- prob[g_0[,i] + 3]
+  pmat[i,] <- prob[g_0[i,] + 1]
+  pmat[,i] <- prob[g_0[,i] + 1]
 
   # Sampling
   n <- nrow(g_0)
@@ -257,3 +257,4 @@ sample_css_network_vector <- function(g_0, prob, i) {
     )
 
 }
+
