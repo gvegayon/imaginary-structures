@@ -11,6 +11,15 @@ print_barry_graph_cpp <- function(x) {
 
 #' Add a counter for reciprocity errors
 #' @param x An object of class [barry_graph].
+#' @param counter_type An integer indicating the type of census to compute (see details).
+#' @details
+#' We can also separate the counts as a function of whether the perceiver is looking
+#' into all ties, only ties including them, or only ties not including them.
+#' This is controlled by the \code{counter_type} argument:
+#' 
+#' - 0: All ties
+#' - 1: Only ties including the perceiver
+#' - 2: Only ties not including the perceiver
 #' @export
 count_recip_errors <- function(x, counter_type = 0L) {
     .Call(`_imaginarycss_count_recip_errors`, x, counter_type)
@@ -18,7 +27,16 @@ count_recip_errors <- function(x, counter_type = 0L) {
 
 #' Computes census of imaginary errors
 #' @param x An object of class [barry_graph].
+#' @param counter_type An integer indicating the type of census to compute (see details).
 #' @details
+#' We can also separate the counts as a function of whether the perceiver is looking
+#' into all ties, only ties including them, or only ties not including them.
+#' This is controlled by the \code{counter_type} argument:
+#' 
+#' - 0: All ties
+#' - 1: Only ties including the perceiver
+#' - 2: Only ties not including the perceiver
+#' 
 #' There are ten (10) values:
 #' - (01) Accurate null
 #' - (02) Partial false positive (null)

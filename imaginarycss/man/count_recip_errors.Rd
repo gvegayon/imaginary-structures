@@ -8,7 +8,19 @@ count_recip_errors(x, counter_type = 0L)
 }
 \arguments{
 \item{x}{An object of class \link{barry_graph}.}
+
+\item{counter_type}{An integer indicating the type of census to compute (see details).}
 }
 \description{
 Add a counter for reciprocity errors
+}
+\details{
+We can also separate the counts as a function of whether the perceiver is looking
+into all ties, only ties including them, or only ties not including them.
+This is controlled by the \code{counter_type} argument:
+\itemize{
+\item 0: All ties
+\item 1: Only ties including the perceiver
+\item 2: Only ties not including the perceiver
+}
 }
