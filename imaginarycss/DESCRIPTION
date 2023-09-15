@@ -1,20 +1,16 @@
 Package: imaginarycss
-Version: 0.0.0.9000
+Version: 0.0-9000
 Title: Imaginary CSS Structures
-Description: Discrete Exponential Markov Models are a
-  family of statistical models that can be used to describe dynamic transitions
-  of phenomena with multivariate bernoulli distributed features. What the package
-  does (one paragraph). These models include GEESE (GEne Evolutionary model
-  using SufficiEnsy) (Vega Yon et al. 2021).
+Description: Tools for measuring and testing imaginary cognitive social structure (CSS) motifs.
 Authors@R: c(
   person(
     "George", "Vega Yon", role=c("aut","cre"), email="g.vegayon@gmail.com",
     comment = c(ORCID = "0000-0002-3171-0844")
     ),
-  person("National
-         Cancer Institute (NCI)", role = "fnd", comment = "Grant Number
-         5P01CA196569-02")
-        )
+  person(
+    "Kyosuke", "Tanaka", role=c("aut"), email="kyokke.tanaka@gmail.com",
+    comment = c(ORCID = "0000-0002-1850-6814")
+  ))
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

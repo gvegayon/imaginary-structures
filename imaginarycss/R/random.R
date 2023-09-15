@@ -7,6 +7,17 @@
 #' 
 #' @param graph A barry_graph object.
 #' @param which_nets Integer vector. The networks to sample from.
+#' @details
+#' There are two special cases worth mentioning. First, when the baseline graph
+#' is fully connected and the probability of true negative is set to `NA`. On the
+#' other hand, if the baseline graph is empty the probability of true positive
+#' is `NA` as well. This doesn't affect the `sample_css_network` function
+#' because those probabilities are unsed since tie/no tie probabilities are
+#' according to the baseline graph, meaning that, for instance, a fully
+#' connected network will never use the `p_0_ego` and `p_0_alter`
+#' probabilities and an empty network will never use the `p_1_ego` and
+#' `p_1_alter` probabilities.
+#' 
 #' @return
 #' The function `tie_level_accuracy` returns a data frame with the following columns:
 #' \itemize{
@@ -87,31 +98,48 @@ tie_level_accuracy <- function(
     p_1_alter <- g_0[-i, -i, drop = FALSE]
     p_1_alter <- which(p_1_alter == 1, arr.ind = TRUE)
 
-    p_1_alter <- mean(g_i[-i, -i, drop=FALSE][p_1_alter] == 1, na.rm = TRUE)
+    # If no ties present, then the probabilities are set to be NA
+    p_1_alter <- if (length(p_1_alter)) {
+      mean(g_i[-i, -i, drop=FALSE][p_1_alter] == 1, na.rm = TRUE)
+    } else {
+       NA_real_
+    }
 
     # The same but for 0
     p_0_alter <- g_0[-i, -i, drop = FALSE]
     p_0_alter <- which(p_0_alter == 0, arr.ind = TRUE)
 
-    p_0_alter <- mean(g_i[-i, -i, drop=FALSE][p_0_alter] == 0, na.rm = TRUE)
+    p_0_alter <- if (length(p_0_alter)) {
+      mean(g_i[-i, -i, drop=FALSE][p_0_alter] == 0, na.rm = TRUE)
+    } else {
+      NA_real_
+    }
 
     # Now only for i
-    p_1_ego <- c(g_0[i,], g_0[, i])
+    p_1_ego <- c(g_0[i, ], g_0[, i])
     p_1_ego <- which(p_1_ego == 1)
 
-    p_1_ego <- mean(
-      c(g_i[i, ], g_i[, i])[p_1_ego] == 1,
-      na.rm = TRUE
-      )
+    p_1_ego <- if (length(p_1_ego)) {
+      mean(
+        c(g_i[i, ], g_i[, i])[p_1_ego] == 1,
+        na.rm = TRUE
+        )
+    } else {
+      NA_real_
+    }
 
     # The same but for 0
     p_0_ego <- c(g_0[i,], g_0[, i])
     p_0_ego <- which(p_0_ego == 0)
 
-    p_0_ego <- mean(
-      c(g_i[i, ], g_i[, i])[p_0_ego] == 0,
-      na.rm = TRUE
-      )
+    p_0_ego <- if (length(p_0_ego)) {
+      mean(
+        c(g_i[i, ], g_i[, i])[p_0_ego] == 0,
+        na.rm = TRUE
+        )
+    } else {
+      NA_real_
+    }
 
     data.frame(
       k         = i,

@@ -47,6 +47,16 @@ accuracy rates, in other words. Pr(i perceives a one| there is a one) and
 Pr(i perceives a zero| there is a zero).
 }
 \details{
+There are two special cases worth mentioning. First, when the baseline graph
+is fully connected and the probability of true negative is set to \code{NA}. On the
+other hand, if the baseline graph is empty the probability of true positive
+is \code{NA} as well. This doesn't affect the \code{sample_css_network} function
+because those probabilities are unsed since tie/no tie probabilities are
+according to the baseline graph, meaning that, for instance, a fully
+connected network will never use the \code{p_0_ego} and \code{p_0_alter}
+probabilities and an empty network will never use the \code{p_1_ego} and
+\code{p_1_alter} probabilities.
+
 The function \code{sample_css_network} samples perceived networks from the
 baseline network. The baseline network is the first network in the
 \code{graph} object. The function \code{tie_level_accuracy} can be used to
