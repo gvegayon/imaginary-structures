@@ -43,6 +43,17 @@ x_zero <- structure(list(k = 1:3, p_0_ego = c(0.333333333333333, 0.75,
   1, 1)), row.names = c(NA, -3L), class = c("data.frame", "tie_level_accuracy"
 ))
 
-expect_equal(
-  tie_level_accuracy(graph),
-  x_zero)
+acc <- tie_level_accuracy(graph)
+expect_equal(acc, x_zero)
+
+# And NAs shouldn't affect sampling
+samp <- sample_css_network(graph, acc)
+samp <- sapply(samp[-1], function(x) {
+  x <- attr(x, "probs")
+  diag(x) <- -1L
+  x <- as.vector(x)
+  all(is.finite(x[x!=-1]))
+})
+
+expect_true(all(samp))
+
