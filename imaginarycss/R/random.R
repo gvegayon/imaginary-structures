@@ -8,12 +8,12 @@
 #' @param graph A barry_graph object.
 #' @param which_nets Integer vector. The networks to sample from.
 #' @details
-#' There are two special cases worth mentioning. First, when the baseline graph
-#' is fully connected and the probability of true negative is set to `NA`. On the
-#' other hand, if the baseline graph is empty the probability of true positive
-#' is `NA` as well. This doesn't affect the `sample_css_network` function
-#' because those probabilities are unsed since tie/no tie probabilities are
-#' according to the baseline graph, meaning that, for instance, a fully
+#' There are two special cases worth mentioning. First, when the dyads in 
+#' question are all present the probability of true negative is set to `NA`.
+#' On the other hand, if the dyads in question are all null, the probability of
+#' true positive is `NA` as well. This doesn't affect the `sample_css_network`
+#' function because those probabilities are unsed since tie/no tie probabilities
+#' are according to the baseline graph, meaning that, for instance, a fully
 #' connected network will never use the `p_0_ego` and `p_0_alter`
 #' probabilities and an empty network will never use the `p_1_ego` and
 #' `p_1_alter` probabilities.
