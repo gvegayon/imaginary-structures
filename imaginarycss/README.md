@@ -43,9 +43,6 @@ adjmat[cbind(source_, target_)] <- 1L
 graph <- new_barry_graph(adjmat, n = 4)
 graph
 #> A barry_graph with 2 networks of size 4
-#> .
-#> Warning in print_barry_graph_cpp(x): printing of extremely long output is
-#> truncated
 #> .    .  1.00     .  1.00     .     .     .     . 
 #>  1.00     .     .     .     .     .     .     . 
 #>     .     .     .  1.00     .     .     .     . 
@@ -68,7 +65,7 @@ count_recip_errors(graph)
 #> 3   0   Completely false recip (omission) (0)     0
 #> 4   0  Completely false recip (comission) (0)     0
 #> 5   0            Mixed reciprocity errors (0)     0
-#> 6   0                  (01) Accurate null (0)     9
+#> 6   0                  (01) Accurate null (0)     3
 #> 7   0  (02) Partial false positive (null) (0)     0
 #> 8   0 (03) Complete false positive (null) (0)     0
 #> 9   0 (04) Partial false negative (assym) (0)     0
@@ -177,9 +174,9 @@ microbenchmark::microbenchmark(
 )
 #> Unit: milliseconds
 #>                       expr      min       lq     mean   median       uq
-#>  sample_css_network(graph) 11.39905 11.63366 12.96151 11.79813 12.34478
+#>  sample_css_network(graph) 11.25291 11.65259 14.32988 12.15657 16.58535
 #>       max neval
-#>  32.94299   100
+#>  32.85994   100
 
 # Retrieving 1000 samples
 set.seed(331)
