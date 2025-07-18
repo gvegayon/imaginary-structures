@@ -1,5 +1,5 @@
 
-##  epiworldR configure.ac (based off RcppArmadillo configure.ac)
+##  imaginarycss configure.ac (based off RcppArmadillo configure.ac)
 ##
 
 ## require at least autoconf 2.69
