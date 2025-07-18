@@ -161,3 +161,5 @@ which_not <- census_all$value -
 length(census_all$name[which(which_not != 0)]) == 0L
 ```
 
+[![pkgdown site](https://img.shields.io/badge/pkgdown-site-blue.svg)](https://gvegayon.github.io/imaginary-structures/)
+

@@ -15,9 +15,13 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE, load = "source")
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 LinkingTo: Rcpp
 Imports: 
     Rcpp,
     stats
-Suggests: tinytest
+Suggests: 
+    knitr,
+    rmarkdown,
+    tinytest
+VignetteBuilder: knitr
