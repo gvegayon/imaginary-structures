@@ -10,3 +10,6 @@
 ^pkgdown$
 ^doc$
 ^Meta$
+
+# Adding the yaml _pkgdown
+^_pkgdown\.yml$
