@@ -5,3 +5,8 @@
 
 src/Makevars
 *log
+
+# R build artifacts
+*.tar.gz
+*.Rcheck/
+
