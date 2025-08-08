@@ -12,4 +12,4 @@
 ^Meta$
 
 # Adding the yaml _pkgdown
-^_pkgdown\.yml$
+^_pkgdown\.yaml$

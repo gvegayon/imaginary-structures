@@ -14,7 +14,7 @@ bibentry(
     person(
     "George", "Vega Yon", role=c("aut","cre"), email="g.vegayon@gmail.com",
     comment = c(ORCID = "0000-0002-3171-0844")
-    ),
+    )),
   journal = "Social Networks",
   year    = 2024,
   month   = "jul",
