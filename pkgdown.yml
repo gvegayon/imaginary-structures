@@ -3,7 +3,7 @@ pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
   intro: intro.html
-last_built: 2025-08-04T18:49Z
+last_built: 2025-08-08T21:03Z
 urls:
   reference: https://gvegayon.github.io/imaginary-structures/reference
   article: https://gvegayon.github.io/imaginary-structures/articles
