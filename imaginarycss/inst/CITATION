@@ -1,0 +1,50 @@
+year <- 2025
+note <- sprintf("R package version %s", meta$Version)
+
+bibentry(
+  header = "To cite imaginarycss in publications use:",
+  bibtype = "Article",
+  entry  = "Article",
+  title = "Imaginary network motifs: Structural patterns of false positives and negatives in social networks",
+  author = c(
+    person(
+      "Kyosuke", "Tanaka", role=c("aut"), email="kyokke.tanaka@gmail.com",
+      comment = c(ORCID = "0000-0002-1850-6814")
+    ),
+    person(
+    "George", "Vega Yon", role=c("aut","cre"), email="g.vegayon@gmail.com",
+    comment = c(ORCID = "0000-0002-3171-0844")
+    ),
+  journal = "Social Networks",
+  year    = 2024,
+  month   = "jul",
+  volume  = 78,
+  doi     = "10.1016/j.socnet.2023.11.005",
+  url     = "https://www.sciencedirect.com/science/article/pii/S0378873323000813",
+  textVersion = paste(
+    "Tanaka, Kyosuke and Vega Yon, George (2024). Imaginary network motifs: Structural patterns of false positives and negatives in social networks.",
+    "Social Networks, 78, 1-12.",
+    "https://doi.org/10.1016/j.socnet.2023.11.005"
+  )
+)
+
+bibentry(bibtype = "Manual",
+         title = "{{imaginarycss: Imaginary CSS Structures}}",
+         author = c(
+          person(
+            "George", "Vega Yon", role=c("aut","cre"), email="g.vegayon@gmail.com",
+            comment = c(ORCID = "0000-0002-3171-0844")
+            ),
+          person(
+            "Kyosuke", "Tanaka", role=c("aut"), email="kyokke.tanaka@gmail.com",
+            comment = c(ORCID = "0000-0002-1850-6814")
+            ),
+          person(
+            "Sima", "Najafzadehkhoei", role=c("aut"), email="sima.njf@utah.edu",
+            comment = c(ORCID = "0009-0002-6253-2910")
+          )  
+         ),
+         year = year,
+         note = note,
+         url = "https://github.com/gvegayon/imaginary-structures", 
+         header = "And the actual R package:")

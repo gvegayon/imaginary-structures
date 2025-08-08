@@ -12,6 +12,10 @@ Authors@R: c(
   person(
     "Kyosuke", "Tanaka", role=c("aut"), email="kyokke.tanaka@gmail.com",
     comment = c(ORCID = "0000-0002-1850-6814")
+    ),
+  person(
+    "Sima", "Najafzadehkhoei", role=c("aut"), email="sima.njf@utah.edu",
+    comment = c(ORCID = "0009-0002-6253-2910")
   ))
 License: MIT + file LICENSE
 Encoding: UTF-8
