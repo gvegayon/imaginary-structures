@@ -1,34 +1,14 @@
 ---
-title: "Introduction to imaginarycss"
-author: "George Vega Yon"
+title: "Real-world example of imaginarycss"
+author: "Sima Najafzadehkhoei"
 date: today
-format:
-  html:
-    toc: true
-    toc-depth: 3
-    fig-width: 7
-    fig-height: 5
-    theme: none
-    minimal: true
-    embed-resources: true
+format: html
 vignette: >
-  %\VignetteIndexEntry{Introduction to imaginarycss}
+  %\VignetteIndexEntry{Real-world example of imaginarycss}
   %\VignetteEngine{quarto::format}
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-   echo = TRUE,
-   collapse = TRUE,
-   comment = "#>",
-   fig.path = "man/figures/vignette-",
-   out.width = "100%",
-   dpi = 300,
-   warning = FALSE,
-   message = FALSE
- )
-```
 # Generating Null Models
 
 Statistical testing in network analysis requires careful null models. We can't just use random networks because individual perceptual biases aren't random - they're systematic and person-specific.

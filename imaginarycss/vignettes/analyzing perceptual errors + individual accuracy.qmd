@@ -1,34 +1,13 @@
 ---
-title: "Introduction to imaginarycss"
-author: "George Vega Yon"
+title: "Analyzing Perceptual Errors + Individual Accuracy"
+author: "Sima Najafzadehkhoei"
 date: today
-format:
-  html:
-    toc: true
-    toc-depth: 3
-    fig-width: 7
-    fig-height: 5
-    theme: none
-    minimal: true
-    embed-resources: true
+format: html
 vignette: >
-  %\VignetteIndexEntry{Introduction to imaginarycss}
+  %\VignetteIndexEntry{Analyzing Perceptual Errors + Individual Accuracy}
   %\VignetteEngine{quarto::format}
   %\VignetteEncoding{UTF-8}
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-   echo = TRUE,
-   collapse = TRUE,
-   comment = "#>",
-   fig.path = "man/figures/vignette-",
-   out.width = "100%",
-   dpi = 300,
-   warning = FALSE,
-   message = FALSE
- )
-```
 
 
 
