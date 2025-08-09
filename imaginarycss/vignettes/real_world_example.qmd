@@ -9,6 +9,40 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r}
+#| label: setup
+```{r load-package}
+library(imaginarycss)
+library(ggplot2)
+library(dplyr)
+library(viridis)
+
+# Set a beautiful theme for all plots
+theme_set(theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", color = "#2c3e50"),
+    plot.subtitle = element_text(size = 12, color = "#7f8c8d"),
+    axis.title = element_text(size = 11, color = "#34495e"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "#ecf0f1", size = 0.5),
+    legend.title = element_text(size = 10, face = "bold"),
+    plot.background = element_rect(fill = "#ffffff", color = NA),
+    panel.background = element_rect(fill = "#ffffff", color = NA)
+  ))
+
+# Define a beautiful color palette
+css_colors <- c(
+  primary = "#3498db",
+  secondary = "#e74c3c", 
+  accent = "#9b59b6",
+  success = "#27ae60",
+  warning = "#f39c12",
+  info = "#17a2b8",
+  light = "#95a5a6",
+  dark = "#2c3e50"
+)
+```
+
 # Generating Null Models
 
 Statistical testing in network analysis requires careful null models. We can't just use random networks because individual perceptual biases aren't random - they're systematic and person-specific.
@@ -32,6 +66,29 @@ The `imaginarycss` approach uses individual accuracy rates to generate realistic
 This approach asks: "If someone has X% accuracy rate for ego ties and Y% accuracy for alter ties, what range of error patterns would we expect by chance?"
 
 ## Sampling Perceived Networks
+
+We start by generating some artificial data:
+
+```{r basic-example}
+library(imaginarycss)
+library(ggplot2)
+
+# Define edges for the true network and one perceived network
+source_ <- c(1, 2, 3, 1) 
+target_ <- c(2, 1, 4, 4)
+
+# Add perceived network (shifted by network size)
+source_ <- c(source_, source_[-1] + 4)
+target_ <- c(target_, target_[-1] + 4)
+
+# Create adjacency matrix
+adjmat <- matrix(0L, nrow = 8, ncol = 8)
+adjmat[cbind(source_, target_)] <- 1L
+
+# Create barry_graph object
+graph <- new_barry_graph(adjmat, n = 4)
+print(graph)
+```
 
 The sampling process works as follows:
 
