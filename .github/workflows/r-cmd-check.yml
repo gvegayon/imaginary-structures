@@ -57,8 +57,10 @@ jobs:
       # Installing the package and checking the installation
       # and building log
       - name: Install the package and show installation log
+        if: ${{ matrix.config.os == 'windows-latest' }}
         run: |
-          R CMD INSTALL . 2>&1 | tee install.log
+          Rscript -e "install.packages('.', repos = NULL, type = 'source')"
+          Rscript -e "cat(readLines('install.log'), sep = '\n')"
         working-directory: imaginarycss
 
 
