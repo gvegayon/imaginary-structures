@@ -60,7 +60,7 @@ jobs:
         if: ${{ matrix.config.os == 'windows-latest' }}
         run: |
           Rscript -e "install.packages('.', repos = NULL, type = 'source')"
-          Rscript -e "cat(readLines('install.log'), sep = '\n')"
+          Rscript -e "library(imaginarycss)"
         working-directory: imaginarycss
 
 
