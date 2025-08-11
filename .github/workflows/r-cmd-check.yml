@@ -54,6 +54,14 @@ jobs:
           install-pandoc: true
           install-quarto: true
 
+      # Installing the package and checking the installation
+      # and building log
+      - name: Install the package and show installation log
+        run: |
+          R CMD INSTALL . 2>&1 | tee install.log
+        working-directory: imaginarycss
+
+
       - uses: r-lib/actions/check-r-package@v2
         if: ${{ matrix.config.os == 'ubuntu-latest' && matrix.config.r == 'release' }}
         with:
