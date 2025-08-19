@@ -1,7 +1,7 @@
 FROM rocker/tidyverse:4.5.1
 
 # Adding R packages
-RUN install2.r viridis tinytest
+RUN install2.r viridis tinytest reshape2
 
 RUN install2.r languageserver quarto && \
   installGithub.r nx10/httpgd

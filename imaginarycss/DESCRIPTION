@@ -35,5 +35,6 @@ Suggests:
     quarto,
     viridis,
     tidyr,
-    scales
+    scales,
+    reshape2
 VignetteBuilder: quarto

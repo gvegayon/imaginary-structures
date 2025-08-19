@@ -447,17 +447,17 @@ sili_fr.table <- ind_table(id_len = c(1:nrow(sili_fr)-1),
                             fr.ans0 = sili_fr.ans0)
 # join tables together
 fr.table <- do.call('rbind',
-                    list(high_fr.table %>% 
-                      as.data.frame() %>% 
+                    list(high_fr.table |> 
+                      as.data.frame() |> 
                       mutate(data = 'HM'),
-                    ital_fr.table %>% 
-                      as.data.frame() %>% 
+                    ital_fr.table |> 
+                      as.data.frame() |> 
                       mutate(data = 'IU'),
-                    sili_fr.table %>% 
-                      as.data.frame() %>% 
+                    sili_fr.table |> 
+                      as.data.frame() |> 
                       mutate(data = 'SS'),
-                    paci_fr.table %>% 
-                      as.data.frame() %>% 
+                    paci_fr.table |> 
+                      as.data.frame() |> 
                       mutate(data = 'PD')))
 # high advice-seeking data
 high_ad.table <- ind_table(id_len = c(0:20),
@@ -477,22 +477,22 @@ sili_ad.table <- ind_table(id_len = c(1:nrow(sili_ad)-1),
                             fr.ans0 = sili_ad.ans0)
 # join tables together
 ad.table <- do.call('rbind',
-                    list(high_ad.table %>% 
-                      as.data.frame() %>% 
+                    list(high_ad.table |> 
+                      as.data.frame() |> 
                       mutate(data = 'HM'),
-                    ital_ad.table %>% 
-                      as.data.frame() %>% 
+                    ital_ad.table |> 
+                      as.data.frame() |> 
                       mutate(data = 'IU'),
-                    sili_ad.table %>% 
-                      as.data.frame() %>% 
+                    sili_ad.table |> 
+                      as.data.frame() |> 
                       mutate(data = 'SS'),
-                    paci_ad.table %>% 
-                      as.data.frame() %>% 
+                    paci_ad.table |> 
+                      as.data.frame() |> 
                       mutate(data = 'PD')))
 
 # friendship plot
-fr.table %>% 
-  mutate(shape = ifelse(Z > 0, T,F)) %>% 
+fr.table |> 
+  mutate(shape = ifelse(Z > 0, T,F)) |> 
   ggplot(data = .,
         aes(x = class, y = Z))+
   geom_jitter(aes(fill = factor(class),shape=shape,alpha = ifelse(p < 0.05, .8,.2)),
@@ -516,10 +516,10 @@ fr.table %>%
         strip.background = element_blank())+
   xlab('Class')+
   ylab('Z score')
-  # geom_pointrange(data = fr.table %>% group_by(class,data) %>%
+  # geom_pointrange(data = fr.table |> group_by(class,data) |>
   # summarise(sd.mpg = sd(Z, na.rm = TRUE),
   #           Z = mean(Z, na.rm = TRUE),
-  #           n.mpg = n()) %>%
+  #           n.mpg = n()) |>
   # mutate(se.mpg = sd.mpg / sqrt(n.mpg),
   #        lower.ci.mpg = Z - qt(1 - (0.05 / 2), n.mpg - 1) * se.mpg,
   #        upper.ci.mpg = Z + qt(1 - (0.05 / 2), n.mpg - 1) * se.mpg),
@@ -531,8 +531,8 @@ id1_fr.table <- fr.table
 # replace with NA except for id 1 in HM
 id1_fr.table[(id1_fr.table$id!=1) | (id1_fr.table$data!='HM'),
              c('Z','p','obs','M','SD')] <- NA
-id1_fr.table %>% 
-  mutate(shape = ifelse(Z > 0, T,F)) %>% 
+id1_fr.table |> 
+  mutate(shape = ifelse(Z > 0, T,F)) |> 
   ggplot(data = .,
         aes(x = class, y = Z))+
   geom_jitter(aes(fill = factor(class),shape=shape,alpha = ifelse(p < 0.05, .8,.2)),
@@ -556,9 +556,9 @@ id1_fr.table %>%
   ylab('Z score')
 
 # advice plot
-ad.table %>% 
-  # as.data.frame %>% 
-  mutate(shape = ifelse(Z > 0, T,F)) %>% 
+ad.table |> 
+  # as.data.frame |> 
+  mutate(shape = ifelse(Z > 0, T,F)) |> 
   ggplot(data = .,
         aes(x = class, y = Z, alpha = ifelse(p < 0.05, .8,.2)))+
   geom_jitter(aes(fill = factor(class),shape=shape),size = 2,width = 0.25)+
@@ -649,11 +649,11 @@ g_hist2 <- function(ans, ans0){
   ghist2 <- ggplot(data = ans0,
         aes(x = value, fill=name))+
   geom_histogram(alpha=.6)+
-  geom_vline(data=ans0 %>% group_by(name) %>% mutate(avg=mean(count)), aes(xintercept = avg, color=name),
+  geom_vline(data=ans0 |> group_by(name) |> mutate(avg=mean(count)), aes(xintercept = avg, color=name),
              linetype = 2)+
   scale_fill_manual(values = c('#55B748','#DB2B27','#FDBF11','#98CF90','#E9807D')) +
   scale_color_manual(values = c('#55B748','#DB2B27','#FDBF11','#98CF90','#E9807D')) +
-  geom_text(data=ans0 %>% group_by(name) %>% mutate(avg=round(mean(count),2)), mapping = aes(x = Inf, y = Inf, label = paste0('M = ',avg), color = name), hjust = 1.05, vjust = 1.5)+
+  geom_text(data=ans0 |> group_by(name) |> mutate(avg=round(mean(count),2)), mapping = aes(x = Inf, y = Inf, label = paste0('M = ',avg), color = name), hjust = 1.05, vjust = 1.5)+
   facet_grid(name~.,
              labeller = labeller(name = as_labeller(c(`Partially false recip (omission) ` = 'P-FN',`Partially false recip (comission) ` = 'P-FP',`Completely false recip (omission) ` = 'C-FN',`Completely false recip (comission) ` = 'C-FP',`Mixed reciprocity errors ` = 'M-F'))))+
   theme_classic(base_size = 14) +
@@ -668,18 +668,18 @@ ggsave('hist_agg_v1.png', plot = hist_save, dpi = 800)
 
 # create a dataframe to agg results
 agg_results <- do.call('rbind',
-        list(t(sapply(1:10,agg_test,ans = sili_fr.ans, ans0 = sili_fr.ans0)) %>% as.data.frame %>% mutate(data = 'SS',network = 'Friendship',class = seq(10)),
-             t(sapply(1:10,agg_test,ans = sili_ad.ans, ans0 = sili_ad.ans0)) %>% as.data.frame %>% mutate(data = 'SS',network = 'Advice',class = seq(10)),
-             t(sapply(1:10,agg_test,ans = high_fr.ans, ans0 = high_fr.ans0)) %>% as.data.frame %>% mutate(data = 'HM',network = 'Friendship',class = seq(10)),
-             t(sapply(1:10,agg_test,ans = high_ad.ans, ans0 = high_ad.ans0)) %>% as.data.frame %>% mutate(data = 'HM',network = 'Advice',class = seq(10)),
-             t(sapply(1:10,agg_test,ans = ital_fr.ans, ans0 = ital_fr.ans0)) %>% as.data.frame %>% mutate(data = 'IU',network = 'Friendship',class = seq(10)),
-             t(sapply(1:10,agg_test,ans = ital_ad.ans, ans0 = ital_ad.ans0)) %>% as.data.frame %>% mutate(data = 'IU',network = 'Advice',class = seq(10)),
-             t(sapply(1:10,agg_test,ans = paci_fr.ans, ans0 = paci_fr.ans0)) %>% as.data.frame %>% mutate(data = 'PD',network = 'Friendship',class = seq(10)),
-             t(sapply(1:10,agg_test,ans = paci_ad.ans, ans0 = paci_ad.ans0)) %>% as.data.frame %>% mutate(data = 'PD',network = 'Advice',class = seq(10))))
+        list(t(sapply(1:10,agg_test,ans = sili_fr.ans, ans0 = sili_fr.ans0)) |> as.data.frame |> mutate(data = 'SS',network = 'Friendship',class = seq(10)),
+             t(sapply(1:10,agg_test,ans = sili_ad.ans, ans0 = sili_ad.ans0)) |> as.data.frame |> mutate(data = 'SS',network = 'Advice',class = seq(10)),
+             t(sapply(1:10,agg_test,ans = high_fr.ans, ans0 = high_fr.ans0)) |> as.data.frame |> mutate(data = 'HM',network = 'Friendship',class = seq(10)),
+             t(sapply(1:10,agg_test,ans = high_ad.ans, ans0 = high_ad.ans0)) |> as.data.frame |> mutate(data = 'HM',network = 'Advice',class = seq(10)),
+             t(sapply(1:10,agg_test,ans = ital_fr.ans, ans0 = ital_fr.ans0)) |> as.data.frame |> mutate(data = 'IU',network = 'Friendship',class = seq(10)),
+             t(sapply(1:10,agg_test,ans = ital_ad.ans, ans0 = ital_ad.ans0)) |> as.data.frame |> mutate(data = 'IU',network = 'Advice',class = seq(10)),
+             t(sapply(1:10,agg_test,ans = paci_fr.ans, ans0 = paci_fr.ans0)) |> as.data.frame |> mutate(data = 'PD',network = 'Friendship',class = seq(10)),
+             t(sapply(1:10,agg_test,ans = paci_ad.ans, ans0 = paci_ad.ans0)) |> as.data.frame |> mutate(data = 'PD',network = 'Advice',class = seq(10))))
 
 # make a summary graph
-agg_results %>% 
-  mutate(shape = ifelse(V1 > 0, T,F)) %>% 
+agg_results |> 
+  mutate(shape = ifelse(V1 > 0, T,F)) |> 
 ggplot(data = .,
         aes(x = class, y = V3, alpha = ifelse(V2 < 0.05, .8,.2)))+
   geom_point(aes(fill = factor(class),shape=shape),size = 4)+
@@ -699,8 +699,8 @@ ggplot(data = .,
   ylab('Count (log10 scale)')
   
 # only for freindship
-agg_results[agg_results$network %in% c('Friendship'),] %>% 
-  mutate(shape = ifelse(V1 > 0, T,F)) %>% 
+agg_results[agg_results$network %in% c('Friendship'),] |> 
+  mutate(shape = ifelse(V1 > 0, T,F)) |> 
 ggplot(data = .,
         aes(x = class, y = V3, alpha = ifelse(V2 < 0.05, .8,.2)))+
   geom_point(aes(fill = factor(class),shape=shape),size = 4)+
@@ -772,7 +772,7 @@ twovars_plot <- function(df = fr.table,
                          var2_name = 'Z-score'){
   splot <- left_join(as.data.frame(df),
           attr_df,
-          by = c('id' = 'id', 'data' = 'data')) %>% 
+          by = c('id' = 'id', 'data' = 'data')) |> 
   ggplot(data = .,
          aes(x = !!enquo(var1),y = !!enquo(var2), color = factor(class)))+
   geom_point(alpha = .5, size = .5)+
@@ -881,7 +881,7 @@ meta_df <- do.call('rbind',
   gcor(as.matrix(paci_ad.true),paci_ad[x,,])
 }))))
 
-meta_df %>% 
+meta_df |> 
   ggplot(data = .,
         aes(x = factor(data, levels=c('PD','IU','HM','SS')), y = r))+
   geom_jitter(alpha=.35,size = 2,width = 0.25)+
@@ -900,14 +900,14 @@ meta_df %>%
   theme(axis.title = element_text(face = "bold"),legend.position = 'none')+
   xlab('Data')+
   ylab('Pearson correlation coefficient')+
-  # stat_pvalue_manual(t_test(r~data, data=meta_df) %>% rstatix::add_y_position(),
+  # stat_pvalue_manual(t_test(r~data, data=meta_df) |> rstatix::add_y_position(),
   #                    label = "p.adj.signif", tip.length = 0.01,
   #                    coord.flip = TRUE)+
   coord_flip()+
-  geom_pointrange(data = meta_df %>% group_by(data) %>%
+  geom_pointrange(data = meta_df |> group_by(data) |>
   summarise(sd.mpg = sd(r, na.rm = TRUE),
             r = mean(r, na.rm = TRUE),
-            n.mpg = n()) %>%
+            n.mpg = n()) |>
   mutate(se.mpg = sd.mpg / sqrt(n.mpg),
          lower.ci.mpg = r - qt(1 - (0.05 / 2), n.mpg - 1) * se.mpg,
          upper.ci.mpg = r + qt(1 - (0.05 / 2), n.mpg - 1) * se.mpg),

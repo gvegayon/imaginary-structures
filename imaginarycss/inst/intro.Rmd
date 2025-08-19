@@ -318,8 +318,8 @@ census_df <- census[, names(census)]  # Strip custom class
 class(census_df) <- "data.frame"
 
 census_df$name_clean <- gsub("\\([0-9]+\\)$", "", census_df$name)
-census_summary <- census_df %>%
-  filter(grepl("^\\([0-9]", name)) %>%
+census_summary <- census_df |>
+  filter(grepl("^\\([0-9]", name)) |>
   mutate(
     error_type = case_when(
       grepl("Accurate null", name_clean) ~ "Accurate Null",
@@ -428,13 +428,13 @@ print(accuracy)
 accuracy_df <- accuracy[, names(accuracy)]  # Strip custom class
 class(accuracy_df) <- "data.frame"
 
-accuracy_long <- accuracy_df %>%
-  select(-k) %>%
+accuracy_long <- accuracy_df |>
+  select(-k) |>
   tidyr::pivot_longer(
     everything(),
     names_to = "measure",
     values_to = "probability"
-  ) %>%
+  ) |>
   mutate(
     measure_clean = case_when(
       measure == "p_0_ego" ~ "True Negative (Ego)",
@@ -709,21 +709,21 @@ compare_df <- data.frame(
   all_ties = census_all_df$value,
   ego_ties = census_ego_df$value,
   alter_ties = census_alter_df$value
-) %>%
-  filter(grepl("^\\([0-9]", error_type)) %>%
+) |>
+  filter(grepl("^\\([0-9]", error_type)) |>
   mutate(
     ego_proportion = ego_ties / all_ties,
     alter_proportion = alter_ties / all_ties
   )
 
 # Visualize the comparison
-compare_long <- compare_df %>%
-  select(error_type, ego_proportion, alter_proportion) %>%
+compare_long <- compare_df |>
+  select(error_type, ego_proportion, alter_proportion) |>
   tidyr::pivot_longer(
     cols = c(ego_proportion, alter_proportion),
     names_to = "tie_type",
     values_to = "proportion"
-  ) %>%
+  ) |>
   mutate(
     tie_type = ifelse(tie_type == "ego_proportion", "Ego Involved", "Alter-Alter"),
     error_short = substr(error_type, 1, 20)
@@ -858,8 +858,8 @@ krack_accuracy <- tie_level_accuracy(krack_graph)
 accuracy_df <- krack_accuracy[, names(krack_accuracy)]
 class(accuracy_df) <- "data.frame"
 
-summary_stats <- accuracy_df %>%
-  select(-k) %>%
+summary_stats <- accuracy_df |>
+  select(-k) |>
   summarise(
     across(everything(), list(mean = mean, sd = sd), na.rm = TRUE)
   )

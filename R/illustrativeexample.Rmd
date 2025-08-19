@@ -576,11 +576,11 @@ g_hist2 <- function(ans, ans0){
   ghist2 <- ggplot(data = ans0,
         aes(x = value, fill=name))+
   geom_histogram(alpha=.6)+
-  geom_vline(data=ans0 %>% group_by(name) %>% mutate(avg=mean(value)), aes(xintercept = avg, color=name),
+  geom_vline(data=ans0 |> group_by(name) |> mutate(avg=mean(value)), aes(xintercept = avg, color=name),
              linetype = 2)+
   scale_fill_manual(values = c('#55B748','#DB2B27','#FDBF11','#98CF90','#E9807D')) +
   scale_color_manual(values = c('#55B748','#DB2B27','#FDBF11','#98CF90','#E9807D')) +
-  geom_text(data=ans0 %>% group_by(name) %>% mutate(avg=round(mean(value),2)), mapping = aes(x = Inf, y = Inf, label = paste0('M = ',avg), color = name), hjust = 1.05, vjust = 1.5)+
+  geom_text(data=ans0 |> group_by(name) |> mutate(avg=round(mean(value),2)), mapping = aes(x = Inf, y = Inf, label = paste0('M = ',avg), color = name), hjust = 1.05, vjust = 1.5)+
   facet_grid(name~.,
              labeller = labeller(name = as_labeller(c(`Partially false recip (omission) ` = 'P-FN',`Partially false recip (comission) ` = 'P-FP',`Completely false recip (omission) ` = 'C-FN',`Completely false recip (comission) ` = 'C-FP',`Mixed reciprocity errors ` = 'M-F'))))+
   theme_classic(base_size = 14) +
@@ -635,7 +635,7 @@ twovars_plot <- function(df = fr_df,
                          var2_name = 'Z-score'){
   splot <- left_join(df,
           attr_df,
-          by = c('id' = 'id')) %>% 
+          by = c('id' = 'id')) |> 
   ggplot(data = .,
          aes(x = !!enquo(var1),y = !!enquo(var2), color = class))+
   geom_point(alpha = .6)+
@@ -667,6 +667,6 @@ ggsave('density_cor_v1.png', plot = den_plot, dpi = 800)
 lm(Z~fr_density+tenure+factor(hierarchy)+factor(dept),
    left_join(fr_df,
           attr_df,
-          by = c('id' = 'id')) %>% .[.$class=='C-C',]) %>% summary
+          by = c('id' = 'id')) |> .[.$class=='C-C',]) |> summary
 ```
 

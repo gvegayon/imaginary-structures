@@ -37,6 +37,7 @@ Organizational advice networks present unique perceptual challenges:
 
 ```{r krackhardt-setup, eval=FALSE}
 # Load the actual Krackhardt data
+library(imaginarycss)
 data(krack_advice)
 data(krack_attributes)
 
@@ -92,7 +93,10 @@ create_realistic_perceptions <- function(true_net, attributes) {
 }
 
 # Create realistic perceptions
-perceived_networks <- create_realistic_perceptions(advice_matrix, krack_attributes)
+perceived_networks <- create_realistic_perceptions(
+  advice_matrix,
+  krack_attributes
+  )
 
 # Combine true network with all individual perceptions
 all_networks <- c(list(advice_matrix), perceived_networks)
@@ -112,8 +116,8 @@ krack_accuracy <- tie_level_accuracy(krack_graph)
 accuracy_df <- krack_accuracy[, names(krack_accuracy)]
 class(accuracy_df) <- "data.frame"
 
-summary_stats <- accuracy_df %>%
-  select(-k) %>%
+summary_stats <- accuracy_df |>
+  select(-k) |>
   summarise(
     across(everything(), list(mean = mean, sd = sd), na.rm = TRUE)
   )
@@ -182,7 +186,9 @@ individual_plot <- ggplot(krack_accuracy, aes(x = factor(k))) +
     legend.position = "bottom",
     legend.title = element_text(face = "bold"),
     panel.grid.minor = element_blank(),
-    legend.box.background = element_rect(color = "#bdc3c7", fill = "#ffffff", alpha = 0.8)
+    legend.box.background = element_rect(
+      color = "#bdc3c7", fill = "#ffffff"
+      )
   ) +
   guides(
     color = guide_legend(

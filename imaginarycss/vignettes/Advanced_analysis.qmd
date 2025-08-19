@@ -105,8 +105,8 @@ library(dplyr)
 analyze_imaginary_motifs <- function(motif_data, null_samples, network_type = "Friendship") {
   
   # Create a summary by motif type (aggregate across individuals)
-  motif_summary <- motif_data %>%
-    group_by(name) %>%
+  motif_summary <- motif_data |>
+    group_by(name) |>
     summarise(
       total_count = sum(value),
       mean_count = mean(value),
@@ -131,9 +131,9 @@ analyze_imaginary_motifs <- function(motif_data, null_samples, network_type = "F
   )
   
   # Aggregate by class
-  class_summary <- motif_data %>%
-    left_join(motif_mapping, by = "name") %>%
-    group_by(class) %>%
+  class_summary <- motif_data |>
+    left_join(motif_mapping, by = "name") |>
+    group_by(class) |>
     summarise(
       total_observed = sum(value),
       mean_observed = mean(value),
@@ -307,7 +307,7 @@ print(friendship_class_summary)
 create_motif_plot <- function(z_results, network_type = "Network") {
   
   # Extract key classes based on your paper's findings
-  key_classes <- z_results %>%
+  key_classes <- z_results |>
     mutate(
       class_num = case_when(
         grepl("Accurate null", motif) ~ "Class 1",
@@ -322,9 +322,9 @@ create_motif_plot <- function(z_results, network_type = "Network") {
         grepl("Accurate full", motif) ~ "Class 10",
         TRUE ~ "Other"
       )
-    ) %>%
-    filter(class_num != "Other") %>%
-    group_by(class_num) %>%
+    ) |>
+    filter(class_num != "Other") |>
+    group_by(class_num) |>
     summarise(
       mean_z_score = mean(z_score, na.rm = TRUE),
       significant_count = sum(significant, na.rm = TRUE),
@@ -366,7 +366,7 @@ print(friendship_plot)
 theoretical_analysis <- function(z_results) {
   
   # Key findings from your paper
-  class_results <- z_results %>%
+  class_results <- z_results |>
     mutate(
       class_num = case_when(
         grepl("Partial false positive.*null", motif) ~ "Class 2 (P-FP)",
@@ -376,9 +376,9 @@ theoretical_analysis <- function(z_results) {
         grepl("Accurate full", motif) ~ "Class 10 (C-TP)",
         TRUE ~ "Other"
       )
-    ) %>%
-    filter(class_num != "Other") %>%
-    group_by(class_num) %>%
+    ) |>
+    filter(class_num != "Other") |>
+    group_by(class_num) |>
     summarise(
       mean_z = mean(z_score, na.rm = TRUE),
       prop_sig = mean(significant, na.rm = TRUE),
@@ -461,8 +461,8 @@ t.test(P_0_Ego ~ Network, data = accuracy_comparison)
 library(tidyr)  # We already have this loaded
 
 # Visualization
-accuracy_long <- accuracy_comparison %>%
-  pivot_longer(cols = starts_with("P_"), names_to = "Accuracy_Type", values_to = "Accuracy") %>%
+accuracy_long <- accuracy_comparison |>
+  pivot_longer(cols = starts_with("P_"), names_to = "Accuracy_Type", values_to = "Accuracy") |>
   filter(!is.na(Accuracy))
 
 ggplot(accuracy_long, aes(x = Network, y = Accuracy, fill = Network)) +
@@ -558,9 +558,9 @@ advice_self_proxy <- analyze_self_proxy(advice_graph, advice_matrix)
 self_proxy_data <- rbind(
   data.frame(friendship_self_proxy, Network = "Friendship"),
   data.frame(advice_self_proxy, Network = "Advice")
-) %>%
+) |>
   pivot_longer(cols = c("Self_Accuracy", "Proxy_Accuracy"), 
-               names_to = "Report_Type", values_to = "Accuracy") %>%
+               names_to = "Report_Type", values_to = "Accuracy") |>
   filter(!is.na(Accuracy))
 
 ggplot(self_proxy_data, aes(x = Report_Type, y = Accuracy, fill = Report_Type)) +

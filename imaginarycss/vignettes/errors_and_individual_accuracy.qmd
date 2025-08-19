@@ -167,8 +167,8 @@ census_df <- census[, names(census)]  # Strip custom class
 class(census_df) <- "data.frame"
 
 census_df$name_clean <- gsub("\\([0-9]+\\)$", "", census_df$name)
-census_summary <- census_df %>%
-  filter(grepl("^\\([0-9]", name)) %>%
+census_summary <- census_df |>
+  filter(grepl("^\\([0-9]", name)) |>
   mutate(
     error_type = case_when(
       grepl("Accurate null", name_clean) ~ "Accurate Null",
@@ -277,13 +277,13 @@ print(accuracy)
 accuracy_df <- accuracy[, names(accuracy)]  # Strip custom class
 class(accuracy_df) <- "data.frame"
 
-accuracy_long <- accuracy_df %>%
-  select(-k) %>%
+accuracy_long <- accuracy_df |>
+  select(-k) |>
   tidyr::pivot_longer(
     everything(),
     names_to = "measure",
     values_to = "probability"
-  ) %>%
+  ) |>
   mutate(
     measure_clean = case_when(
       measure == "p_0_ego" ~ "True Negative (Ego)",
