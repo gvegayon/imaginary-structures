@@ -35,9 +35,13 @@ Organizational advice networks present unique perceptual challenges:
 3. **Status effects**: People may misperceive advice patterns based on formal hierarchy
 4. **Wishful thinking**: Employees might report advice patterns they wish existed
 
-```{r krackhardt-setup, eval=FALSE}
+```{r}
+#| label: krackhardt-setup
+#| eval: true
 # Load the actual Krackhardt data
 library(imaginarycss)
+library(dplyr)
+library(ggplot2)
 data(krack_advice)
 data(krack_attributes)
 
@@ -108,7 +112,9 @@ attr(krack_graph, "organization") <- "high_tech_company"
 attr(krack_graph, "n_employees") <- n_people
 ```
 
-```{r krackhardt-analysis, eval=FALSE}
+```{r}
+#| label: krackhardt-analysis
+#| eval: true
 # Analyze the organizational network
 krack_accuracy <- tie_level_accuracy(krack_graph)
 
