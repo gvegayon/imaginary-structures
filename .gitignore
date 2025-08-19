@@ -4,7 +4,7 @@
 .Ruserdata
 
 src/Makevars
-*log
+*.log
 
 # R build artifacts
 *.tar.gz
