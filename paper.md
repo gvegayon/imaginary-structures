@@ -23,11 +23,11 @@ Cognitive Social Structures (CSS) capture how each individual perceives the enti
 
 Built on a performant C++ core with an R interface, `imaginarycss` combines efficient computation with an accessible API. Key capabilities include:
 
-- **CSS-native data model**: The `barry_graph` object stores a ground-truth network and perceiver layers in a single, standardized structure.\\
-- **Flexible inputs**: Create CSS objects from lists of adjacency matrices or block-diagonal matrices.\\
+- **CSS-native data model**: The `barry_graph` object stores a ground-truth network and perceiver layers in a single, standardized structure.
+- **Flexible inputs**: Create CSS objects from lists of adjacency matrices or block-diagonal matrices.
 - **Comprehensive error taxonomy**: `count_imaginary_census()` assigns each dyad to a 10-category classification spanning null, asymmetric, and reciprocal cases; `count_recip_errors()` focuses on reciprocity.\\
-- **Accuracy decomposition**: `tie_level_accuracy()` separates ego vs. alter and true-positive vs. true-negative components of perceptual accuracy.\\
-- **Accuracy-based null models**: `sample_css_network()` generates simulated perceptions that preserve individual-level accuracy rates, supporting hypothesis tests against realistic baselines.\\
+- **Accuracy decomposition**: `tie_level_accuracy()` separates ego vs. alter and true-positive vs. true-negative components of perceptual accuracy.
+- **Accuracy-based null models**: `sample_css_network()` generates simulated perceptions that preserve individual-level accuracy rates, supporting hypothesis tests against realistic baselines.
 - **Performance and scale**: Core routines use vectorized, compiled code for interactive analysis on sizeable CSS datasets.
 - **Ecosystem compatibility**: Complements `statnet`/ERGM modeling and `igraph` utilities; focuses on measurement and diagnostics of perception.
 
