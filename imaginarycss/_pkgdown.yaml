@@ -11,10 +11,9 @@ home:
 articles:
   - title: "Getting started"
     contents:
-      - intro_basics
-      - real_world_example
+      - intro-basics
+      - real-world-example
   - title: "Analysis"
     contents:
-      - Advanced_analysis
-      - errors_and_individual_accuracy
-      
+      - advanced-analysis
+      - errors-and-individual-accuracy
