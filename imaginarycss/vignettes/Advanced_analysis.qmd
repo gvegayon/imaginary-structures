@@ -12,7 +12,7 @@ vignette: >
 
 ## Theoretical Predictions vs. Empirical Findings
 
-Our research on imaginary network motifs tested several key theoretical predictions about how people perceive social networks. Here we demonstrate how to reproduce the main findings using the package.
+our research on imaginary network motifs tested several key theoretical predictions about how people perceive social networks. Here we demonstrate how to reproduce the main findings using the package.
 ```{r}
 if (!requireNamespace("imaginarycss", quietly = TRUE)) {
   devtools::load_all()
