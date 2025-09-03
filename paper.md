@@ -72,6 +72,5 @@ Crucially, `imaginarycss` complements the existing R ecosystem. Whereas `statnet
 
 # Acknowledgements
 
-*Optional.* Include funding or acknowledgements here if appropriate.
 
 # References
