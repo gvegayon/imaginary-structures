@@ -21,10 +21,10 @@ profile: install
 	R --debugger=valgrind --debugger-args='--tool=cachegrind --cachegrind-out-file=test.cache.out'
 
 update:
-	rsync -av ~/Documents/development/barry/include/barry inst/include
+	rsync -av ../../barry/include/barry inst/include
 
 update-css:
-	rsync -av ~/Documents/development/barry/include/barry/counters/network-css.hpp inst/include/barry/counters
+	rsync -av ../../barry/include/barry/counters/network-css.hpp inst/include/barry/counters
 
 .PHONY: man docker
 

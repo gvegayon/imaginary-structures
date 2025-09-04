@@ -9,19 +9,20 @@ inline std::vector< double > keygen_defm(
     size_t nrow = Array_.nrow();
     size_t ncol = Array_.ncol();
 
-    std::vector< double > res(
+    std::vector< double > res;
+    res.reserve(
         2u +                // Rows + cols
         ncol * (nrow - 1u) // Markov cells
         );
 
-    res[0u] = static_cast<double>(nrow);
-    res[1u] = static_cast<double>(ncol);
+    res.push_back(static_cast<double>(nrow));
+    res.push_back(static_cast<double>(ncol));
 
-    size_t iter = 2u;
+    // size_t iter = 2u;
     // Adding the cells
     for (size_t i = 0u; i < (nrow - 1); ++i)
         for (size_t j = 0u; j < ncol; ++j)
-            res[iter++] = Array_(i, j);
+            res.push_back(Array_(i, j));
 
     return res;
 
@@ -74,7 +75,10 @@ inline void DEFM::simulate(
 
                 // Setting the data
                 tmp_array.set_data(
-                    new DEFMData(&tmp_array, X, (start_i + proc_n), X_ncol, ID_length),
+                    new DEFMData(
+                        &tmp_array, X, (start_i + proc_n), X_ncol, ID_length,
+                        this->column_major
+                        ),
                     true // Delete the data
                 );
 
@@ -109,8 +113,9 @@ inline DEFM::DEFM(
     size_t y_ncol,
     size_t x_ncol,
     size_t m_order,
-    bool copy_data
-) {
+    bool copy_data,
+    bool column_major
+) : column_major(column_major) {
 
     // Pointers
     if (copy_data)
@@ -200,21 +205,39 @@ inline DEFM::DEFM(
 
     // Creating the names
     for (auto i = 0u; i < Y_ncol; ++i)
-        Y_names.push_back(std::string("y") + std::to_string(i));
+        Y_names.emplace_back(std::string("y") + std::to_string(i));
 
     for (auto i = 0u; i < X_ncol; ++i)
-        X_names.push_back(std::string("X") + std::to_string(i));
+        X_names.emplace_back(std::string("X") + std::to_string(i));
 
     return;    
 
 }
 
 
-inline void DEFM::init() 
+inline void DEFM::init(bool force_new) 
 {
 
     // Adding the rule
     rules_markov_fixed(this->get_rules(), M_order);
+
+    // Element access will be contingent on the column major
+    std::function<size_t(size_t,size_t,size_t,size_t)> element_access;
+
+    if (this->column_major)
+    {
+
+        element_access = [](size_t i, size_t j, size_t nrow, size_t) -> size_t {
+            return i + j * nrow;
+        };
+
+    } else {
+
+        element_access = [](size_t i, size_t j, size_t, size_t ncol) -> size_t {
+            return j + i * ncol;
+        };
+
+    }
 
     // Creating the arrays
     for (size_t i = 0u; i < N; ++i)
@@ -233,17 +256,26 @@ inline void DEFM::init()
             // Creating the array for process n_proc and setting the data
             DEFMArray array(M_order + 1u, Y_ncol);
             array.set_data(
-                new DEFMData(&array, X, (start_i + n_proc), X_ncol, ID_length),
+                new DEFMData(
+                    &array, X, (start_i + n_proc), X_ncol, ID_length,
+                    this->column_major
+                    ),
                 true // Delete the data
             );
 
             // Filling-out the array
             for (size_t k = 0u; k < Y_ncol; ++k)
                 for (size_t o = 0u; o < (M_order + 1u); ++o)
-                    array(o, k) = *(Y + k * ID_length + start_i + n_proc + o);
+                    // array(o, k) = *(Y + k * ID_length + start_i + n_proc + o);
+                    array(o, k) = *(Y + element_access(
+                        start_i + n_proc + o, // Row
+                        k,                    // Column
+                        ID_length,            // N_row
+                        Y_ncol                // N_col
+                        ));
 
             // Adding to the model
-            model_ord.push_back( this->add_array(array, true) );
+            model_ord.push_back( this->add_array(array, force_new) );
 
         }
 
@@ -351,7 +383,10 @@ inline std::vector< double > DEFM::logodds(
             // Creating the array for process n_proc and setting the data
             DEFMArray array(M_order + 1u, Y_ncol);
             array.set_data(
-                new DEFMData(&array, X, (start_i + n_proc), X_ncol, ID_length),
+                new DEFMData(
+                    &array, X, (start_i + n_proc), X_ncol, ID_length,
+                    this->column_major
+                    ),
                 true // Delete the data
             );
 
@@ -418,6 +453,11 @@ inline std::vector< bool > DEFM::is_motif()
         res.push_back(counterss->operator[](i).data.is_motif);
 
     return res;
+}
+
+inline bool DEFM::get_column_major() const noexcept
+{
+    return column_major;
 }
 
 #undef DEFM_RANGES
