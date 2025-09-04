@@ -21,8 +21,4 @@ krack_attributes
 Node attributes for the 21 managers in Krackhardt's high-tech company study.
 Contains demographic and organizational information for each manager.
 }
-\examples{
-data(krack_attributes)
-head(krack_attributes)
-}
 \keyword{datasets}

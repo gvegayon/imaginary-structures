@@ -12,11 +12,6 @@
 #' @source Krackhardt, D. (1987). Cognitive social structures. Social Networks, 9(2), 109-134.
 #' @references 
 #' Krackhardt, D. (1987). Cognitive social structures. Social Networks, 9(2), 109-134.
-#' @examples
-#' data(krack_advice)
-#' # Convert to edgelist (only existing ties)
-#' advice_edges <- krack_advice[krack_advice$value == 1, c("from", "to")]
-#' head(advice_edges)
 "krack_advice"
 
 #' Krackhardt High-Tech Managers Friendship Network
@@ -58,7 +53,4 @@
 #'   \item{...}{Add descriptions based on your actual columns}
 #' }
 #' @source Krackhardt, D. (1987). Cognitive social structures. Social Networks, 9(2), 109-134.
-#' @examples
-#' data(krack_attributes)
-#' head(krack_attributes)
 "krack_attributes"

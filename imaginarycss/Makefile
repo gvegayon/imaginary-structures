@@ -1,5 +1,5 @@
-VERSION:=$(shell Rscript -e 'x<-readLines("DESCRIPTION");cat(gsub(".+[:]\\s*", "", x[grepl("^Vers", x)]))')
-PKGNAME:=$(shell Rscript -e 'x<-readLines("DESCRIPTION");cat(gsub(".+[:]\\s*", "", x[grepl("^Package", x)]))')
+VERSION:=$(shell Rscript -e 'x<-readLines("DESCRIPTION");cat(gsub(".+[:]\\\\s*", "", x[grepl("^Vers", x)]))')
+PKGNAME:=$(shell Rscript -e 'x<-readLines("DESCRIPTION");cat(gsub(".+[:]\\\\s*", "", x[grepl("^Package", x)]))')
 
 .PHONY: build
 ${PKGNAME}_${VERSION}.tar.gz: R/* src/*.cpp inst/include/barry/** man
@@ -29,8 +29,7 @@ update-css:
 .PHONY: man docker
 
 man: R/* 
-	Rscript --vanilla -e 'Rcpp::compileAttributes(verbose = TRUE)' & \
-		Rscript --vanilla -e 'roxygen2::roxygenize()' 
+	Rscript -e 'devtools::document()' 
 
 
 
