@@ -7,13 +7,3 @@ home:
   title: "Imaginary CSS Structures"
   description: >
     Tools for measuring and testing imaginary cognitive social structure (CSS) motifs
-
-articles:
-  - title: "Getting started"
-    contents:
-      - intro-basics
-      - real-world-example
-  - title: "Analysis"
-    contents:
-      - advanced-analysis
-      - errors-and-individual-accuracy
