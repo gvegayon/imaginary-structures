@@ -21,7 +21,8 @@ profile: install
 	R --debugger=valgrind --debugger-args='--tool=cachegrind --cachegrind-out-file=test.cache.out'
 
 update:
-	rsync -av ../../barry/include/barry inst/include
+	rsync -av ../../barry/include/barry inst/include && \
+	rm -rf inst/include/barry/models
 
 update-css:
 	rsync -av ../../barry/include/barry/counters/network-css.hpp inst/include/barry/counters
