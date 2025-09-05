@@ -33,4 +33,6 @@ Suggests:
     tidyr,
     scales,
     reshape2
+Depends: 
+    R (>= 4.0.0)
 VignetteBuilder: quarto
