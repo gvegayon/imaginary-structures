@@ -60,16 +60,21 @@
 
 #' Krackhardt Advice Network Edge List
 #'
-#' Edge list representation of the Krackhardt advice network data containing
-#' pairs of nodes representing advice relationships in a high-tech manufacturing firm.
+#' Edge list representation of advice relationships in Krackhardt's
+#' high-tech manufacturing firm study. Contains pairs of nodes
+#' representing who goes to whom for advice.
 #'
-#' @format A data frame with X rows and 2 variables:
+#' @format A data frame with edge pairs:
 #' \describe{
-#'   \item{V1}{Source node (integer, 1-21)}
-#'   \item{V2}{Target node (integer, 1-21)}
+#'   \item{V1}{Source node ID (integer)}
+#'   \item{V2}{Target node ID (integer)}
 #' }
-#' @source David Krackhardt (1987). Cognitive social structures. Social Networks, 9(2), 109-134.
+#' @source Krackhardt, D. (1987). Cognitive social structures. 
+#'   Social Networks, 9(2), 109-134.
 #' @examples
 #' data(advice_nets)
 #' head(advice_nets)
+#' # Create adjacency matrix
+#' adj_mat <- matrix(0, 21, 21)
+#' adj_mat[as.matrix(advice_nets)] <- 1
 "advice_nets"
