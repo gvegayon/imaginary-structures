@@ -2,17 +2,10 @@
 title: "Advanced Analysis: Imaginary Network Motifs"
 author: "Sima Najafzadehkhoei"
 date: today
-format: 
-  html:
-    code-fold: false
-    toc: true
-    theme: default
-execute:
-  warning: false
-  message: false
+format: html
 vignette: >
-  %\VignetteIndexEntry{Advanced analysis}
-  %\VignetteEngine{quarto::html}
+  %\VignetteIndexEntry{Introduction to imaginarycss}
+  %\VignetteEngine{quarto::format}
   %\VignetteEncoding{UTF-8}
 ---
 
