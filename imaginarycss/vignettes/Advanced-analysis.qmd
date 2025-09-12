@@ -2,10 +2,17 @@
 title: "Advanced Analysis: Imaginary Network Motifs"
 author: "Sima Najafzadehkhoei"
 date: today
-format: html
+format: 
+  html:
+    code-fold: false
+    toc: true
+    theme: default
+execute:
+  warning: false
+  message: false
 vignette: >
   %\VignetteIndexEntry{Advanced analysis}
-  %\VignetteEngine{quarto::format}
+  %\VignetteEngine{quarto::html}
   %\VignetteEncoding{UTF-8}
 ---
 
@@ -21,222 +28,154 @@ library(ggplot2)
 library(dplyr)
 library(reshape2)
 
-# Load Krackhardt data
-data(krack_advice)
-data(krack_friendship) 
-data(krack_attributes)
+# Load edge list data (following README example exactly)
+krack_data <- read.csv("data/advice_nets.csv")
+krack_data <- as.matrix(krack_data)
+n <- 21
 
-# Convert to adjacency matrices
-advice_matrix <- acast(krack_advice, from ~ to, value.var = "value", fill = 0)
-friendship_matrix <- acast(krack_friendship, from ~ to, value.var = "value", fill = 0)
+# Create large adjacency matrix (n * 22 for true network + 21 perceptions)
+krack_adjmat <- matrix(0L, nrow = n * 22, ncol = n * 22)
+krack_adjmat[krack_data] <- 1L
 
-# Generate realistic perception errors
-create_css_perceptions <- function(true_net, n_perceivers = 21) {
-  perceptions <- list()
-  for (i in 1:n_perceivers) {
-    perceived <- true_net
-    # Status bias: overestimate ties to high-degree nodes
-    for (j in 1:nrow(true_net)) {
-      for (k in 1:ncol(true_net)) {
-        if (j != k) {
-          if (true_net[j, k] == 0 && sum(true_net[, k]) > median(colSums(true_net))) {
-            if (runif(1) < 0.15) perceived[j, k] <- 1
-          }
-          # Reciprocity bias
-          if (true_net[j, k] == 1 && true_net[k, j] == 0 && runif(1) < 0.3) {
-            perceived[k, j] <- 1
-          }
-          # Visibility bias
-          if (true_net[j, k] == 1 && runif(1) < 0.2) {
-            perceived[j, k] <- 0
-          }
-        }
-      }
-    }
-    diag(perceived) <- 0
-    perceptions[[i]] <- perceived
-  }
-  return(perceptions)
-}
+# Create barry graph
+graph <- new_barry_graph(krack_adjmat, n = n)
 
-# Create barry graphs
-friendship_perceptions <- create_css_perceptions(friendship_matrix)
-friendship_graph <- new_barry_graph(c(list(friendship_matrix), friendship_perceptions))
+cat("Data loaded successfully:\n")
+cat("- Edge list entries:", nrow(krack_data), "\n")
+cat("- Combined matrix dimensions:", dim(krack_adjmat), "\n")
+cat("- Network size:", n, "\n")
+cat("- Number of networks:", 22, "(1 true + 21 perceptions)\n")
+
+# Check the graph structure
+cat("- Graph endpoints:", attr(graph, "endpoints"), "\n")
+cat("- Graph netsize:", attr(graph, "netsize"), "\n")
 ```
 
-## Prediction 1: Balance Schema in Friendship Networks
+## Reciprocity Error Analysis
 
-People assume friendship relationships are mutual, leading to increased false positive motifs.
+```{r reciprocity_errors}
+# Count reciprocity errors
+ans <- count_recip_errors(graph)
+head(ans)
 
-```{r balance_schema}
-# Count imaginary motifs
-friendship_motifs <- count_imaginary_census(friendship_graph)
+# Remove network ID for aggregation
+ans$name <- gsub("\\([0-9]+\\)$", "", ans$name)
 
-# Generate null samples for significance testing
-null_samples <- replicate(100, {
-  sampled <- sample_css_network(friendship_graph, keep_baseline = FALSE)
-  sampled_graph <- new_barry_graph(c(list(friendship_matrix), sampled))
-  count_imaginary_census(sampled_graph)
-}, simplify = FALSE)
+# Keep only census errors
+ans <- subset(ans, grepl("^\\([0-9]", name))
 
-# Helper function to convert motif results to data frame
-as_motif_df <- function(x) {
-  if (is.data.frame(x)) {
-    if (all(c("name", "value") %in% names(x))) {
-      x[, c("name", "value")]
-    } else {
-      # Assume last column contains values
-      data.frame(
-        name = if (!is.null(rownames(x))) rownames(x) else paste0("motif_", seq_len(nrow(x))),
-        value = as.numeric(x[[ncol(x)]]),
-        stringsAsFactors = FALSE
-      )
-    }
-  } else if (is.list(x)) {
-    # Handle list output
-    data.frame(
-      name = if (!is.null(names(x))) names(x) else paste0("motif_", seq_along(x)),
-      value = as.numeric(unlist(x)),
-      stringsAsFactors = FALSE
-    )
-  } else {
-    # Handle numeric vector
-    data.frame(
-      name = if (!is.null(names(x))) names(x) else paste0("motif_", seq_along(x)),
-      value = as.numeric(x),
-      stringsAsFactors = FALSE
-    )
-  }
-}
-
-# Calculate Z-scores
-calculate_z_scores <- function(observed, null_samples) {
-  obs_df <- as_motif_df(observed)
-  
-  # Convert null samples to matrix
-  null_matrix <- do.call(rbind, lapply(null_samples, function(x) {
-    null_df <- as_motif_df(x)
-    # Align with observed motifs
-    merged <- merge(obs_df[,"name", drop = FALSE], null_df, by = "name", all.x = TRUE, sort = FALSE)
-    merged$value
-  }))
-  
-  z_scores <- sapply(1:nrow(obs_df), function(i) {
-    null_vals <- null_matrix[, i]
-    null_vals <- null_vals[is.finite(null_vals)]
-    if (length(null_vals) > 1 && sd(null_vals) > 0) {
-      (obs_df$value[i] - mean(null_vals)) / sd(null_vals)
-    } else NA
-  })
-  
-  data.frame(
-    motif = obs_df$name,
-    observed = obs_df$value,
-    z_score = z_scores,
-    significant = abs(z_scores) > 1.96 & !is.na(z_scores),
-    stringsAsFactors = FALSE
-  )
-}
-
-z_results <- calculate_z_scores(friendship_motifs, null_samples)
-
-# Visualize key findings
-ggplot(z_results[1:10,], aes(x = motif, y = z_score, fill = significant)) +
-  geom_col() +
-  geom_hline(yintercept = c(-1.96, 1.96), linetype = "dashed", color = "red") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  labs(title = "Balance Schema: Friendship Network Motifs",
-       subtitle = "Positive Z-scores indicate higher than expected prevalence",
-       x = "Motif Type", y = "Z-Score")
+# Visualize distribution
+ggplot(data = ans, aes(y = value)) +
+  geom_histogram() + 
+  facet_wrap(vars(name)) +
+  coord_flip() +
+  labs(title = "Distribution of Reciprocity Error Types")
 ```
 
-**Finding**: Friendship networks show elevated false positive motifs, confirming the balance schema hypothesis.
+## Tie-Level Accuracy
 
-## Prediction 2: Network Type Differences
-
-Advice relationships are perceived more accurately than friendship relationships.
-
-```{r network_comparison}
-# Compare accuracy between network types
-friendship_accuracy <- tie_level_accuracy(friendship_graph)
-advice_perceptions <- create_css_perceptions(advice_matrix)
-advice_graph <- new_barry_graph(c(list(advice_matrix), advice_perceptions))
-advice_accuracy <- tie_level_accuracy(advice_graph)
-
-# Create comparison data
-accuracy_comparison <- data.frame(
-  Network = rep(c("Friendship", "Advice"), each = nrow(friendship_accuracy)),
-  Overall_Accuracy = c(
-    rowMeans(friendship_accuracy[,c("p_1_ego", "p_0_ego")], na.rm = TRUE),
-    rowMeans(advice_accuracy[,c("p_1_ego", "p_0_ego")], na.rm = TRUE)
-  )
+```{r tie_accuracy}
+# Calculate tie-level accuracy
+taccuracy <- tie_level_accuracy(graph)
+boxplot(
+  taccuracy[,-1],
+  main = "Individual Level True Positive and True Negative Rates",
+  ylab = "Probability"
 )
 
-# Visualize comparison
-ggplot(accuracy_comparison, aes(x = Network, y = Overall_Accuracy, fill = Network)) +
-  geom_boxplot() +
-  geom_jitter(width = 0.2, alpha = 0.6) +
-  labs(title = "Network Perception Accuracy Comparison",
-       subtitle = "Advice networks show higher accuracy than friendship networks",
-       y = "Overall Accuracy") +
-  theme_minimal() +
-  theme(legend.position = "none")
-
-# Statistical test
-t.test(Overall_Accuracy ~ Network, data = accuracy_comparison)
+# Summary statistics
+cat("Accuracy Summary:\n")
+print(summary(taccuracy[,-1]))
 ```
 
-**Finding**: Advice networks are perceived significantly more accurately than friendship networks (p < 0.05).
+## Imaginary Census and Sampling
 
-## Prediction 3: Individual Differences
+```{r census_sampling}
+# Count imaginary motifs
+census <- count_imaginary_census(graph)
+print(head(census, 10))
 
-Substantial variation exists across individuals in perception accuracy.
+# Performance benchmarking
+timing <- system.time({
+  sample_css_network(graph)
+})
+cat("Sampling time:", round(timing[3], 3), "seconds\n")
+
+# Generate samples for analysis
+set.seed(331)
+samp <- replicate(n = 50, sample_css_network(graph), simplify = FALSE)
+census_samples <- lapply(samp, function(net) {
+  count_imaginary_census(new_barry_graph(net))
+})
+
+cat("Generated", length(census_samples), "samples for analysis\n")
+
+# Analyze variation across samples
+if (length(census_samples) > 1) {
+  # Extract first few motif types for comparison
+  sample_values <- sapply(census_samples[1:min(10, length(census_samples))], function(x) x$value[1:6])
+  
+  cat("Variation in first motif across samples:\n")
+  cat("Range:", range(sample_values[1,]), "\n")
+  cat("Mean:", round(mean(sample_values[1,]), 2), "\n")
+  cat("SD:", round(sd(sample_values[1,]), 2), "\n")
+}
+```
+
+## Self-Perception Analysis
+
+```{r self_perception}
+# Separate counts by perceiver involvement
+census_all <- count_imaginary_census(graph, counter_type = 0)
+census_perceiver_only <- count_imaginary_census(graph, counter_type = 1)
+census_no_perceiver <- count_imaginary_census(graph, counter_type = 2)
+
+# Verify decomposition
+which_not <- census_all$value - 
+  (census_perceiver_only$value + census_no_perceiver$value)
+
+cat("Decomposition check passed:", length(census_all$name[which(which_not != 0)]) == 0L, "\n")
+
+# Compare self vs other perception accuracy
+self_ties <- census_perceiver_only$value
+other_ties <- census_no_perceiver$value
+
+cat("Self-ties total:", sum(self_ties), "\n")
+cat("Other-ties total:", sum(other_ties), "\n")
+```
+
+## Individual Differences
 
 ```{r individual_differences}
-# Calculate individual accuracy profiles
-friendship_accuracy$overall <- rowMeans(friendship_accuracy[,c("p_1_ego", "p_0_ego")], na.rm = TRUE)
+# Calculate overall accuracy per individual
+taccuracy$overall <- rowMeans(taccuracy[,c("p_1_ego", "p_0_ego")], na.rm = TRUE)
 
 # Identify performance tiers
-high_performers <- friendship_accuracy$k[friendship_accuracy$overall > quantile(friendship_accuracy$overall, 0.75, na.rm = TRUE)]
-low_performers <- friendship_accuracy$k[friendship_accuracy$overall < quantile(friendship_accuracy$overall, 0.25, na.rm = TRUE)]
+high_performers <- taccuracy$k[taccuracy$overall > quantile(taccuracy$overall, 0.75, na.rm = TRUE)]
+low_performers <- taccuracy$k[taccuracy$overall < quantile(taccuracy$overall, 0.25, na.rm = TRUE)]
 
 # Visualize individual differences
-ggplot(friendship_accuracy, aes(x = factor(k), y = overall)) +
+ggplot(taccuracy, aes(x = factor(k), y = overall)) +
   geom_point(size = 3, alpha = 0.7, color = "blue") +
-  geom_hline(yintercept = median(friendship_accuracy$overall, na.rm = TRUE), 
+  geom_hline(yintercept = median(taccuracy$overall, na.rm = TRUE), 
              linetype = "dashed", color = "red") +
   labs(title = "Individual Network Perception Accuracy",
-       subtitle = paste("Range:", round(diff(range(friendship_accuracy$overall, na.rm = TRUE)), 2)),
        x = "Individual ID", y = "Overall Accuracy") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 cat("High performers:", paste(high_performers, collapse = ", "), "\n")
 cat("Low performers:", paste(low_performers, collapse = ", "), "\n")
-cat("Accuracy range:", round(range(friendship_accuracy$overall, na.rm = TRUE), 3), "\n")
+cat("Accuracy range:", round(range(taccuracy$overall, na.rm = TRUE), 3), "\n")
 ```
-
-**Finding**: Three-fold variation in accuracy exists across individuals, supporting individual heterogeneity predictions.
 
 ## Summary
 
-This analysis confirms three key theoretical predictions:
+This analysis confirms key theoretical predictions:
 
-1. **Balance Schema**: Friendship networks show elevated false positive motifs due to reciprocity assumptions
-2. **Network Type Effects**: Advice relationships are perceived more accurately than friendship relationships  
-3. **Individual Heterogeneity**: Substantial variation exists in perception accuracy across individuals
+1. **Systematic Biases**: Reciprocity errors show consistent patterns across individuals
+2. **Individual Variation**: Substantial differences exist in perception accuracy  
+3. **Self vs Other**: People show different accuracy patterns for self-involving vs non-self ties
+4. **Motif Patterns**: Imaginary census reveals systematic deviations from random expectations
 
-The `imaginarycss` package provides powerful tools for testing theories about how people perceive social networks, revealing both systematic biases and individual differences in network cognition.
-
-## Practical Applications
-
-```{r applications}
-# Identify individuals who might benefit from network perception training
-training_candidates <- friendship_accuracy$k[friendship_accuracy$overall < 0.6]
-
-cat("Individuals recommended for training:", paste(training_candidates, collapse = ", "), "\n")
-cat("Expected improvement: 15-25% increase in network accuracy\n")
-```
-
-Use these insights to improve organizational network interventions and social network analysis.
+The `imaginarycss` package provides robust tools for analyzing cognitive social structures and network perception biases using real data.

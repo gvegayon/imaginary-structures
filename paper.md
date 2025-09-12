@@ -19,7 +19,7 @@ authors:
 affiliations:
  - name: University of Utah, USA
    index: 1
- - name: University of Tokyo, Japan
+ - name: Aarhus University, Denmark
    index: 2
 date: 9 September 2025
 bibliography: paper.bib

@@ -1,7 +1,12 @@
 pandoc: '3.2'
-pkgdown: 2.0.9
+pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
-  intro: intro.html
-last_built: 2025-07-18T20:31Z
-
+  Advanced-analysis: Advanced-analysis.html
+  errors-and-individual-accuracy: errors-and-individual-accuracy.html
+  intro-basics: intro-basics.html
+  real-world-example: real-world-example.html
+last_built: 2025-09-10T21:57Z
+urls:
+  reference: https://sima-njf.github.io/imaginary-structures/reference
+  article: https://sima-njf.github.io/imaginary-structures/articles
