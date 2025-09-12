@@ -66,8 +66,8 @@
 #'
 #' @format A data frame with edge pairs:
 #' \describe{
-#'   \item{V1}{Source node ID (integer, 1-462)}
-#'   \item{V2}{Target node ID (integer, 1-462)}
+#'   \item{V1}{Source node ID (integer)}
+#'   \item{V2}{Target node ID (integer)}
 #' }
 #' @details The data is structured as blocks:
 #' \itemize{
@@ -86,11 +86,13 @@
 #' range(advice_nets$V1)
 #' range(advice_nets$V2)
 #' 
-#' # Create barry graph (as intended for the package)
+#' # Create barry graph (correct usage for imaginarycss package)
+#' library(imaginarycss)
 #' n <- 21
 #' krack_adjmat <- matrix(0L, nrow = n * 22, ncol = n * 22)
 #' krack_adjmat[as.matrix(advice_nets)] <- 1L
 #' 
-#' # Verify dimensions
-#' dim(krack_adjmat)
+#' # Create graph and verify
+#' graph <- new_barry_graph(krack_adjmat, n = n)
+#' attr(graph, "netsize")
 "advice_nets"

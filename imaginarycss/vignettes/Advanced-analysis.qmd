@@ -24,13 +24,12 @@ data("advice_nets", package = "imaginarycss")
 
 # Load edge list data (following README example exactly)
 krack_data <- advice_nets
-krack_data <- as.matrix(krack_data)
+krack_data <- as.matrix(advice_nets)
 n <- 21
 
 # Create large adjacency matrix (n * 22 for true network + 21 perceptions)
 krack_adjmat <- matrix(0L, nrow = n * 22, ncol = n * 22)
 krack_adjmat[krack_data] <- 1L
-
 # Create barry graph
 graph <- new_barry_graph(krack_adjmat, n = n)
 
