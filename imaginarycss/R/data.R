@@ -57,3 +57,19 @@
 #' }
 #' @source Krackhardt, D. (1987). Cognitive social structures. Social Networks, 9(2), 109-134.
 "krack_attributes"
+
+#' Krackhardt Advice Network Edge List
+#'
+#' Edge list representation of the Krackhardt advice network data containing
+#' pairs of nodes representing advice relationships in a high-tech manufacturing firm.
+#'
+#' @format A data frame with X rows and 2 variables:
+#' \describe{
+#'   \item{V1}{Source node (integer, 1-21)}
+#'   \item{V2}{Target node (integer, 1-21)}
+#' }
+#' @source David Krackhardt (1987). Cognitive social structures. Social Networks, 9(2), 109-134.
+#' @examples
+#' data(advice_nets)
+#' head(advice_nets)
+"advice_nets"
