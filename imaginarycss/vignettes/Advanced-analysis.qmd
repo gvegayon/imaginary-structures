@@ -37,9 +37,6 @@ graph <- new_barry_graph(krack_adjmat, n = n)
 cat("Data loaded successfully:\n")
 cat("- Edge list entries:", nrow(krack_data), "\n")
 cat("- Combined matrix dimensions:", dim(krack_adjmat), "\n")
-cat("- Network size:", n, "\n")
-cat("- Number of networks:", 22, "(1 true + 21 perceptions)\n")
-
 # Check the graph structure
 cat("- Graph endpoints:", attr(graph, "endpoints"), "\n")
 cat("- Graph netsize:", attr(graph, "netsize"), "\n")
