@@ -61,38 +61,12 @@
 #' Krackhardt Advice Network Edge List
 #'
 #' Complete edge list for Krackhardt's cognitive social structure study.
-#' Contains the true advice network (nodes 1-21) plus individual perceptions
-#' from all 21 participants, formatted for use with imaginarycss package.
 #'
-#' @format A data frame with edge pairs:
-#' \describe{
-#'   \item{V1}{Source node ID (integer)}
-#'   \item{V2}{Target node ID (integer)}
-#' }
-#' @details The data is structured as blocks:
-#' \itemize{
-#'   \item Nodes 1-21: True advice network
-#'   \item Nodes 22-42: Person 1's perception of the network
-#'   \item Nodes 43-63: Person 2's perception of the network
-#'   \item ... and so on for all 21 participants
-#' }
-#' @source Krackhardt, D. (1987). Cognitive social structures. 
-#'   Social Networks, 9(2), 109-134.
+#' @format A data frame with edge pairs
+#' @source Krackhardt (1987)
 #' @examples
 #' data(advice_nets)
 #' head(advice_nets)
-#' 
-#' # Check the structure
 #' range(advice_nets$V1)
 #' range(advice_nets$V2)
-#' 
-#' # Create barry graph (correct usage for imaginarycss package)
-#' library(imaginarycss)
-#' n <- 21
-#' krack_adjmat <- matrix(0L, nrow = n * 22, ncol = n * 22)
-#' krack_adjmat[as.matrix(advice_nets)] <- 1L
-#' 
-#' # Create graph and verify
-#' graph <- new_barry_graph(krack_adjmat, n = n)
-#' attr(graph, "netsize")
 "advice_nets"
