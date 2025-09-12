@@ -67,6 +67,4 @@
 #' @examples
 #' data(advice_nets)
 #' head(advice_nets)
-#' range(advice_nets$V1)
-#' range(advice_nets$V2)
 "advice_nets"
