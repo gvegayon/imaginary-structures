@@ -1,8 +1,12 @@
 ---
-title: "Analyzing Perceptual Errors + Individual Accuracy"
+title: "Analyzing Perceptual Errors and Individual Accuracy"
 author: "Sima Najafzadehkhoei"
 date: today
 format: html
+vignette: >
+  %\VignetteIndexEntry{Analyzing Perceptual Errors and Individual Accuracy}
+  %\VignetteEngine{quarto::format}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup}
