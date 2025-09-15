@@ -1,98 +1,20 @@
-# _pkgdown.yml configuration for imaginarycss package
-
 url: https://gvegayon.github.io/imaginary-structures
 
 template:
   bootstrap: 5
-  theme: flatly
-  bslib:
-    primary: "#0073e6"
-    secondary: "#6c757d"
-
-development:
-  mode: auto
-
+  
 home:
-  title: "imaginarycss: Cognitive Social Structures Analysis"
+  title: "Imaginary CSS Structures"
   description: >
-    An R package for analyzing systematic biases in network perception using 
-    imaginary network motifs and cognitive social structures (CSS) framework.
+    Tools for measuring and testing imaginary cognitive social structure (CSS) motifs
+
+build:
+  bootstrap: true
   
-  links:
-  - text: Learn more
-    href: https://github.com/gvegayon/imaginary-structures
-  
-navbar:
-  structure:
-    left:  [home, intro, reference, articles, tutorials, news]
-    right: [search, github]
-  components:
-    home:
-      icon: fas fa-home fa-lg
-      href: index.html
-    reference:
-      text: Reference
-      href: reference/index.html
-    articles:
-      text: Articles
-      menu:
-      - text: "Getting Started"
-        href: articles/intro-basics.html
-      - text: "Advanced Analysis"
-        href: articles/Advanced-analysis.html
-      - text: "Real World Example"
-        href: articles/real-world-example.html
-      - text: "Individual Accuracy"
-        href: articles/errors-and-individual-accuracy.html
-    github:
-      icon: fab fa-github fa-lg
-      href: https://github.com/gvegayon/imaginary-structures
-
-reference:
-- title: "Data"
-  desc: "Built-in datasets for analysis"
-  contents:
-  - krack_friendship
-  - krack_advice
-  - krack_attributes
-  - krack_friendship_perceptions
-  - krack_advice_perceptions
-
-- title: "Core Functions"
-  desc: "Main analysis functions"
-  contents:
-  - new_barry_graph
-  - count_imaginary_census
-  - sample_css_network
-
-- title: "Analysis Functions"  
-  desc: "Statistical analysis and testing"
-  contents:
-  - tie_level_accuracy
-  - count_recip_errors
-
 articles:
-- title: "Getting Started"
-  navbar: ~
-  contents:
-  - intro-basics
-
-- title: "Analysis Examples"
-  navbar: ~
+- title: "Vignettes" 
   contents:
   - Advanced-analysis
+  - intro-basics
   - real-world-example
   - errors-and-individual-accuracy
-
-authors:
-  Sima Najafzadehkhoei:
-    href: "https://github.com/sima-najafzadehkhoei"
-  George Vega Yon:
-    href: "https://github.com/gvegayon"
-  Kyosuke Tanaka:
-    href: "https://github.com/kyosuke-tanaka"
-
-footer:
-  structure:
-    left: developed_by
-    right: built_with
