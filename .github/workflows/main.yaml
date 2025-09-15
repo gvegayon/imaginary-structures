@@ -34,8 +34,13 @@ jobs:
           
       - name: Render Quarto vignettes
         run: |
-          quarto render vignettes/ --to html
-        working-directory: imaginarycss
+          cd imaginarycss/vignettes
+          for file in *.qmd; do
+            if [ -f "$file" ]; then
+              quarto render "$file" --to html
+            fi
+          done
+        shell: bash
         
       - name: Build site
         run: pkgdown::build_site_github_pages(new_process = FALSE, install = TRUE)
