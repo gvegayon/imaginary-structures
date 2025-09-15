@@ -57,3 +57,21 @@
 #' }
 #' @source Krackhardt, D. (1987). Cognitive social structures. Social Networks, 9(2), 109-134.
 "krack_attributes"
+
+#' Krackhardt Friendship Network Perception Errors
+#'
+#' Individual perceptions of the Krackhardt friendship network containing
+#' systematic perception errors and biases.
+#'
+#' @format A list of 21 matrices (21x21 each) representing individual perceptions
+#' @source Generated perception errors based on Krackhardt friendship data
+"krack_friendship_perceptions"
+
+#' Krackhardt Advice Network Perception Errors  
+#'
+#' Individual perceptions of the Krackhardt advice network containing
+#' systematic perception errors and biases.
+#'
+#' @format A list of 21 matrices (21x21 each) representing individual perceptions
+#' @source Generated perception errors based on Krackhardt advice data
+"krack_advice_perceptions"
