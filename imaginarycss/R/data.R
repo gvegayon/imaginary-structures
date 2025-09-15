@@ -57,14 +57,3 @@
 #' }
 #' @source Krackhardt, D. (1987). Cognitive social structures. Social Networks, 9(2), 109-134.
 "krack_attributes"
-
-#' Krackhardt Advice Network Edge List
-#'
-#' Complete edge list for Krackhardt's cognitive social structure study.
-#'
-#' @format A data frame with edge pairs
-#' @source Krackhardt (1987)
-#' @examples
-#' data(advice_nets)
-#' head(advice_nets)
-"advice_nets"
