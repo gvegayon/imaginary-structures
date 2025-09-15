@@ -7,21 +7,21 @@ tags:
   - perception
   - network analysis
 authors:
+  - name: Sima Najafzadehkhoei
+    equal-contrib: true
+    affiliation: 1
   - name: George Vega Yon
     equal-contrib: true
     affiliation: 1
   - name: Kyosuke Tanaka
-    equal-contrib: true
-    affiliation: 2
-  - name: Sima Najafzadehkhoei
     equal-contrib: false
-    affiliation: 1
+    affiliation: 2
 affiliations:
  - name: University of Utah, USA
    index: 1
  - name: Aarhus University, Denmark
    index: 2
-date: 9 September 2025
+date: 15 September 2025
 bibliography: paper.bib
 ---
 
