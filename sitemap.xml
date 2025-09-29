@@ -1,8 +1,11 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://gvegayon.github.io/imaginary-structures/404.html</loc></url>
 <url><loc>https://gvegayon.github.io/imaginary-structures/LICENSE-text.html</loc></url>
+<url><loc>https://gvegayon.github.io/imaginary-structures/articles/Advanced-analysis.html</loc></url>
+<url><loc>https://gvegayon.github.io/imaginary-structures/articles/errors-and-individual-accuracy.html</loc></url>
 <url><loc>https://gvegayon.github.io/imaginary-structures/articles/index.html</loc></url>
-<url><loc>https://gvegayon.github.io/imaginary-structures/articles/intro.html</loc></url>
+<url><loc>https://gvegayon.github.io/imaginary-structures/articles/intro-basics.html</loc></url>
+<url><loc>https://gvegayon.github.io/imaginary-structures/articles/real-world-example.html</loc></url>
 <url><loc>https://gvegayon.github.io/imaginary-structures/authors.html</loc></url>
 <url><loc>https://gvegayon.github.io/imaginary-structures/index.html</loc></url>
 <url><loc>https://gvegayon.github.io/imaginary-structures/reference/barray_to_edgelist.html</loc></url>
@@ -10,9 +13,14 @@
 <url><loc>https://gvegayon.github.io/imaginary-structures/reference/count_recip_errors.html</loc></url>
 <url><loc>https://gvegayon.github.io/imaginary-structures/reference/hello.html</loc></url>
 <url><loc>https://gvegayon.github.io/imaginary-structures/reference/index.html</loc></url>
+<url><loc>https://gvegayon.github.io/imaginary-structures/reference/krack_advice.html</loc></url>
+<url><loc>https://gvegayon.github.io/imaginary-structures/reference/krack_advice_perceptions.html</loc></url>
+<url><loc>https://gvegayon.github.io/imaginary-structures/reference/krack_attributes.html</loc></url>
+<url><loc>https://gvegayon.github.io/imaginary-structures/reference/krack_friendship.html</loc></url>
+<url><loc>https://gvegayon.github.io/imaginary-structures/reference/krack_friendship_perceptions.html</loc></url>
+<url><loc>https://gvegayon.github.io/imaginary-structures/reference/krack_reports.html</loc></url>
 <url><loc>https://gvegayon.github.io/imaginary-structures/reference/new_barry_graph.html</loc></url>
 <url><loc>https://gvegayon.github.io/imaginary-structures/reference/print.barry_graph.html</loc></url>
 <url><loc>https://gvegayon.github.io/imaginary-structures/reference/tie_level_accuracy.html</loc></url>
-<url><loc>https://gvegayon.github.io/imaginary-structures/reference/to_integer.html</loc></url>
 </urlset>
 
