@@ -40,4 +40,3 @@ Suggests:
 Depends: 
     R (>= 4.0.0)
 VignetteBuilder: quarto
-Remotes: USCBiostats/barryr
