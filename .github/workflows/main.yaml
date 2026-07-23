@@ -61,7 +61,7 @@ jobs:
         if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         uses: actions/upload-pages-artifact@v3
         with:
-          path: imaginarycss/docs
+          path: docs
 
       # Upload artifact for PR preview (only for pull requests)
       - name: Upload PR artifact
@@ -69,7 +69,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pkgdown-site
-          path: imaginarycss/docs
+          path: docs
 
       # Post comment with link to artifact on PRs
       - name: Post artifact link to PR
